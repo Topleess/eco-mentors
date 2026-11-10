@@ -12,9 +12,9 @@ it('requires explicit repository opt-in before any production workflow job can r
     'deploy',
     'notify-failure',
   ]) {
-    const block = workflow.split(`\n  ${job}:`)[1]?.split(/\n  [a-z][a-z-]*:/)[0]
+    const block = workflow.split(`\n  ${job}:`)[1]?.split(/\n {2}[a-z][a-z-]*:/)[0]
     expect(block).toBeDefined()
-    const guard = block?.match(/\n    if: ([^\n]*(?:\n      [^\n]*)*)/)?.[1]
+    const guard = block?.match(/\n {4}if: ([^\n]*(?:\n {6}[^\n]*)*)/)?.[1]
     expect(guard).toContain("vars.ENABLE_PRODUCTION_DEPLOY == 'true'")
   }
 })
