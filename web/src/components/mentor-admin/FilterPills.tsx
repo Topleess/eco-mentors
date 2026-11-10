@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/mentor'
 /**
  * Status filter pills for the requests inbox (design 07): active pill is
  * solid navy, idle pills are white with a line border; counts render in
@@ -23,8 +25,9 @@ export default function FilterPills<T extends string>({
   value,
   onChange,
 }: FilterPillsProps<T>): JSX.Element {
+  const { t } = useTranslation(messages)
   return (
-    <div className="no-scrollbar flex gap-1.5 overflow-x-auto" role="group" aria-label="Filter by status">
+    <div className="no-scrollbar flex gap-1.5 overflow-x-auto" role="group" aria-label={t('filterByStatus')}>
       {options.map((option) => {
         const isActive = option.value === value
         return (

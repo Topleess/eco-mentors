@@ -1,3 +1,6 @@
+import { useTranslation } from '@/i18n'
+import { translateLabel } from '@/i18n/labels'
+import { messages } from '@/i18n/messages/catalog'
 import classNames from 'classnames'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import allFilters from '@/config/filters'
@@ -86,6 +89,7 @@ interface PanelItemProps {
 
 /** Dropdown panel row: label left, mono count right; selected = cobalt fill. */
 function PanelItem({ label, count, selected, onClick }: PanelItemProps): JSX.Element {
+  const { intlLocale } = useTranslation(messages)
   return (
     <button
       type="button"
@@ -105,7 +109,7 @@ function PanelItem({ label, count, selected, onClick }: PanelItemProps): JSX.Ele
           selected ? 'text-white/90' : 'text-ink-mute'
         )}
       >
-        {count.toLocaleString('en-US')}
+        {count.toLocaleString(intlLocale)}
       </span>
     </button>
   )
@@ -120,6 +124,7 @@ function PanelItem({ label, count, selected, onClick }: PanelItemProps): JSX.Ele
  * the scroll row so overflow-x never clips them).
  */
 export default function MentorsFilters({ appliedFilters, mentors }: MentorsFiltersProps) {
+  const { t, locale } = useTranslation(messages)
   const [openPanel, setOpenPanel] = useState<PanelKey | null>(null)
   const [panelLeft, setPanelLeft] = useState(0)
   const wrapperRef = useRef<HTMLDivElement>(null)
@@ -291,7 +296,7 @@ export default function MentorsFilters({ appliedFilters, mentors }: MentorsFilte
       {/* Mobile: full-bleed horizontal scroll (sections use px-5/px-8),
           hidden scrollbar; desktop wraps. */}
       <div className="no-scrollbar -mx-5 flex items-center gap-2 overflow-x-auto px-5 py-0.5 sm:-mx-8 sm:px-8 lg:mx-0 lg:flex-wrap lg:overflow-x-visible lg:px-0">
-        <Pill label="All mentors" active={!topicFilterActive} onClick={onClickAll} />
+        <Pill label={t('allMentors')} active={!topicFilterActive} onClick={onClickAll} />
 
         {allFilters.categories.map((category) => {
           const isActive = appliedFilters.category.values === category.label
@@ -301,7 +306,7 @@ export default function MentorsFilters({ appliedFilters, mentors }: MentorsFilte
           return (
             <Pill
               key={category.label}
-              label={selectedTag ?? category.label}
+              label={translateLabel(locale, selectedTag ?? category.label)}
               active={isActive}
               hasChevron={hasDropdown}
               open={openPanel === `cat:${category.label}`}
@@ -311,7 +316,7 @@ export default function MentorsFilters({ appliedFilters, mentors }: MentorsFilte
         })}
 
         <Pill
-          label="Experience"
+          label={t('experience')}
           active={appliedFilters.experience.values.length > 0}
           hasChevron
           open={openPanel === 'experience'}
@@ -320,7 +325,7 @@ export default function MentorsFilters({ appliedFilters, mentors }: MentorsFilte
         />
 
         <Pill
-          label="Price"
+          label={t('price')}
           active={Boolean(appliedFilters.price.values)}
           hasChevron
           open={openPanel === 'price'}
@@ -338,7 +343,7 @@ export default function MentorsFilters({ appliedFilters, mentors }: MentorsFilte
             openCategory.tags.map((tag) => (
               <PanelItem
                 key={tag}
-                label={tag}
+                label={translateLabel(locale, tag)}
                 count={tagCounts.get(tag) ?? 0}
                 selected={appliedFilters.tags.values.includes(tag)}
                 onClick={() => onClickTag(tag)}
@@ -349,7 +354,7 @@ export default function MentorsFilters({ appliedFilters, mentors }: MentorsFilte
             Object.keys(allFilters.experience).map((label) => (
               <PanelItem
                 key={label}
-                label={label}
+                label={translateLabel(locale, label)}
                 count={experienceCounts.get(label) ?? 0}
                 selected={appliedFilters.experience.values.includes(label)}
                 onClick={() => onClickExperience(label)}
@@ -360,7 +365,7 @@ export default function MentorsFilters({ appliedFilters, mentors }: MentorsFilte
             Object.keys(allFilters.byPrice).map((label) => (
               <PanelItem
                 key={label}
-                label={label}
+                label={translateLabel(locale, label)}
                 count={priceCounts.get(label) ?? 0}
                 selected={appliedFilters.price.values === label}
                 onClick={() => onClickPrice(label)}

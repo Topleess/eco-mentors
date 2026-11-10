@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="760" viewBox="0 0 1200 760" role="img" aria-labelledby="title desc">
+  <title id="title">Экологическая карьера — учебная обложка</title>
+  <desc id="desc">Демонстрационная обложка каталога исследований. Светлый фон, типографика и линии маршрутов.</desc>
+  <rect width="1200" height="760" fill="#E4EDE6"/>
+  <path d="M820 760V490C820 350 1070 410 1070 250V0M940 760V550C940 435 700 360 700 205V0" fill="none" stroke="#B4CBBB" stroke-width="3"/>
+  <circle cx="820" cy="490" r="13" fill="#132A52"/>
+  <circle cx="1070" cy="250" r="13" fill="#2F5EFF"/>
+  <circle cx="700" cy="205" r="13" fill="#132A52"/>
+  <text x="70" y="100" font-family="Arial, sans-serif" font-size="22" letter-spacing="3" fill="#132A52">ИССЛЕДОВАНИЯ</text>
+  <text x="70" y="294" font-family="Arial, sans-serif" font-size="78" font-weight="700" fill="#132A52">Экология.</text>
+  <text x="70" y="390" font-family="Arial, sans-serif" font-size="78" font-weight="700" fill="#132A52">Люди.</text>
+  <text x="70" y="486" font-family="Arial, sans-serif" font-size="78" font-weight="700" fill="#132A52">Карьера.</text>
+  <path d="M70 600H570" stroke="#132A52" stroke-width="2"/>
+  <text x="70" y="655" font-family="Arial, sans-serif" font-size="22" fill="#435446">УЧЕБНЫЙ ПРИМЕР · НЕ РЕЗУЛЬТАТ ИССЛЕДОВАНИЯ</text>
+</svg>

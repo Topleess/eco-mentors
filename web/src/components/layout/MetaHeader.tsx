@@ -4,6 +4,9 @@ import Head from 'next/head'
 import { useRouter } from 'next/compat/router'
 import constants from '@/config/constants'
 import seo from '@/config/seo'
+import { useTranslation } from '@/i18n'
+import { localizedPath } from '@/i18n/core'
+import { messages } from '@/i18n/messages/common'
 
 interface MetaHeaderProps {
   customTitle?: string
@@ -50,26 +53,41 @@ export default function MetaHeader({
   noIndex = false,
 }: MetaHeaderProps) {
   const router = useRouter()
+  const { t, locale } = useTranslation(messages)
 
   // Social titles stay short: og:site_name already carries the brand, and
   // scrapers truncate around 65 chars — no "| OpenMentor.io" suffix here
   // (the <title> tag, set by each page, keeps the full suffixed form).
-  const page_title = customTitle || seo.title
-  const page_description = customDescription || seo.description
+  const page_title = customTitle || t('seoTitle')
+  const page_description = customDescription || t('seoDescription')
   const page_image = customImage ?? seo.imageUrl
-  const page_image_alt = imageAlt ?? 'OpenMentor.io — an open community of tech mentors'
+  const page_image_alt = imageAlt ?? t('seoTitle')
 
   // Query strings and hashes never identify a distinct page here (filters are
   // client state, ?utm_* is tracking), so they are stripped from the default.
   // Statically prerendered pages (/404) have no router and get no canonical —
   // correct, since they are not a canonical anything.
   const path = router?.asPath.split(/[?#]/)[0]
-  const canonical = canonicalUrl ?? (path ? constants.BASE_URL + path.replace(/^\/+/, '') : null)
+  const rawCanonical = canonicalUrl ?? (path ? constants.BASE_URL + path.replace(/^\/+/, '') : null)
+  const canonical = rawCanonical && router?.locale
+    ? (() => { const url = new URL(rawCanonical); url.pathname = localizedPath(url.pathname, locale); return url.toString() })()
+    : rawCanonical
+  const alternate = (language: 'ru' | 'en'): string | undefined => {
+    if (!canonical) return undefined
+    const url = new URL(canonical)
+    url.pathname = localizedPath(url.pathname, language)
+    return url.toString()
+  }
 
   return (
     <Head>
       <meta name="description" content={page_description} />
       {canonical && <link rel="canonical" href={canonical} />}
+      {!noIndex && canonical && <>
+        <link rel="alternate" hrefLang="ru" href={alternate('ru')} />
+        <link rel="alternate" hrefLang="en" href={alternate('en')} />
+        <link rel="alternate" hrefLang="x-default" href={alternate('ru')} />
+      </>}
 
       {/* max-image-preview:large opts into large thumbnails in Search and
           Discover; without it Google shows a small one or none at all. */}
@@ -84,7 +102,7 @@ export default function MetaHeader({
 
       <meta property="og:site_name" content="OpenMentor.io" />
       <meta property="og:type" content={ogType} />
-      <meta property="og:locale" content="en_US" />
+      <meta property="og:locale" content={locale === 'ru' ? 'ru_RU' : 'en_US'} />
       <meta property="og:title" content={page_title} />
       <meta property="og:description" content={page_description} />
       {canonical && <meta property="og:url" content={canonical} />}

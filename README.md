@@ -1,72 +1,70 @@
-# openmentor.io
+# Eco Mentors
 
-An open community of tech mentors — mentees find a mentor, send a request, and meet one-on-one. The platform connects people and stays out of the way: no payment processing, no lock-in, sessions are arranged directly between mentor and mentee.
+Открытая менторская платформа для проекта «ЭкоКарьера», разработанная на основе [OpenMentor](https://github.com/openmentor-io/openmentor).
 
-OpenMentor is a community project: donation-funded, zero commission, no ads — and mentoring for free is encouraged. The full story is at [openmentor.io/about](https://openmentor.io/about).
+Исходный код этой версии: **https://github.com/Topleess/eco-mentors**.
 
-This is the monorepo for the whole platform.
+## Что есть в этой версии
 
-## Layout
+- Каталог менторов, заявки и личный кабинет ментора.
+- Административный интерфейс: модерация, менторы, заявки, вакансии и исследования.
+- Публичные разделы вакансий и исследований, загрузка обложек и PDF.
+- Аналитика в административном интерфейсе: посещаемость из self-hosted Umami и история заявок из PostgreSQL.
+- Русский и английский интерфейс.
+- Серверная основа для входа по почте, уведомлений и напоминаний.
 
-| Directory | What it is | Stack |
-|---|---|---|
-| [`web/`](web/) | The website: mentor catalog, profiles, contact flow, mentor dashboard, admin moderation | Next.js 16, TypeScript, Tailwind |
-| [`api/`](api/) | Backend: REST API, background worker (email + cron jobs), DB migrations — three binaries, one Docker image | Go, PostgreSQL |
-| [`infra/`](infra/) | Deployment: Docker Compose + Traefik on a single VM, Postgres with backups, Grafana Alloy observability | Compose, shell |
-| [`docs/`](docs/) | Decisions log, runbooks, legal drafts, design reference, historical migration plan | Markdown |
-| [`brand/`](brand/) | "Fresh Signal" brand asset pack — logos, color tokens (source of truth for `web/public/brand`) | SVG/PNG/CSS |
+**Статус:** рабочая локальная версия; окончательная айдентика и тексты, клиентский сервер, домен, почта и production-настройки ещё не завершены. Наличие кода интеграции не означает, что внешний сервис уже настроен. В проекте пока остаются исходные имена OpenMentor в интерфейсе, пакетах и конфигурации.
 
-Each component keeps its own README with details; start there.
+## Локальный запуск
 
-## Architecture in one paragraph
+Нужны Docker с Compose, Node.js 26 с npm, Python 3 и Go, совместимый с [`api/go.mod`](api/go.mod). Запускайте из корня репозитория:
 
-The web app is a thin client — every data operation goes through the Go API (mentors catalog, magic-link auth for mentors and moderators, request lifecycle). Side effects (transactional email via AWS SES, daily reminder/deactivation crons) run in a separate `worker` process built from the same Go codebase — isolated crash domain, own DB pool, talked to via authenticated internal HTTP triggers. Everything deploys as one Compose stack behind Traefik on a single VM, with Postgres in a container (protected external volume + nightly dumps to S3), and metrics/logs/traces/profiles shipped to Grafana Cloud through Alloy.
-
-## Local development
-
-```bash
-# 1. Database
-docker run -d --name openmentor-pg \
-  -e POSTGRES_USER=openmentor -e POSTGRES_PASSWORD=password -e POSTGRES_DB=openmentor \
-  -p 5432:5432 postgres:16-alpine
-
-# 2. API (see api/.env.example for required vars)
-cd api && cp .env.example .env   # fill in dev values
-go run ./cmd/migrate && go run ./cmd/api   # and optionally: go run ./cmd/worker
-
-# 3. Web (see web/.env.example; GO_API_INTERNAL_TOKEN must match the API's INTERNAL_MENTORS_API)
-cd web && cp .env.example .env && npm ci && npm run dev
+```sh
+git clone https://github.com/Topleess/eco-mentors.git
+cd eco-mentors
+./infra/local/start.sh
 ```
 
-Full-stack via Compose: see [`infra/README.md`](infra/README.md).
+Откройте **http://localhost:3100/dev** и выберите тестовый вход администратора или ментора. Запуск создаёт отдельную локальную БД, синтетические аккаунты и приватный файл с локальными секретами; почта и worker в этом режиме не запускаются.
 
-## CI
+**Не публикуйте этот development-контур в интернет.** Его обход авторизации предназначен только для локальной разработки. Подробности, порты, требования и остановка: [`infra/local/README.md`](infra/local/README.md).
 
-| Workflow | Trigger | Purpose |
-|---|---|---|
-| `Checks` | every PR | The one **required** branch-protection check (`Checks / required-checks`) — runs quick gates for whatever changed, passes trivially otherwise |
-| `CI / Web` | changes under `web/` | lint, typecheck, tests, production build |
-| `CI / API` | changes under `api/` | race tests + coverage floor, gosec → SARIF in the Security tab plus a gate on HIGH findings outside `api/gosec-baseline.txt`, full Docker smoke test (postgres → migrate → api → worker) |
-| `Deploy` | manual dispatch | builds both images from one SHA, ships the stack to the VM with health-checked rollback; serialized (`production-deploy` concurrency group + a VM-side `flock`) |
+Локальный Umami запускается отдельно: [`infra/local/umami/README.md`](infra/local/umami/README.md). Контракты и смысл показателей: [`docs/development/analytics.md`](docs/development/analytics.md).
 
-Every `uses:` is pinned to a commit SHA (Dependabot's `github-actions` ecosystem
-refreshes them), and the merge gate keeps every fast check exclusively — see the
-header of `.github/workflows/checks.yml`.
+## Структура
 
-## Contributing
+| Путь | Назначение |
+| --- | --- |
+| `web/` | Next.js/React, TypeScript, Tailwind; публичные страницы, кабинеты и BFF |
+| `api/` | Go API, worker, миграции PostgreSQL |
+| `infra/` | Docker Compose, конфигурация развёртывания и локального контура |
+| `docs/` | Технические руководства, решения и исторические материалы upstream |
+| `brand/` | Исходные материалы брендинга OpenMentor |
+| `grafana/` | Конфигурация технической наблюдаемости |
 
-Contributions are welcome — and mentoring counts as one. See
-[CONTRIBUTING.md](CONTRIBUTING.md) for the ways to help, how to get set up, the
-house rules, and what to run before opening a PR. Small fixes can go straight to
-a pull request; anything larger should start as an issue.
+## Проверки
 
-- [Code of conduct](CODE_OF_CONDUCT.md)
-- [Security policy](SECURITY.md) — please report vulnerabilities privately, never as an issue
+```sh
+(cd web && npm ci && npm test -- --runInBand && npx tsc --noEmit)
+(cd api && make ci)
+(cd api && make migration-check)
+(cd infra && make check)
+```
 
-## History
+Для Go используйте совместимый toolchain и инструменты из `api/Makefile`. Интеграционные тесты с `OPENMENTOR_TEST_DATABASE_URL` запускайте **только на отдельной одноразовой тестовой БД**: эти тесты изменяют данные. Без тестовой БД часть проверок пропускается.
 
-openmentor.io began as a fork of [getmentor.dev](https://getmentor.dev) — a Russian-language mentorship community by the same author — adapted for a global audience: translated, redesigned, Telegram-free, and consolidated from five repositories into this monorepo (fresh history; the component repos remain as archives). The full story lives in [`docs/migration/`](docs/migration/).
+## Production и безопасность
 
-## License
+- Сервер, домен и провайдеры согласуются отдельно. Настройки development не являются production-конфигурацией.
+- Workflow `Deploy` выключен по умолчанию: все его задачи требуют явного включения repository variable `ENABLE_PRODUCTION_DEPLOY=true`, ручного запуска и настройки собственных repository secrets. При публикации эта переменная не включается; развёртывание не выполняется.
+- Примеры окружения содержат имена настроек, а не рабочие секреты. Реальные `.env`, ключи, credentials, базы, выгрузки и приватные локальные данные не должны попадать в Git.
+- Не отправляйте в issues пароли, токены, персональные данные, дампы или полные диагностические логи. См. [`SECURITY.md`](SECURITY.md).
+- Инфраструктурные руководства и старые записи решений содержат исторические настройки OpenMentor; проверяйте их применимость к своему серверу и провайдерам.
 
-[AGPL-3.0](LICENSE) for the entire repository.
+## Происхождение и лицензия
+
+Это модифицированная версия **OpenMentor**; изменения этой редакции подготовлены к публикации **10 ноября 2026 года**. История исходного проекта и его уведомления об авторских правах сохранены. Upstream: https://github.com/openmentor-io/openmentor.
+
+Репозиторий распространяется под **GNU Affero General Public License v3.0**, как указано в [`LICENSE`](LICENSE). Текст исходной лицензии сохранён без изменений. Сторонние шрифты Open Graph распространяются под SIL OFL 1.1; их уведомления и тексты лицензий находятся в [`web/src/assets/og-fonts/`](web/src/assets/og-fonts/README.md).
+
+Ошибки и предложения для этой версии: https://github.com/Topleess/eco-mentors/issues. Рекомендации участникам: [`CONTRIBUTING.md`](CONTRIBUTING.md).

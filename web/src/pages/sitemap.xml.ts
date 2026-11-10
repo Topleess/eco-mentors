@@ -3,8 +3,9 @@ import { getAllMentors } from '@/server/mentors-data'
 import { withSSRObservability } from '@/lib/with-ssr-observability'
 import constants from '@/config/constants'
 import { ALL_TAGS, TAG_PAGES } from '@/config/tags'
+import { locales, localizedPath } from '@/i18n/core'
 
-const baseUrl = constants.BASE_URL
+const baseUrl = constants.BASE_URL ?? 'http://localhost:3000/'
 
 // SECURITY (L7): escape XML metacharacters before interpolating into <loc>.
 // Slugs are currently constrained, but an '&' or '<' (from a backend change or
@@ -29,12 +30,15 @@ function toLastmodDate(updatedAt: string | undefined): string | undefined {
 
 function sitemapItem(path: string, updatedAt?: string): string {
   const lastmod = toLastmodDate(updatedAt)
-  return `
+  const url = (locale: 'ru' | 'en'): string => escapeXml(baseUrl.replace(/\/$/, '') + localizedPath('/' + path, locale))
+  const alternates = locales.map((locale) => `<xhtml:link rel="alternate" hreflang="${locale}" href="${url(locale)}" />`).join('')
+  return locales.map((locale) => `
         <url>
-        <loc>${escapeXml(baseUrl + path)}</loc>
+        <loc>${url(locale)}</loc>
+        ${alternates}
         ${lastmod ? `<lastmod>${lastmod}</lastmod>` : ''}
         </url>
-    `
+    `).join('')
 }
 
 const _getServerSideProps: GetServerSideProps = async ({ res }) => {
@@ -58,7 +62,7 @@ const _getServerSideProps: GetServerSideProps = async ({ res }) => {
   const tagPages = ALL_TAGS.filter((tag) => tagsInUse.has(tag))
 
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+        <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">
         ${staticPages.map((s) => sitemapItem(s.page)).join('')}
         ${allMentors.map((m) => sitemapItem('mentor/' + m.slug, m.updatedAt)).join('')}
         ${tagPages.map((tag) => sitemapItem('mentors/' + TAG_PAGES[tag].slug)).join('')}

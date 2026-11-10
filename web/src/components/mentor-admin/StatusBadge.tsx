@@ -1,3 +1,5 @@
+import { useLocale } from '@/i18n'
+import { statusLabel } from '@/components/mentor-admin/utils'
 /**
  * Status Badge component
  *
@@ -7,7 +9,7 @@
 
 import classNames from 'classnames'
 import type { RequestStatus } from '@/types'
-import { STATUS_LABELS, STATUS_COLORS } from '@/types'
+import { STATUS_COLORS } from '@/types'
 
 interface StatusBadgeProps {
   status: RequestStatus
@@ -18,13 +20,14 @@ interface StatusBadgeProps {
 const UNKNOWN_STATUS_COLORS = { bg: 'bg-surface-deep', text: 'text-ink-mute' }
 
 export default function StatusBadge({ status, className }: StatusBadgeProps): JSX.Element {
+  const locale = useLocale()
   // `status` is typed but arrives as JSON, so the type is no guarantee at
   // runtime: the database's status CHECK constraint is the real source of
   // truth and has held values the UI did not list (this is how 'reschedule'
   // crashed the admin request list). Render the raw value in a neutral pill
   // rather than dereferencing an undefined map entry and taking down the page.
   const colors = STATUS_COLORS[status] || UNKNOWN_STATUS_COLORS
-  const label = STATUS_LABELS[status] || status
+  const label = statusLabel(status, locale)
 
   return (
     <span

@@ -7,10 +7,15 @@ import { faCircleNotch, faCheckCircle, faTimesCircle } from '@fortawesome/free-s
 import { NoIndexHead } from '@/components'
 import { AdminAuthProvider, useAdminAuth } from '@/components/admin-moderation'
 import analytics from '@/lib/analytics'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/admin'
+import { adminMessage } from '@/i18n/admin'
+import LanguageSwitcher from '@/components/layout/LanguageSwitcher'
 
 type CallbackState = 'verifying' | 'success' | 'error'
 
 function CallbackHandler(): JSX.Element {
+  const { t, locale } = useTranslation(messages)
   const router = useRouter()
   const { verifyLogin, isAuthenticated } = useAdminAuth()
   const [state, setState] = useState<CallbackState>('verifying')
@@ -77,9 +82,10 @@ function CallbackHandler(): JSX.Element {
 
   return (
     <div className="flex min-h-screen flex-col justify-center bg-surface px-5 py-12">
-      <NoIndexHead title="Moderation sign-in" />
+      <NoIndexHead title={t('callbackTitle')} />
 
       <div className="mx-auto w-full max-w-md">
+        <div className="mb-4 flex justify-end"><LanguageSwitcher /></div>
         <Link href="/" className="mb-8 flex justify-center">
           <Image
             src="/brand/logo/svg/logo-horizontal.svg"
@@ -98,9 +104,9 @@ function CallbackHandler(): JSX.Element {
                   icon={faCircleNotch}
                   className="mb-4 animate-spin text-4xl text-brand-cobalt"
                 />
-                <h2 className="mb-2 text-lg text-ink">Verifying the link...</h2>
+                <h2 className="mb-2 text-lg text-ink">{t('verifying')}</h2>
                 <p className="my-0 text-sm text-ink-soft">
-                  Hang on, this will take a couple of seconds
+                  {t('verifyingHint')}
                 </p>
               </>
             )}
@@ -108,9 +114,9 @@ function CallbackHandler(): JSX.Element {
             {state === 'success' && (
               <>
                 <FontAwesomeIcon icon={faCheckCircle} className="mb-4 text-4xl text-brand-mint" />
-                <h2 className="mb-2 text-lg text-ink">You&apos;re signed in!</h2>
+                <h2 className="mb-2 text-lg text-ink">{t('signedIn')}</h2>
                 <p className="my-0 text-sm text-ink-soft">
-                  Redirecting to the moderation panel...
+                  {t('redirecting')}
                 </p>
               </>
             )}
@@ -118,10 +124,10 @@ function CallbackHandler(): JSX.Element {
             {state === 'error' && (
               <>
                 <FontAwesomeIcon icon={faTimesCircle} className="mb-4 text-4xl text-danger" />
-                <h2 className="mb-2 text-lg text-ink">Sign-in failed</h2>
-                <p className="my-0 mb-4 text-sm text-ink-soft">{errorMessage}</p>
+                <h2 className="mb-2 text-lg text-ink">{t('signInFailed')}</h2>
+                <p className="my-0 mb-4 text-sm text-ink-soft">{adminMessage(locale, errorMessage)}</p>
                 <Link href="/admin/login" className="button">
-                  Try again
+                  {t('retry')}
                 </Link>
               </>
             )}

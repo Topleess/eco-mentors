@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/public-pages'
 import { captureException } from '@/lib/posthog'
 import type { NextPageContext } from 'next'
 
@@ -7,6 +9,7 @@ interface ErrorPageProps {
 }
 
 function ErrorPage({ statusCode }: ErrorPageProps): JSX.Element {
+  const { t } = useTranslation(messages)
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-white px-5 text-center">
       {/* Brand glyph: ring + cobalt stroke + mint node */}
@@ -16,20 +19,20 @@ function ErrorPage({ statusCode }: ErrorPageProps): JSX.Element {
         <div className="absolute right-0.5 top-0.5 h-4 w-4 rounded-full bg-brand-mint" />
       </div>
 
-      <p className="meta-mono mb-0 mt-6 text-ink-mute">Error {statusCode}</p>
+      <p className="meta-mono mb-0 mt-6 text-ink-mute">{t('errorCode', { code: statusCode })}</p>
 
       <h1 className="mt-2 text-3xl sm:text-[40px]">
-        {statusCode === 404 ? 'Page not found' : 'Something broke'}
+        {statusCode === 404 ? t('pageNotFound') : t('somethingBroke')}
       </h1>
 
       <p className="mb-0 mt-3 max-w-[420px] text-[15px] leading-[1.6] text-ink-soft">
         {statusCode === 404
-          ? 'Page not found.'
-          : 'Something went wrong. We are already working on a fix.'}
+          ? t('pageNotFoundDescription')
+          : t('errorDescription')}
       </p>
 
       <Link href="/" className="button-secondary mt-8">
-        ← Back to all mentors
+        {t('backToAllMentors')}
       </Link>
     </div>
   )

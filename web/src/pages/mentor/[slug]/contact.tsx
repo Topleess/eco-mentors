@@ -1,3 +1,6 @@
+import { translateLabel } from '@/i18n/labels'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/forms'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { InlineWidget } from 'react-calendly'
@@ -21,7 +24,6 @@ import { GENERIC_SUBMIT_ERROR, upstreamErrorMessage } from '@/lib/upstream-error
 import { captureException } from '@/lib/posthog'
 import { withSSRObservability } from '@/lib/with-ssr-observability'
 import logger, { getTraceContext } from '@/lib/logger'
-import pluralize from '@/lib/pluralize'
 import type { ContactMentorResponse, MentorBase } from '@/types'
 
 // Rate limiting configuration
@@ -42,7 +44,7 @@ interface ContactFormData {
   captchaToken: string
 }
 
-const _getServerSideProps: GetServerSideProps<{ mentor: MentorContact }> = async (context) => {
+const _getServerSideProps: GetServerSideProps<{ mentor: MentorContact; demoReadOnly: boolean }> = async (context) => {
   const slugParam = context.params?.slug
   const slug = Array.isArray(slugParam) ? slugParam[0] : slugParam
 
@@ -82,6 +84,7 @@ const _getServerSideProps: GetServerSideProps<{ mentor: MentorContact }> = async
   return {
     props: {
       mentor,
+      demoReadOnly: process.env.DEMO_AUTH_ENABLED === 'true',
     },
   }
 }
@@ -99,10 +102,11 @@ function RecapPrice({ price }: { price: string }): JSX.Element {
 
 /** Desktop mentor recap card (design 03, right column). */
 function MentorRecapCard({ mentor }: { mentor: MentorContact }): JSX.Element {
+  const { t } = useTranslation(messages)
   const metaLead =
     mentor.sessionsCount && mentor.sessionsCount > 0
-      ? `${mentor.sessionsCount} ${pluralize(mentor.sessionsCount, 'session')}`
-      : `${mentor.experience}y exp`
+      ? t('sessionCount', { count: mentor.sessionsCount })
+      : t('experienceYears', { years: mentor.experience })
 
   return (
     <div className="hidden w-[300px] flex-none overflow-hidden rounded-panel border border-line lg:block">
@@ -131,6 +135,7 @@ function MentorRecapCard({ mentor }: { mentor: MentorContact }): JSX.Element {
 
 /** Mobile mentor recap strip under the header (design 03 · 390). */
 function MentorRecapStrip({ mentor }: { mentor: MentorContact }): JSX.Element {
+  const { locale } = useTranslation(messages)
   return (
     <div className="flex items-center gap-3 border-b border-line bg-surface px-5 py-4 lg:hidden">
       <MentorPortrait
@@ -145,7 +150,7 @@ function MentorRecapStrip({ mentor }: { mentor: MentorContact }): JSX.Element {
       <div className="min-w-0">
         <div className="truncate font-name text-[15px] font-bold text-ink">{mentor.name}</div>
         <div className="truncate text-xs text-ink-soft">
-          {mentor.job} · {mentor.workplace} · {mentor.price}
+          {mentor.job} · {mentor.workplace} · {translateLabel(locale, mentor.price)}
         </div>
       </div>
     </div>
@@ -154,7 +159,9 @@ function MentorRecapStrip({ mentor }: { mentor: MentorContact }): JSX.Element {
 
 export default function OrderMentor({
   mentor,
+  demoReadOnly,
 }: InferGetServerSidePropsType<typeof getServerSideProps>): JSX.Element {
+  const { t } = useTranslation(messages)
   const [readyStatus, setReadyStatus] = useState<ReadyStatus>('')
   const [formData, setFormData] = useState<ContactFormData | undefined>()
   const [submissionRequestId, setSubmissionRequestId] = useState<string | undefined>()
@@ -296,21 +303,19 @@ export default function OrderMentor({
       })
   }
 
-  const showForm = mentor.isVisible && readyStatus !== 'success' && readyStatus !== 'limit'
+  const showForm = !demoReadOnly && mentor.isVisible && readyStatus !== 'success' && readyStatus !== 'limit'
 
   return (
     <>
-      <NoIndexHead title={`Contact ${mentor.name}`} />
+      <NoIndexHead title={t('contactTitle', { name: mentor.name })} />
 
-      <NavHeader backLink={{ href: '/mentor/' + mentor.slug, label: 'Back to profile' }} />
+      <NavHeader backLink={{ href: '/mentor/' + mentor.slug, label: t('backToProfile') }} />
 
       {showForm && <MentorRecapStrip mentor={mentor} />}
 
       <main className="mx-auto flex w-full max-w-[1100px] animate-rise-in items-start gap-14 px-5 pb-16 pt-9 md:px-8 md:pt-12 lg:px-16">
         {!mentor.isVisible && (
-          <div className="flex-1 py-10 text-center text-ink-soft">
-            This mentor is temporarily not accepting new requests.
-          </div>
+          <div className="flex-1 py-10 text-center text-ink-soft">{' '}{t('mentorUnavailable')}{' '}</div>
         )}
 
         {mentor.isVisible && readyStatus === 'success' && (
@@ -319,16 +324,20 @@ export default function OrderMentor({
 
         {mentor.isVisible && readyStatus === 'limit' && <LimitMessage />}
 
+        {mentor.isVisible && demoReadOnly && (
+          <section role="note" className="flex-1 rounded-panel border border-line bg-surface p-6">
+            <h1 className="text-[24px] leading-[1.05] tracking-[-0.02em] md:text-[34px]">{' '}{t('requestSession')}{' '}</h1>
+            <p className="mb-5 mt-3 text-[15px] leading-relaxed text-ink-soft">{' '}{t('demoReadOnly')}{' '}</p>
+            <Link href="/demo-login" className="button inline-flex px-7 py-[15px] text-[15px]">{' '}{t('viewMentorDemo')}{' '}</Link>
+          </section>
+        )}
+
         {showForm && (
           <>
             <div className="min-w-0 max-w-[560px] flex-1">
-              <h1 className="text-[24px] leading-[1.05] tracking-[-0.02em] md:text-[34px]">
-                Request a session
-              </h1>
+              <h1 className="text-[24px] leading-[1.05] tracking-[-0.02em] md:text-[34px]">{' '}{t('requestSession')}{' '}</h1>
               <p className="mb-7 mt-2.5 text-[15px] leading-relaxed text-ink-soft">
-                {firstName} will get your message by email and reply directly to you. Be specific —
-                mentors accept requests they can actually help with.
-              </p>
+                {firstName}{' '}{t('requestIntroSuffix')}{' '}</p>
 
               <ContactMentorForm
                 isLoading={readyStatus === 'loading'}
@@ -357,6 +366,7 @@ interface SuccessMessageProps {
 
 /** Success state (design 03): open ring + mint node, CAPS header, CTAs. */
 function SuccessMessage({ mentor, formData, requestId }: SuccessMessageProps): JSX.Element {
+  const { t } = useTranslation(messages)
   const firstName = mentor.name.split(' ')[0]
 
   return (
@@ -377,34 +387,28 @@ function SuccessMessage({ mentor, formData, requestId }: SuccessMessageProps): J
         </div>
       </div>
 
-      <h2 className="mt-[22px] text-[28px] tracking-[-0.02em] text-ink">Request sent</h2>
+      <h2 className="mt-[22px] text-[28px] tracking-[-0.02em] text-ink">{' '}{t('requestSent')}{' '}</h2>
 
       <p className="mb-0 mt-3 max-w-[380px] text-[15px] leading-relaxed text-ink-soft">
-        {firstName} got your message and will reply directly to{' '}
+        {firstName}{' '}{t('requestSentSuffix')}{' '}{' '}
         {formData?.email ? (
           <b className="font-semibold text-ink">{formData.email}</b>
         ) : (
-          'your email'
+          t('yourEmailFallback')
         )}
         .
       </p>
 
-      {requestId && <p className="meta-mono mb-0 mt-3 text-ink-mute">Request ID: {requestId}</p>}
+      {requestId && <p className="meta-mono mb-0 mt-3 text-ink-mute">{' '}{t('requestId')}{' '}{requestId}</p>}
 
       <div className="mt-6 flex flex-wrap justify-center gap-2.5">
-        <Link href="/" className="button">
-          Browse more mentors
-        </Link>
-        <Link href={'/mentor/' + mentor.slug} className="button-secondary">
-          Back to profile
-        </Link>
+        <Link href="/" className="button">{' '}{t('browseMentors')}{' '}</Link>
+        <Link href={'/mentor/' + mentor.slug} className="button-secondary">{' '}{t('backToProfile')}{' '}</Link>
       </div>
 
       {mentor.calendarType !== 'none' && (
         <div className="mt-10 w-full max-w-screen-md">
-          <p className="text-[15px] leading-relaxed text-ink-soft">
-            You can also pick a convenient time for the session right now using the form below.
-          </p>
+          <p className="text-[15px] leading-relaxed text-ink-soft">{' '}{t('bookingHint')}{' '}</p>
 
           {mentor.calendarType === 'calendly' ? (
             <InlineWidget
@@ -428,9 +432,7 @@ function SuccessMessage({ mentor, formData, requestId }: SuccessMessageProps): J
               href={safeHttpUrl(mentor.calendarUrl) as string}
               target="_blank"
               rel="noreferrer"
-            >
-              Book a session
-            </a>
+            >{' '}{t('bookSession')}{' '}</a>
           ) : null}
         </div>
       )}
@@ -439,6 +441,7 @@ function SuccessMessage({ mentor, formData, requestId }: SuccessMessageProps): J
 }
 
 function LimitMessage(): JSX.Element {
+  const { t } = useTranslation(messages)
   return (
     <div className="flex flex-1 animate-rise-in flex-col items-center py-10 text-center">
       <div
@@ -449,9 +452,7 @@ function LimitMessage(): JSX.Element {
           <path d="M6 2v5M6 9.5v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       </div>
-      <p className="mt-6 max-w-[420px] text-lg text-ink">
-        You&apos;ve reached the daily request limit. Come back tomorrow to contact another mentor.
-      </p>
+      <p className="mt-6 max-w-[420px] text-lg text-ink">{' '}{t('dailyLimit')}{' '}</p>
     </div>
   )
 }

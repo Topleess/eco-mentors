@@ -1,4 +1,7 @@
 import Link from 'next/link'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/common'
+
 import { useEffect, useState } from 'react'
 import { getConsent, setConsent } from '@/lib/consent'
 import type { ConsentChoice } from '@/lib/consent'
@@ -10,6 +13,7 @@ import type { ConsentChoice } from '@/lib/consent'
  */
 export default function CookieConsentBanner(): JSX.Element | null {
   const [visible, setVisible] = useState(false)
+  const { t } = useTranslation(messages)
 
   useEffect(() => {
     // Consent is read client-side only, so decide visibility after mount
@@ -26,27 +30,27 @@ export default function CookieConsentBanner(): JSX.Element | null {
   return (
     <div
       role="dialog"
-      aria-label="Cookie consent"
+      aria-label={t('cookieTitle')}
       className="fixed inset-x-0 bottom-0 z-50 bg-gray-900 px-4 py-4 text-sm text-white"
       data-section="cookie-consent"
     >
       <div className="mx-auto flex max-w-4xl flex-col items-center gap-3 sm:flex-row sm:justify-between">
         <p className="text-center sm:text-left">
-          We use analytics cookies to improve OpenMentor. Essential cookies are always on.{' '}
+          {t('cookieCopy')}{' '}
           <Link href="/privacy" className="underline hover:text-gray-300">
-            Learn more
+            {t('learnMore')}
           </Link>
         </p>
         <div className="flex shrink-0 gap-2">
           <button type="button" className="button" onClick={() => choose('accepted')}>
-            Accept
+            {t('accept')}
           </button>
           <button
             type="button"
             className="rounded border border-gray-500 px-4 py-2 hover:bg-gray-700"
             onClick={() => choose('declined')}
           >
-            Decline
+            {t('decline')}
           </button>
         </div>
       </div>

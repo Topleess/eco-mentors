@@ -6,7 +6,8 @@ import { imageLoader, updatedAtToVersion } from '@/lib/image-loader'
 import { mentorInitialsClass, mentorPastelGradClass } from '@/lib/mentor-pastel'
 import { fixedAmount, isFree, parsePrice } from '@/lib/price'
 import analytics from '@/lib/analytics'
-import pluralize from '@/lib/pluralize'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/catalog'
 import type { MentorCardItem } from '@/types'
 
 interface MentorsListProps {
@@ -39,8 +40,9 @@ function initials(name: string): string {
  * byPrice buckets read.
  */
 function PriceMeta({ price }: { price: string }): JSX.Element {
+  const { t } = useTranslation(messages)
   if (isFree(price)) {
-    return <span className="text-mint-ink">FREE</span>
+    return <span className="text-mint-ink">{t('free')}</span>
   }
 
   const amount = fixedAmount(price)
@@ -53,7 +55,7 @@ function PriceMeta({ price }: { price: string }): JSX.Element {
   }
 
   if (parsePrice(price)?.kind === 'negotiable') {
-    return <span>NEGOTIABLE</span>
+    return <span>{t('negotiable')}</span>
   }
 
   // Predates the grammar, so mentors_price_chk makes this unreachable for
@@ -88,6 +90,7 @@ function MentorCard({
         version: updatedAtToVersion(mentor.updatedAt),
       })
 
+  const { t } = useTranslation(messages)
   const sessions = mentor.sessionsCount ?? 0
 
   // Fire-and-forget analytics on click — never blocks navigation.
@@ -175,11 +178,11 @@ function MentorCard({
         {/* Badge: NEW wins over the sessions count. */}
         {mentor.isNew ? (
           <span className="absolute left-2.5 top-2.5 rounded-md bg-brand-cobalt px-[9px] py-1 font-mono text-[10px] font-bold uppercase tracking-[0.06em] text-white sm:left-3 sm:top-3">
-            NEW
+            {t('newMentor')}
           </span>
         ) : sessions > 0 ? (
           <span className="absolute left-2.5 top-2.5 rounded-md bg-white/90 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-[0.05em] text-brand-navy sm:left-3 sm:top-3">
-            {sessions} {pluralize(sessions, 'SESSION', 'SESSIONS')}
+            {t('sessionCount', { count: sessions })}
           </span>
         ) : null}
       </div>
@@ -194,7 +197,7 @@ function MentorCard({
         </div>
 
         <div className="meta-mono mt-2 text-[10px] text-ink-mute sm:mt-2.5 sm:text-[11px]">
-          {formatExperience(mentor.experience)} · <PriceMeta price={mentor.price} />
+          {t('cardExperience', { experience: mentor.experience.replace(/-/g, '–').toUpperCase() })} · <PriceMeta price={mentor.price} />
         </div>
       </div>
     </Link>
@@ -208,6 +211,7 @@ export default function MentorsList({
 }: MentorsListProps): JSX.Element {
   // Entrance animation runs on first mount only — cards appearing later
   // (pagination, filter changes) render without it.
+  const { t } = useTranslation(messages)
   const isFirstRender = useRef(true)
   useEffect(() => {
     isFirstRender.current = false
@@ -229,7 +233,7 @@ export default function MentorsList({
       {hasMore && (
         <div className="text-center">
           <button className="button-secondary px-[30px] py-[13px]" onClick={() => onClickMore()}>
-            Show more mentors
+            {t('showMore')}
           </button>
         </div>
       )}

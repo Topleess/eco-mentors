@@ -1,3 +1,6 @@
+import { mentorMessage } from '@/components/mentor-admin/utils'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/mentor'
 /**
  * Mentor Profile Edit Page (design 09)
  *
@@ -71,6 +74,7 @@ function StatusBanner({ accent, label, children }: StatusBannerProps): JSX.Eleme
 }
 
 function ProfileEditContent(): JSX.Element {
+  const { t, locale } = useTranslation(messages)
   const router = useRouter()
   const { isAuthenticated, isLoading: authLoading, session } = useMentorAuth()
   const [mentor, setMentor] = useState<MentorWithSecureFields | null>(null)
@@ -105,16 +109,16 @@ function ProfileEditContent(): JSX.Element {
           credentials: 'include',
         })
         if (!response.ok) {
-          throw new Error('Failed to load profile')
+          throw new Error(messages.failedToLoadProfile.en)
         }
         const data = await response.json()
         if (data.mentor && hasMentorSecureFields(data.mentor)) {
           setMentor(data.mentor)
         } else {
-          setError('Profile not found')
+          setError(messages.profileNotFound.en)
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load profile')
+        setError(err instanceof Error ? err.message : messages.failedToLoadProfile.en)
       } finally {
         setIsLoading(false)
       }
@@ -196,14 +200,14 @@ function ProfileEditContent(): JSX.Element {
       const data = await response.json().catch(() => null)
 
       if (!response.ok || !data?.success) {
-        throw new Error(data?.error || 'Failed to submit the profile')
+        throw new Error(data?.error || t('failedToSubmitTheProfile'))
       }
 
       // Status refreshes to pending — the banner becomes the pending one
       setMentor((current) => (current ? { ...current, status: 'pending' } : current))
       setShowSubmitSuccess(true)
     } catch (e) {
-      setSubmitReviewError('Failed to submit your profile for review. Please try again.')
+      setSubmitReviewError(t('failedToSubmitYourProfileFor'))
       if (e instanceof Error) {
         captureException(e, { page: 'edit-profile', action: 'submit-for-review' })
       }
@@ -229,7 +233,7 @@ function ProfileEditContent(): JSX.Element {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to save profile')
+        throw new Error(t('failedToSaveProfile'))
       }
 
       const result = await response.json()
@@ -263,7 +267,7 @@ function ProfileEditContent(): JSX.Element {
       })
 
       if (!response.ok) {
-        throw new Error('Failed to upload image')
+        throw new Error(t('failedToUploadImage'))
       }
 
       const data = await response.json()
@@ -292,7 +296,7 @@ function ProfileEditContent(): JSX.Element {
 
   // Show loading while checking auth
   if (authLoading || !isAuthenticated) {
-    return <AuthGateScreen title="My profile" />
+    return <AuthGateScreen title={t('myProfile')} />
   }
 
   const isReturned = mentor?.status === 'draft' && !!mentor?.moderationNote
@@ -302,10 +306,10 @@ function ProfileEditContent(): JSX.Element {
 
   return (
     <>
-      <NoIndexHead title="My profile" />
+      <NoIndexHead title={t('myProfile')} />
 
       <MentorAdminLayout
-        title="My profile"
+        title={t('myProfile')}
         actions={
           !isLoading && mentor && isApproved ? (
             <Link
@@ -313,7 +317,7 @@ function ProfileEditContent(): JSX.Element {
               target="_blank"
               className="button-secondary text-[13px]"
             >
-              Preview public page ↗
+              {t('previewPublicPage')}
             </Link>
           ) : undefined
         }
@@ -325,19 +329,19 @@ function ProfileEditContent(): JSX.Element {
               icon={faCircleNotch}
               className="mb-3 animate-spin text-2xl text-brand-cobalt"
             />
-            <p className="my-0 text-sm text-ink-soft">Loading profile...</p>
+            <p className="my-0 text-sm text-ink-soft">{t('loadingProfile')}</p>
           </div>
         )}
 
         {/* Error state */}
         {error && !isLoading && (
           <div className="rounded-panel border border-danger/40 bg-white p-6 text-center">
-            <p className="my-0 mb-4 text-sm font-medium text-danger">{error}</p>
+            <p className="my-0 mb-4 text-sm font-medium text-danger">{mentorMessage(locale, error)}</p>
             <button
               onClick={() => window.location.reload()}
               className="text-sm font-semibold text-brand-cobalt transition-colors duration-120 hover:text-brand-navy"
             >
-              Try again
+              {t('tryAgain')}
             </button>
           </div>
         )}
@@ -347,16 +351,16 @@ function ProfileEditContent(): JSX.Element {
           <div className="space-y-4">
             {/* Returned for edits (draft with a reviewer note) */}
             {isReturned && (
-              <StatusBanner accent="danger" label="Returned for edits">
+              <StatusBanner accent="danger" label={t('returnedForEdits')}>
                 <p className="my-0 mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink">
                   {mentor.moderationNote}
                 </p>
                 <p className="my-0 mt-2 text-[13px] text-ink-soft">
-                  Edit and resubmit — most fixes get approved within a day.
+                  {t('editAndResubmitMostFixesGet')}
                 </p>
                 {submitReviewError && (
                   <p className="my-0 mt-3 text-sm font-medium text-danger" role="alert">
-                    {submitReviewError}
+                    {mentorMessage(locale, submitReviewError)}
                   </p>
                 )}
                 <button
@@ -367,10 +371,9 @@ function ProfileEditContent(): JSX.Element {
                   {isSubmittingForReview ? (
                     <>
                       <FontAwesomeIcon icon={faCircleNotch} className="mr-2 animate-spin" />
-                      Submitting...
-                    </>
+                      {t('submitting')} </>
                   ) : (
-                    'Submit for review'
+                    t('submitForReview')
                   )}
                 </button>
               </StatusBanner>
@@ -378,21 +381,18 @@ function ProfileEditContent(): JSX.Element {
 
             {/* Draft awaiting email confirmation (no note) */}
             {isAwaitingConfirm && (
-              <StatusBanner accent="cobalt" label="Confirm your email">
+              <StatusBanner accent="cobalt" label={t('confirmYourEmail')}>
                 <p className="my-0 mt-2 text-sm leading-relaxed text-ink-soft">
-                  Your profile isn&apos;t in review yet. Check your inbox and follow the
-                  confirmation link — that submits your profile to our moderators. You can keep
-                  editing in the meantime.
+                  {t('yourProfileIsnTInReview')}
                 </p>
               </StatusBanner>
             )}
 
             {/* Pending review */}
             {isPending && (
-              <StatusBanner accent="navy" label="In review">
+              <StatusBanner accent="navy" label={t('inReview')}>
                 <p className="my-0 mt-2 text-sm leading-relaxed text-ink-soft">
-                  Your profile is in review — we&apos;ll email you as soon as it&apos;s approved.
-                  You can keep editing in the meantime.
+                  {t('yourProfileIsInReviewWe')}
                 </p>
               </StatusBanner>
             )}
@@ -454,13 +454,13 @@ function ProfileEditContent(): JSX.Element {
           <div className="flex w-full flex-col items-center space-y-4 sm:items-end">
             <Transition show={showSuccess} as={Fragment} {...toastTransition}>
               <Notification
-                content="Changes saved successfully"
+                content={t('changesSavedSuccessfully')}
                 onClose={() => setShowSuccess(false)}
               />
             </Transition>
             <Transition show={showVisibilitySuccess} as={Fragment} {...toastTransition}>
               <Notification
-                content="Profile visibility updated"
+                content={t('profileVisibilityUpdated')}
                 onClose={() => setShowVisibilitySuccess(false)}
               />
             </Transition>
@@ -468,7 +468,7 @@ function ProfileEditContent(): JSX.Element {
               <Notification
                 content={
                   <>
-                    Profile submitted for review. <b>We&apos;ll email you.</b>
+                    {t('profileSubmittedForReview')} <b>{t('weLlEmailYou')}</b>
                   </>
                 }
                 onClose={() => setShowSubmitSuccess(false)}

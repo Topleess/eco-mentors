@@ -1,4 +1,8 @@
-# Contributing to OpenMentor
+# Contributing to Eco Mentors
+
+This is the modified Eco Mentors edition of OpenMentor. Report issues and open pull requests in [Topleess/eco-mentors](https://github.com/Topleess/eco-mentors), not in the upstream project. The public client domain is not yet configured; use the [isolated local environment](infra/local/README.md) for development.
+
+The upstream contribution guide below is retained for technical context. References to OpenMentor community activities and its public site describe the upstream project, not a deployed Eco Mentors service.
 
 Thanks for being here. OpenMentor is a community project — donation-funded, zero
 commission, no ads — and it only works because people give it their time. That
@@ -17,7 +21,7 @@ first-class here — [sign up at openmentor.io/bementor](https://openmentor.io/b
 **Tell someone about it.** A mentee who never hears about the platform can't use
 it. Sharing it with someone who's stuck is real help.
 
-**Report a bug.** Something broken, confusing, or wrong? [Open an issue](https://github.com/openmentor-io/openmentor/issues/new/choose).
+**Report a bug.** Something broken, confusing, or wrong? [Open an issue](https://github.com/Topleess/eco-mentors/issues/new/choose).
 Bugs you hit as a real user are more useful than most code contributions.
 
 **Improve the docs.** Every directory has a README, and they drift. Fixes to
@@ -34,7 +38,7 @@ merged quickly.
 For **typos, docs, broken links, and obvious bug fixes** — just open a pull
 request. No ceremony needed.
 
-For **anything else**, please [open an issue first](https://github.com/openmentor-io/openmentor/issues/new/choose)
+For **anything else**, please [open an issue first](https://github.com/Topleess/eco-mentors/issues/new/choose)
 and let's agree on the approach before you start. That especially means changes
 that touch:
 
@@ -66,9 +70,9 @@ Ask, and you'll get a real answer.
 
 ```bash
 # Fork the repo on GitHub first, then:
-git clone https://github.com/<your-username>/openmentor.git
-cd openmentor
-git remote add upstream https://github.com/openmentor-io/openmentor.git
+git clone https://github.com/<your-username>/eco-mentors.git
+cd eco-mentors
+git remote add upstream https://github.com/Topleess/eco-mentors.git
 git checkout -b your-change-name
 ```
 

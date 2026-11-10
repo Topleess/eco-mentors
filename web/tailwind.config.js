@@ -1,6 +1,7 @@
 module.exports = {
   content: [
     './src/components/**/*.{js,ts,jsx,tsx}',
+    './src/features/**/*.{js,ts,jsx,tsx}',
     './src/pages/**/*.{js,ts,jsx,tsx}',
     './src/lib/**/*.{js,ts,jsx,tsx}',
     // STATUS_COLORS (the request status pills) lives in src/types. Without

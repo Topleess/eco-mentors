@@ -1,3 +1,7 @@
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/admin-detail'
+import { translateLabel } from '@/i18n/labels'
+import { moderationStatusLabel } from '@/components/admin-moderation/utils'
 import { useEffect, useMemo, useRef, useState, type ChangeEvent } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -38,11 +42,7 @@ import { imageLoader } from '@/lib/image-loader'
 import { isValidCalendarUrl } from '@/lib/safe-url'
 import { formatPrice, isValidPrice, parsePrice, type PriceValue } from '@/lib/price'
 import PriceField from '@/components/forms/PriceField'
-import {
-  useUsernameAvailability,
-  isUsernameFormatValid,
-  USERNAME_MAX_LENGTH,
-} from '@/lib/username'
+import { useUsernameAvailability, isUsernameFormatValid, USERNAME_MAX_LENGTH } from '@/lib/username'
 
 type SaveState = 'idle' | 'loading' | 'success' | 'error'
 type PictureState = 'idle' | 'loading' | 'success' | 'error'
@@ -94,6 +94,13 @@ function AdminUsernameField({
   currentUsername: string
   onChanged: (mentor: AdminMentorDetails) => void
 }): JSX.Element {
+  const { t } = useTranslation(messages)
+  const localizeError = (message: string): string => {
+    const key = (Object.keys(messages) as Array<keyof typeof messages>).find(
+      (key) => messages[key].en === message,
+    )
+    return key ? t(key) : message
+  }
   const [value, setValue] = useState(currentUsername)
   const [confirming, setConfirming] = useState(false)
   const [state, setState] = useState<'idle' | 'loading' | 'error'>('idle')
@@ -140,7 +147,7 @@ function AdminUsernameField({
   return (
     <div className="rounded-panel border border-line bg-surface/40 p-4">
       <label htmlFor="admin-username" className={labelClass}>
-        Username (profile link)
+        {t('usernameLabel')}
       </label>
       <div className="flex items-center overflow-hidden rounded-field border-[1.5px] border-line bg-white focus-within:border-brand-cobalt">
         <span className="select-none whitespace-nowrap py-2 pl-3 pr-0 font-mono text-[13px] text-ink-soft">
@@ -159,7 +166,7 @@ function AdminUsernameField({
               e.target.value
                 .toLowerCase()
                 .replace(/[^a-z0-9-]+/g, '-')
-                .replace(/-{2,}/g, '-')
+                .replace(/-{2,}/g, '-'),
             )
           }}
           className="w-full min-w-0 border-0 bg-transparent py-2 pl-0 pr-3 font-mono text-[13px] text-ink outline-none"
@@ -167,30 +174,30 @@ function AdminUsernameField({
       </div>
 
       <div className="mt-1.5 min-h-[1.125rem] text-[13px]" role="status" aria-live="polite">
-        {isUnchanged && <span className="text-ink-soft">Current username.</span>}
+        {isUnchanged && <span className="text-ink-soft">{t('usernameCurrent')}</span>}
         {!isUnchanged && availability.status === 'checking' && (
           <span className="text-ink-soft">
             <FontAwesomeIcon icon={faCircleNotch} spin className="mr-1" />
-            Checking…
+            {t('checking')}
           </span>
         )}
         {!isUnchanged && availability.status === 'available' && (
-          <span className="font-medium text-mint-ink">✓ Available</span>
+          <span className="font-medium text-mint-ink">{t('available')}</span>
         )}
         {!isUnchanged && availability.status === 'unavailable' && (
           <span className="font-medium text-danger">
             {availability.reason === 'taken'
-              ? 'Already taken.'
+              ? t('taken')
               : availability.reason === 'reserved'
-                ? 'Reserved word.'
-                : 'Use 3–40 letters, numbers and hyphens.'}
+                ? t('reserved')
+                : t('usernameFormat')}
           </span>
         )}
       </div>
 
       {error && (
         <p className="mt-1 text-[13px] font-medium text-danger" role="alert">
-          {error}
+          {localizeError(error)}
         </p>
       )}
 
@@ -201,14 +208,12 @@ function AdminUsernameField({
           onClick={() => setConfirming(true)}
           className="button button-secondary mt-2 text-[13px] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          Change username…
+          {t('changeUsername')}
         </button>
       ) : (
         <div className="mt-2 rounded-field border border-danger/40 bg-danger/[0.06] p-3">
           <p className="mb-2 text-[13px] text-ink">
-            Rename to <span className="font-mono font-semibold">/mentor/{value}</span>? The old link
-            <span className="font-mono"> /mentor/{currentUsername}</span> will redirect for now, but
-            frees up after two more changes.
+            {t('rename', { newLink: `/mentor/${value}`, oldLink: `/mentor/${currentUsername}` })}
           </p>
           <div className="flex gap-2">
             <button
@@ -220,10 +225,10 @@ function AdminUsernameField({
               {state === 'loading' ? (
                 <>
                   <FontAwesomeIcon icon={faCircleNotch} spin className="mr-1.5" />
-                  Changing…
+                  {t('changing')}
                 </>
               ) : (
-                'Yes, change it'
+                t('confirmRename')
               )}
             </button>
             <button
@@ -232,7 +237,7 @@ function AdminUsernameField({
               onClick={() => setConfirming(false)}
               className="button button-secondary text-[13px]"
             >
-              Cancel
+              {t('cancel')}
             </button>
           </div>
         </div>
@@ -242,7 +247,18 @@ function AdminUsernameField({
 }
 
 function MentorModerationEditContent(): JSX.Element {
+  const { t, locale } = useTranslation(messages)
+  const localizeError = (message: string): string => {
+    const key = (Object.keys(messages) as Array<keyof typeof messages>).find(
+      (key) => messages[key].en === message,
+    )
+    return key ? t(key) : message
+  }
   const router = useRouter()
+  // Next replaces its router object on locale navigation. Keep redirects current
+  // without refetching the mentor and overwriting the administrator's draft.
+  const routerRef = useRef(router)
+  useEffect(() => { routerRef.current = router }, [router])
   const { id } = router.query
   const mentorId = Array.isArray(id) ? id[0] : id
   const { isAuthenticated, isLoading: authLoading, session } = useAdminAuth()
@@ -298,7 +314,7 @@ function MentorModerationEditContent(): JSX.Element {
         }
 
         if (session.role === 'moderator' && data.status !== 'pending') {
-          router.replace('/admin/mentors/pending')
+          routerRef.current.replace('/admin/mentors/pending')
           return
         }
 
@@ -321,7 +337,7 @@ function MentorModerationEditContent(): JSX.Element {
     return () => {
       mounted = false
     }
-  }, [isAuthenticated, session, mentorId, router])
+  }, [isAuthenticated, session, mentorId])
 
   useEffect(() => {
     if (!session || session.role !== 'moderator' || !mentor) return
@@ -344,7 +360,7 @@ function MentorModerationEditContent(): JSX.Element {
 
   const handleInputChange = (
     field: keyof AdminMentorProfileUpdateRequest,
-    value: string | string[]
+    value: string | string[],
   ): void => {
     if (!formData) return
     setFormData({ ...formData, [field]: value })
@@ -430,7 +446,7 @@ function MentorModerationEditContent(): JSX.Element {
       return
     }
     if (reason.length > RETURN_REASON_MAX) {
-      setReturnError(`The reason must be at most ${RETURN_REASON_MAX} characters.`)
+      setReturnError(t('reasonMax', { max: RETURN_REASON_MAX }))
       return
     }
 
@@ -445,7 +461,7 @@ function MentorModerationEditContent(): JSX.Element {
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
         setReturnError(
-          'This mentor has already been activated and cannot be returned to draft. Edit the profile directly or decline it instead.'
+          'This mentor has already been activated and cannot be returned to draft. Edit the profile directly or decline it instead.',
         )
       } else {
         setReturnError(err instanceof Error ? err.message : 'Failed to return the profile')
@@ -513,7 +529,7 @@ function MentorModerationEditContent(): JSX.Element {
     // The limit is the RAW file; the request that carries it is ~4/3 bigger
     // because the photo goes out base64-encoded inside JSON. See config/uploads.
     if (file.size > MAX_IMAGE_FILE_BYTES) {
-      setActionError(`Image size should not exceed ${MAX_IMAGE_FILE_LABEL}`)
+      setActionError(t('imageMax', { max: MAX_IMAGE_FILE_LABEL }))
       return
     }
 
@@ -555,12 +571,12 @@ function MentorModerationEditContent(): JSX.Element {
   }
 
   if (authLoading || !isAuthenticated) {
-    return <AuthGateScreen title="Mentor moderation" />
+    return <AuthGateScreen title={t('moderationTitle')} />
   }
 
   return (
-    <AdminLayout title="Mentor review">
-      <NoIndexHead title="Mentor moderation" />
+    <AdminLayout title={t('reviewTitle')}>
+      <NoIndexHead title={t('moderationTitle')} />
 
       {isLoading && (
         <div className="flex items-center justify-center py-12">
@@ -573,7 +589,7 @@ function MentorModerationEditContent(): JSX.Element {
 
       {!isLoading && error && (
         <div className="rounded-card border border-danger/40 bg-white p-4 text-sm font-medium text-danger">
-          {error}
+          {localizeError(error)}
         </div>
       )}
 
@@ -585,7 +601,7 @@ function MentorModerationEditContent(): JSX.Element {
                 href={getBackLink(mentor)}
                 className="text-sm font-semibold text-brand-cobalt transition-colors duration-120 hover:text-brand-navy"
               >
-                ← Back to list
+                {t('back')}
               </Link>
               <Link
                 href={`/mentor/${mentor.slug}`}
@@ -593,7 +609,7 @@ function MentorModerationEditContent(): JSX.Element {
                 rel="noreferrer"
                 className="text-sm font-semibold text-brand-cobalt transition-colors duration-120 hover:text-brand-navy"
               >
-                Open mentor profile ↗
+                {t('openProfile')}
               </Link>
             </div>
             <div className="flex flex-wrap items-center gap-3">
@@ -605,15 +621,17 @@ function MentorModerationEditContent(): JSX.Element {
                   href={`/admin/mentors/${encodeURIComponent(mentor.mentorId)}/requests`}
                   className="button-secondary text-[13px]"
                 >
-                  Requests ({mentor.requestsCount})
+                  {t('requests', { count: mentor.requestsCount })}
                 </Link>
               )}
               {mentor.deletedAt ? (
                 <span className="inline-flex items-center rounded-full bg-danger/10 px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.05em] text-danger">
-                  deleted
+                  {t('deleted')}
                 </span>
               ) : (
-                <span className={moderationStatusBadgeClass(mentor.status)}>{mentor.status}</span>
+                <span className={moderationStatusBadgeClass(mentor.status)}>
+                  {moderationStatusLabel(mentor.status, locale)}
+                </span>
               )}
             </div>
           </div>
@@ -624,20 +642,12 @@ function MentorModerationEditContent(): JSX.Element {
           {mentor.deletedAt && (
             <div className="rounded-panel border border-l-4 border-line border-l-danger bg-white p-5">
               <div className="font-display text-[13px] font-extrabold uppercase tracking-[0.03em] text-danger">
-                Profile deleted
+                {t('profileDeleted')}
               </div>
               <p className="my-0 mt-2 text-sm leading-relaxed text-ink">
-                Deleted on {formatDateTime(mentor.deletedAt)}. The public page returns 404, the
-                mentor cannot log in and receives no login links, and their outstanding review
-                invitations were cancelled.
+                {t('deletedInfo', { date: formatDateTime(mentor.deletedAt, locale) })}
               </p>
-              <p className="my-0 mt-2 text-[13px] text-ink-soft">
-                No moderation action works on a deleted profile. Restoring brings it back as{' '}
-                <strong>inactive</strong> — hidden from the catalog, with the mentor able to log in
-                again — from where you or they can publish it. Once the retention window closes,
-                the profile and all its requests and reviews are erased permanently and this page
-                stops existing.
-              </p>
+              <p className="my-0 mt-2 text-[13px] text-ink-soft">{t('restoreInfo')}</p>
               {session?.role === 'admin' && (
                 <button
                   type="button"
@@ -648,10 +658,10 @@ function MentorModerationEditContent(): JSX.Element {
                   {isRestoring ? (
                     <>
                       <FontAwesomeIcon icon={faCircleNotch} className="mr-2 animate-spin" />
-                      Restoring...
+                      {t('restoring')}
                     </>
                   ) : (
-                    'Restore profile'
+                    t('restore')
                   )}
                 </button>
               )}
@@ -662,15 +672,12 @@ function MentorModerationEditContent(): JSX.Element {
           {mentor.status === 'draft' && mentor.moderationNote && (
             <div className="rounded-panel border border-l-4 border-line border-l-danger bg-white p-5">
               <div className="font-display text-[13px] font-extrabold uppercase tracking-[0.03em] text-ink">
-                Returned for edits
+                {t('returned')}
               </div>
               <p className="my-0 mt-2 whitespace-pre-wrap text-sm leading-relaxed text-ink">
                 {mentor.moderationNote}
               </p>
-              <p className="my-0 mt-2 text-[13px] text-ink-soft">
-                The mentor is editing their profile — it will come back to the pending queue once
-                they resubmit.
-              </p>
+              <p className="my-0 mt-2 text-[13px] text-ink-soft">{t('resubmit')}</p>
             </div>
           )}
 
@@ -681,7 +688,7 @@ function MentorModerationEditContent(): JSX.Element {
           {!mentor.deletedAt && (
             <div className="flex flex-wrap items-center gap-2.5">
               <button type="button" onClick={onApprove} className="button">
-                Approve
+                {t('approve')}
               </button>
 
               {mentor.status === 'pending' && (
@@ -695,7 +702,7 @@ function MentorModerationEditContent(): JSX.Element {
                   className="button-secondary"
                   aria-expanded={showReturnForm}
                 >
-                  Return for edits…
+                  {t('returnForEdits')}
                 </button>
               )}
 
@@ -710,10 +717,10 @@ function MentorModerationEditContent(): JSX.Element {
                     {isDeclining ? (
                       <>
                         <FontAwesomeIcon icon={faCircleNotch} className="mr-2 animate-spin" />
-                        Declining...
+                        {t('declining')}
                       </>
                     ) : (
-                      'Confirm decline'
+                      t('confirmDecline')
                     )}
                   </button>
                   <button
@@ -722,7 +729,7 @@ function MentorModerationEditContent(): JSX.Element {
                     disabled={isDeclining}
                     className="button-ghost"
                   >
-                    Cancel
+                    {t('cancel')}
                   </button>
                 </span>
               ) : (
@@ -734,29 +741,21 @@ function MentorModerationEditContent(): JSX.Element {
                   }}
                   className="button-destructive"
                 >
-                  Decline…
+                  {t('decline')}
                 </button>
               )}
             </div>
           )}
 
-          {confirmingDecline && (
-            <p className="my-0 text-sm text-ink-soft">
-              Decline is a hard reject (spam / not a real profile). To ask for fixes, use
-              &quot;Return for edits&quot; instead.
-            </p>
-          )}
+          {confirmingDecline && <p className="my-0 text-sm text-ink-soft">{t('declineHelp')}</p>}
 
           {/* Inline return-for-edits reason form */}
           {showReturnForm && (
             <div className="animate-dropdown-in rounded-panel border border-line bg-white p-5">
               <label htmlFor="return-reason" className={labelClass}>
-                What should the mentor fix? <span className="text-danger">*</span>
+                {t('reasonLabel')} <span className="text-danger">*</span>
               </label>
-              <p className="my-0 mb-2 text-[13px] text-ink-soft">
-                This note is emailed to the mentor and shown on their profile edit page. The
-                profile goes back to draft until they resubmit.
-              </p>
+              <p className="my-0 mb-2 text-[13px] text-ink-soft">{t('reasonHelp')}</p>
               <textarea
                 id="return-reason"
                 value={returnReason}
@@ -767,7 +766,7 @@ function MentorModerationEditContent(): JSX.Element {
                 rows={4}
                 maxLength={RETURN_REASON_MAX}
                 disabled={isReturning}
-                placeholder="e.g. Please add a real photo and expand the about section…"
+                placeholder={t('reasonPlaceholder')}
                 className="field"
               />
               <div className="meta-mono mt-1 text-ink-mute">
@@ -775,7 +774,7 @@ function MentorModerationEditContent(): JSX.Element {
               </div>
               {returnError && (
                 <p className="my-0 mt-2 text-sm font-medium text-danger" role="alert">
-                  {returnError}
+                  {localizeError(returnError)}
                 </p>
               )}
               <div className="mt-3 flex flex-wrap gap-2.5">
@@ -788,10 +787,10 @@ function MentorModerationEditContent(): JSX.Element {
                   {isReturning ? (
                     <>
                       <FontAwesomeIcon icon={faCircleNotch} className="mr-2 animate-spin" />
-                      Returning...
+                      {t('returning')}
                     </>
                   ) : (
-                    'Return to mentor'
+                    t('returnToMentor')
                   )}
                 </button>
                 <button
@@ -803,7 +802,7 @@ function MentorModerationEditContent(): JSX.Element {
                   disabled={isReturning}
                   className="button-ghost"
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
               </div>
             </div>
@@ -816,14 +815,14 @@ function MentorModerationEditContent(): JSX.Element {
                 onClick={() => onToggleActive('active')}
                 className="button-secondary"
               >
-                Set active
+                {t('active')}
               </button>
               <button
                 type="button"
                 onClick={() => onToggleActive('inactive')}
                 className="button-secondary"
               >
-                Set inactive
+                {t('inactive')}
               </button>
               {/* Deletion sits apart from the visibility toggles, pushed to the
                   far end: it is not another way to hide a profile, and it
@@ -833,20 +832,20 @@ function MentorModerationEditContent(): JSX.Element {
                 onClick={() => setIsDeleteDialogOpen(true)}
                 className="button-destructive sm:ml-auto"
               >
-                Delete profile…
+                {t('deleteProfile')}
               </button>
             </div>
           )}
 
           {actionError && saveState !== 'error' && (
             <div className="rounded-card border border-danger/40 bg-white p-3 text-sm font-medium text-danger">
-              {actionError}
+              {localizeError(actionError)}
             </div>
           )}
 
           <div className="grid gap-4 rounded-panel border border-line bg-white p-6 md:grid-cols-2">
             <div>
-              <label className={labelClass}>Name</label>
+              <label className={labelClass}>{t('name')}</label>
               <input
                 value={formData.name}
                 onChange={(e) => handleInputChange('name', e.target.value)}
@@ -854,7 +853,7 @@ function MentorModerationEditContent(): JSX.Element {
               />
             </div>
             <div>
-              <label className={labelClass}>Email</label>
+              <label className={labelClass}>{t('email')}</label>
               <input
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
@@ -862,7 +861,7 @@ function MentorModerationEditContent(): JSX.Element {
               />
             </div>
             <div>
-              <label className={labelClass}>Contact</label>
+              <label className={labelClass}>{t('contact')}</label>
               <input
                 value={formData.contact}
                 onChange={(e) => handleInputChange('contact', e.target.value)}
@@ -870,7 +869,7 @@ function MentorModerationEditContent(): JSX.Element {
               />
             </div>
             <div>
-              <label className={labelClass}>Job</label>
+              <label className={labelClass}>{t('job')}</label>
               <input
                 value={formData.job}
                 onChange={(e) => handleInputChange('job', e.target.value)}
@@ -878,7 +877,7 @@ function MentorModerationEditContent(): JSX.Element {
               />
             </div>
             <div>
-              <label className={labelClass}>Workplace</label>
+              <label className={labelClass}>{t('workplace')}</label>
               <input
                 value={formData.workplace}
                 onChange={(e) => handleInputChange('workplace', e.target.value)}
@@ -899,19 +898,19 @@ function MentorModerationEditContent(): JSX.Element {
               />
             )}
             <div>
-              <label className={labelClass}>Experience</label>
+              <label className={labelClass}>{t('experience')}</label>
               <select
                 value={formData.experience}
                 onChange={(e) => handleInputChange('experience', e.target.value)}
                 className="field"
               >
-                <option value="">Select experience</option>
+                <option value="">{t('selectExperience')}</option>
                 {Object.keys(filters.experience).map((item) => (
                   <option
                     key={filters.experience[item as keyof typeof filters.experience]}
                     value={filters.experience[item as keyof typeof filters.experience]}
                   >
-                    {item}
+                    {translateLabel(locale, item)}
                   </option>
                 ))}
               </select>
@@ -926,18 +925,14 @@ function MentorModerationEditContent(): JSX.Element {
                   // save until it resolves.
                   handleInputChange('price', formatPrice(next) ?? '')
                 }}
-                label="Price"
+                label={t('price')}
                 labelClassName={labelClass}
                 invalid={priceInvalid}
-                error={
-                  priceInvalid
-                    ? 'Choose Free, Negotiable, or a whole amount from $1 to $1000. Saving is blocked until this is fixed.'
-                    : undefined
-                }
+                error={priceInvalid ? t('priceHelp') : undefined}
               />
             </div>
             <div>
-              <label className={labelClass}>Calendar URL</label>
+              <label className={labelClass}>{t('calendar')}</label>
               <input
                 value={formData.calendarUrl}
                 onChange={(e) => handleInputChange('calendarUrl', e.target.value)}
@@ -945,13 +940,13 @@ function MentorModerationEditContent(): JSX.Element {
               />
               {calendarUrlInvalid && (
                 <p className="mt-1 text-sm font-medium text-danger" role="alert">
-                  Must be an https:// link, or empty. Saving is blocked until this is fixed.
+                  {t('calendarHelp')}
                 </p>
               )}
             </div>
 
             <div className="md:col-span-2">
-              <p className={labelClass}>Tags</p>
+              <p className={labelClass}>{t('tags')}</p>
               <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                 {availableTags.map((tag) => {
                   const selected = formData.tags.includes(tag)
@@ -959,9 +954,7 @@ function MentorModerationEditContent(): JSX.Element {
                     <label
                       key={tag}
                       className={`flex cursor-pointer items-center gap-2 rounded-field border px-3 py-2 text-sm text-ink ${
-                        selected
-                          ? 'border-brand-cobalt bg-brand-cobalt/5'
-                          : 'border-line bg-white'
+                        selected ? 'border-brand-cobalt bg-brand-cobalt/5' : 'border-line bg-white'
                       }`}
                     >
                       <input
@@ -970,7 +963,7 @@ function MentorModerationEditContent(): JSX.Element {
                         onChange={() => toggleTag(tag)}
                         className="h-4 w-4 rounded border-line text-brand-cobalt focus:ring-brand-cobalt"
                       />
-                      <span>{tag}</span>
+                      <span>{translateLabel(locale, tag)}</span>
                     </label>
                   )
                 })}
@@ -978,7 +971,7 @@ function MentorModerationEditContent(): JSX.Element {
             </div>
 
             <div className="md:col-span-2">
-              <label className={labelClass}>About</label>
+              <label className={labelClass}>{t('about')}</label>
               <Wysiwyg
                 key={`about-${mentor.updatedAt}`}
                 content={formData.about}
@@ -986,7 +979,7 @@ function MentorModerationEditContent(): JSX.Element {
               />
             </div>
             <div className="md:col-span-2">
-              <label className={labelClass}>Description</label>
+              <label className={labelClass}>{t('description')}</label>
               <Wysiwyg
                 key={`description-${mentor.updatedAt}`}
                 content={formData.description}
@@ -994,7 +987,7 @@ function MentorModerationEditContent(): JSX.Element {
               />
             </div>
             <div className="md:col-span-2">
-              <label className={labelClass}>Competencies</label>
+              <label className={labelClass}>{t('competencies')}</label>
               <textarea
                 value={formData.competencies}
                 onChange={(e) => handleInputChange('competencies', e.target.value)}
@@ -1006,12 +999,12 @@ function MentorModerationEditContent(): JSX.Element {
           {session?.role === 'admin' && (
             <div className="rounded-panel border border-line bg-white p-6">
               <h3 className="mb-3 font-display text-[13px] font-extrabold uppercase tracking-[0.03em] text-ink">
-                Profile picture
+                {t('picture')}
               </h3>
               <div className="mb-3 flex items-center gap-4">
                 <Image
                   src={imagePreview || imageLoader({ src: mentor.mentorId, quality: 'full' })}
-                  alt="Mentor picture"
+                  alt={t('pictureAlt')}
                   width={96}
                   height={96}
                   className="h-24 w-24 rounded-full object-cover"
@@ -1021,18 +1014,19 @@ function MentorModerationEditContent(): JSX.Element {
                   <input
                     ref={fileInputRef}
                     type="file"
+                    aria-label={t('picture')}
                     accept="image/jpeg,image/jpg,image/png,image/webp"
                     onChange={handleImageSelect}
                     className="block w-full text-sm text-ink-soft file:mr-4 file:rounded-field file:border-0 file:bg-brand-cobalt/10 file:px-4 file:py-2 file:text-sm file:font-medium file:text-brand-cobalt hover:file:bg-brand-cobalt/20"
                   />
                   {pictureState === 'success' && (
                     <p className="my-0 mt-2 text-sm font-medium text-mint-ink">
-                      Picture uploaded successfully.
+                      {t('pictureSuccess')}
                     </p>
                   )}
                   {pictureState === 'error' && (
                     <p className="my-0 mt-2 text-sm font-medium text-danger">
-                      Picture upload failed.
+                      {t('pictureFailure')}
                     </p>
                   )}
                 </div>
@@ -1046,10 +1040,10 @@ function MentorModerationEditContent(): JSX.Element {
                 {pictureState === 'loading' ? (
                   <>
                     <FontAwesomeIcon icon={faCircleNotch} className="mr-2 animate-spin" />
-                    Uploading...
+                    {t('uploading')}
                   </>
                 ) : (
-                  'Upload picture'
+                  t('upload')
                 )}
               </button>
             </div>
@@ -1065,18 +1059,18 @@ function MentorModerationEditContent(): JSX.Element {
               {saveState === 'loading' ? (
                 <>
                   <FontAwesomeIcon icon={faCircleNotch} className="mr-2 animate-spin" />
-                  Saving...
+                  {t('saving')}
                 </>
               ) : (
-                'Save changes'
+                t('save')
               )}
             </button>
             {saveState === 'success' && (
-              <span className="text-sm font-medium text-mint-ink">Mentor saved successfully.</span>
+              <span className="text-sm font-medium text-mint-ink">{t('saved')}</span>
             )}
             {saveState === 'error' && (
               <span className="text-sm font-medium text-danger">
-                {actionError || 'Failed to save changes.'}
+                {actionError ? localizeError(actionError) : t('saveFailedPeriod')}
               </span>
             )}
           </div>
@@ -1090,18 +1084,15 @@ function MentorModerationEditContent(): JSX.Element {
             onClose={() => setIsDeleteDialogOpen(false)}
             onConfirm={onDeleteProfile}
             username={mentor.slug}
-            title={`Delete ${mentor.name}'s profile`}
+            title={t('deleteTitle', { name: mentor.name })}
           >
             <p className="my-0">
-              <strong className="text-ink">{mentor.name}</strong> ({mentor.email}) will disappear
-              from the site: their page returns 404, they can no longer log in or receive login
-              links, and their outstanding review invitations are cancelled.
+              {t('deleteConsequences', { name: mentor.name, email: mentor.email })}
             </p>
             <p className="my-0 mt-2">
-              You can restore the profile from the Deleted tab until the retention window closes.
-              After that it is erased for good, along with its{' '}
-              {mentor.requestsCount === 1 ? '1 request' : `${mentor.requestsCount} requests`} and
-              their reviews.
+              {t('deleteRetention', {
+                requests: t('requestCount', { count: mentor.requestsCount }),
+              })}
             </p>
           </DeleteProfileDialog>
         </div>

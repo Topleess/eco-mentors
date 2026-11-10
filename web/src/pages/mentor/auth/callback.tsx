@@ -1,3 +1,6 @@
+import { mentorMessage } from '@/components/mentor-admin/utils'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/mentor'
 /**
  * Mentor Auth Callback Page
  *
@@ -17,6 +20,7 @@ import analytics from '@/lib/analytics'
 type CallbackState = 'verifying' | 'success' | 'error'
 
 function CallbackHandler(): JSX.Element {
+  const { t, locale } = useTranslation(messages)
   const router = useRouter()
   const { verifyLogin, isAuthenticated } = useMentorAuth()
   const [state, setState] = useState<CallbackState>('verifying')
@@ -73,7 +77,7 @@ function CallbackHandler(): JSX.Element {
             outcome: 'error',
             error_type: 'invalid_token',
           })
-          setErrorMessage(result.message || 'The link is invalid or has expired')
+          setErrorMessage(result.message || messages.theLinkIsInvalidOrHas2.en)
         }
       } catch {
         setState('error')
@@ -81,7 +85,7 @@ function CallbackHandler(): JSX.Element {
           outcome: 'error',
           error_type: 'verification_failed',
         })
-        setErrorMessage('Something went wrong while verifying the link')
+        setErrorMessage(messages.somethingWentWrongWhileVerifyingThe.en)
       }
     }
 
@@ -90,7 +94,7 @@ function CallbackHandler(): JSX.Element {
 
   return (
     <div className="flex min-h-screen flex-col justify-center bg-surface px-5 py-12">
-      <NoIndexHead title="Sign in" />
+      <NoIndexHead title={t('signIn')} />
 
       <div className="mx-auto w-full max-w-md">
         <Link href="/" className="mb-8 flex justify-center">
@@ -111,9 +115,9 @@ function CallbackHandler(): JSX.Element {
                   icon={faCircleNotch}
                   className="mb-4 animate-spin text-4xl text-brand-cobalt"
                 />
-                <h2 className="mb-2 text-lg text-ink">Verifying the link...</h2>
+                <h2 className="mb-2 text-lg text-ink">{t('verifyingTheLink')}</h2>
                 <p className="my-0 text-sm text-ink-soft">
-                  Hang on, this will take a couple of seconds
+                  {t('hangOnThisWillTakeA')}
                 </p>
               </>
             )}
@@ -121,18 +125,18 @@ function CallbackHandler(): JSX.Element {
             {state === 'success' && (
               <>
                 <FontAwesomeIcon icon={faCheckCircle} className="mb-4 text-4xl text-brand-mint" />
-                <h2 className="mb-2 text-lg text-ink">You&apos;re signed in!</h2>
-                <p className="my-0 text-sm text-ink-soft">Redirecting to your dashboard...</p>
+                <h2 className="mb-2 text-lg text-ink">{t('youReSignedIn')}</h2>
+                <p className="my-0 text-sm text-ink-soft">{t('redirectingToYourDashboard')}</p>
               </>
             )}
 
             {state === 'error' && (
               <>
                 <FontAwesomeIcon icon={faTimesCircle} className="mb-4 text-4xl text-danger" />
-                <h2 className="mb-2 text-lg text-ink">Sign-in failed</h2>
-                <p className="my-0 mb-4 text-sm text-ink-soft">{errorMessage}</p>
+                <h2 className="mb-2 text-lg text-ink">{t('signInFailed')}</h2>
+                <p className="my-0 mb-4 text-sm text-ink-soft">{mentorMessage(locale, errorMessage)}</p>
                 <Link href="/mentor/login" className="button">
-                  Try again
+                  {t('tryAgain')}
                 </Link>
               </>
             )}

@@ -3,17 +3,23 @@ import '../styles/design-tokens.css'
 import '../styles/globals.css'
 import '@fortawesome/fontawesome-svg-core/styles.css'
 import { useEffect } from 'react'
+import { I18nProvider } from '@/i18n'
+import { createTranslator, normalizeLocale } from '@/i18n/core'
+import { messages } from '@/i18n/messages/common'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
 import { Archivo, IBM_Plex_Mono, Inter, Schibsted_Grotesk } from 'next/font/google'
 import TagManager from 'react-gtm-module'
 import { CookieConsentBanner } from '@/components'
 import constants from '@/config/constants'
+import { SOURCE_REPOSITORY_URL } from '@/config/source'
 import seo from '@/config/seo'
 import { jsonLdScriptProps } from '@/lib/json-ld'
 import { onAnalyticsConsentGranted } from '@/lib/consent'
 import { initializeFaro, trackRouteChange } from '@/lib/faro'
 import { initializePostHog } from '@/lib/posthog'
+import { resolveProvider } from '@/lib/analytics'
+import { initializeUmami, trackUmamiPageview } from '@/lib/umami'
 import type { AppProps } from 'next/app'
 
 // Sitewide entity graph (JSON-LD), rendered on every page via this layout.
@@ -32,7 +38,7 @@ const siteJsonLd: Record<string, unknown> = {
       url: constants.BASE_URL,
       logo: `${constants.BASE_URL}brand/logo/png/icon-app/icon-app-512.png`,
       description: seo.description,
-      sameAs: ['https://github.com/openmentor-io/openmentor'],
+      sameAs: [SOURCE_REPOSITORY_URL],
       email: 'hello@openmentor.io',
     },
     {
@@ -95,6 +101,12 @@ let analyticsInitialized = false
 // Product analytics (PostHog + GTM, which loads GA) initialize only
 // after the user accepts analytics cookies in the consent banner.
 function initializeAnalytics(): void {
+  const provider = resolveProvider()
+  if (provider === 'umami') {
+    initializeUmami()
+    return
+  }
+  if (provider === 'none') return
   if (analyticsInitialized) return
   analyticsInitialized = true
 
@@ -106,6 +118,21 @@ function initializeAnalytics(): void {
 
 function MyApp({ Component, pageProps }: AppProps): JSX.Element {
   const router = useRouter()
+  const locale = normalizeLocale(router.locale)
+  const t = createTranslator(locale, messages)
+  const localizedSiteJsonLd = {
+    ...siteJsonLd,
+    '@graph': (siteJsonLd['@graph'] as Record<string, unknown>[]).map((node) => ({
+      ...node,
+      ...(node['@type'] === 'WebSite'
+        ? { inLanguage: locale }
+        : { description: t('seoDescription') }),
+    })),
+  }
+
+  useEffect(() => {
+    document.documentElement.lang = locale
+  }, [locale])
 
   useEffect(() => {
     // Runs immediately if consent was already given, or retroactively (without
@@ -119,6 +146,10 @@ function MyApp({ Component, pageProps }: AppProps): JSX.Element {
     // trackRouteChange is a no-op when Faro is not initialized.
     const handleRouteChangeComplete = (url: string): void => {
       trackRouteChange(url)
+      if (resolveProvider() === 'umami') {
+        initializeUmami()
+        trackUmamiPageview(url)
+      }
     }
 
     router.events.on('routeChangeComplete', handleRouteChangeComplete)
@@ -128,15 +159,17 @@ function MyApp({ Component, pageProps }: AppProps): JSX.Element {
   }, [router.events])
 
   return (
-    <div
-      className={`${inter.variable} ${archivo.variable} ${schibsted.variable} ${plexMono.variable} flex min-h-screen flex-col font-sans`}
-    >
-      <Head>
-        <script {...jsonLdScriptProps(siteJsonLd)} />
-      </Head>
-      <Component {...pageProps} />
-      <CookieConsentBanner />
-    </div>
+    <I18nProvider locale={locale}>
+      <div
+        className={`${inter.variable} ${archivo.variable} ${schibsted.variable} ${plexMono.variable} flex min-h-screen flex-col font-sans`}
+      >
+        <Head>
+          <script {...jsonLdScriptProps(localizedSiteJsonLd)} />
+        </Head>
+        <Component {...pageProps} />
+        <CookieConsentBanner />
+      </div>
+    </I18nProvider>
   )
 }
 

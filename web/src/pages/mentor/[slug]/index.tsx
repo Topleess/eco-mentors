@@ -1,3 +1,8 @@
+import { createTranslator } from '@/i18n/core'
+import type { Locale } from '@/i18n/core'
+import { translateLabel } from '@/i18n/labels'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/public-pages'
 import { useEffect } from 'react'
 import Link from 'next/link'
 import Head from 'next/head'
@@ -14,7 +19,6 @@ import { isKnownTag, tagPath } from '@/config/tags'
 import analytics from '@/lib/analytics'
 import { jsonLdScriptProps } from '@/lib/json-ld'
 import { imageLoader, updatedAtToVersion } from '@/lib/image-loader'
-import pluralize from '@/lib/pluralize'
 import { withSSRObservability } from '@/lib/with-ssr-observability'
 import logger, { getTraceContext } from '@/lib/logger'
 import type { MentorBase } from '@/types'
@@ -32,12 +36,9 @@ interface MentorPageProps {
  * Social/search description: the specific facts first (name, role, company,
  * experience), then the community pitch. Scrapers truncate around 160 chars.
  */
-export function mentorMetaDescription(mentor: MentorBase): string {
-  return (
-    `Book a one-on-one mentoring session with ${mentor.name} — ` +
-    `${mentor.job} at ${mentor.workplace}, ${mentor.experience} years of experience. ` +
-    `No accounts, no commission, just mentorship.`
-  )
+export function mentorMetaDescription(mentor: MentorBase, locale: Locale = 'en'): string {
+  const t = createTranslator(locale, messages)
+  return t('profileDescription', { name: mentor.name, job: mentor.job, workplace: mentor.workplace, experience: mentor.experience })
 }
 
 const _getServerSideProps: GetServerSideProps<MentorPageProps> = async (context) => {
@@ -91,7 +92,7 @@ const _getServerSideProps: GetServerSideProps<MentorPageProps> = async (context)
   return {
     props: {
       mentor,
-      canonicalUrl: `${base}mentor/${mentor.slug}`,
+      canonicalUrl: `${base}${context.locale === 'en' ? 'en/' : ''}mentor/${mentor.slug}`,
       ogImageUrl,
     },
   }
@@ -105,18 +106,20 @@ function SectionLabel({ children }: { children: string }): JSX.Element {
 }
 
 /** Photo-card footer / mobile chip lead: sessions -> mentees -> experience. */
-function mentorMetaLead(mentor: MentorBase): string {
+function mentorMetaLead(mentor: MentorBase, locale: Locale): string {
+  const t = createTranslator(locale, messages)
   if (mentor.sessionsCount && mentor.sessionsCount > 0) {
-    return `${mentor.sessionsCount} ${pluralize(mentor.sessionsCount, 'session')}`
+    return t('sessionCount', { count: mentor.sessionsCount })
   }
   if (mentor.menteeCount > 0) {
-    return `${mentor.menteeCount} ${pluralize(mentor.menteeCount, 'mentee')}`
+    return t('menteeCount', { count: mentor.menteeCount })
   }
-  return `${mentor.experience}y exp`
+  return t('experienceShort', { count: mentor.experience })
 }
 
 /** Mint-dot availability meta ("AVAILABLE" per design 02). */
 function AvailabilityMeta({ isVisible }: { isVisible: boolean }): JSX.Element {
+  const { t } = useTranslation(messages)
   return (
     <span
       className={
@@ -132,7 +135,7 @@ function AvailabilityMeta({ isVisible }: { isVisible: boolean }): JSX.Element {
             : 'h-[7px] w-[7px] rounded-full bg-ink-faint'
         }
       />
-      {isVisible ? 'Available' : 'Paused'}
+      {isVisible ? t('available') : t('paused')}
     </span>
   )
 }
@@ -165,6 +168,7 @@ export default function Mentor({
   canonicalUrl,
   ogImageUrl,
 }: InferGetServerSidePropsType<typeof getServerSideProps>): JSX.Element {
+  const { t, locale } = useTranslation(messages)
   const title = pageTitle(mentor.name)
 
   useEffect(() => {
@@ -184,7 +188,7 @@ export default function Mentor({
   }, []) // Intentionally run once on mount - analytics tracking
 
   const contactHref = '/mentor/' + mentor.slug + '/contact'
-  const metaLead = mentorMetaLead(mentor)
+  const metaLead = mentorMetaLead(mentor, locale)
   const legacySessions = mentor.legacySessionsCount ?? 0
 
   // Real profile photo (not the /api/og/mentor social card) — may 404 for
@@ -199,6 +203,7 @@ export default function Mentor({
   const profileJsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'ProfilePage',
+    inLanguage: locale,
     ...(mentor.updatedAt ? { dateModified: mentor.updatedAt } : {}),
     mainEntity: {
       '@type': 'Person',
@@ -211,7 +216,7 @@ export default function Mentor({
       ...(mentor.tags.length > 0 ? { knowsAbout: mentor.tags } : {}),
       url: canonicalUrl,
       image: personImage,
-      description: mentorMetaDescription(mentor),
+      description: mentorMetaDescription(mentor, locale),
     },
     // No offers/priceRange YET: since D87 a fixed price is a well-formed
     // schema.org value ("$137" -> price 137, priceCurrency USD), so the old
@@ -231,7 +236,7 @@ export default function Mentor({
       {
         '@type': 'ListItem',
         position: 1,
-        name: 'Home',
+        name: t('home'),
         item: constants.BASE_URL,
       },
       {
@@ -254,14 +259,14 @@ export default function Mentor({
 
       <MetaHeader
         customTitle={`${mentor.name} — ${mentor.job}`}
-        customDescription={mentorMetaDescription(mentor)}
+        customDescription={mentorMetaDescription(mentor, locale)}
         customImage={ogImageUrl}
-        imageAlt={`${mentor.name} — ${mentor.job} at ${mentor.workplace} on OpenMentor`}
+        imageAlt={t('profileImageAlt', { name: mentor.name, job: mentor.job, workplace: mentor.workplace })}
         canonicalUrl={canonicalUrl}
         ogType="profile"
       />
 
-      <NavHeader backLink={{ href: '/', label: 'Back to mentors' }} />
+      <NavHeader backLink={{ href: '/', label: t('backToMentors') }} />
 
       <main>
         {/* Mobile: full-bleed pastel portrait with meta chips (design 02 · 390). */}
@@ -301,36 +306,32 @@ export default function Mentor({
             <div className="flex flex-col gap-3 rounded-panel border border-line bg-white p-5">
               <div className="flex items-baseline justify-between">
                 <span className="font-display text-sm font-extrabold uppercase tracking-[0.02em] text-ink">
-                  Price
-                </span>
+                  {t('price')}</span>
                 <PriceValue price={mentor.price} size="lg" />
               </div>
 
               {mentor.isVisible ? (
                 <Link href={contactHref} className="button w-full py-[15px] text-[15px]">
-                  Send request
-                </Link>
+                  {t('sendRequest')}</Link>
               ) : (
                 <div className="text-center text-sm text-ink-soft">
-                  This mentor is temporarily not accepting new requests.
-                </div>
+                  {t('thisMentorIsTemporarilyNotAcceptingNew')}</div>
               )}
 
               <span className="text-center text-xs leading-normal text-ink-soft">
-                Free to contact · no commission · the mentor replies by email
-              </span>
+                {t('freeToContactNoCommissionTheMentor')}</span>
             </div>
 
             <div className="flex flex-col gap-2.5 rounded-panel border border-line px-5 py-[18px]">
               <div className="flex justify-between">
-                <span className="text-[13px] text-ink-soft">Experience</span>
-                <span className="text-[13px] font-semibold text-ink">{mentor.experience} years</span>
+                <span className="text-[13px] text-ink-soft">{t('experience')}</span>
+                <span className="text-[13px] font-semibold text-ink">{t('experienceYears', { count: mentor.experience })}</span>
               </div>
               {mentor.menteeCount > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-[13px] text-ink-soft">Helped</span>
+                  <span className="text-[13px] text-ink-soft">{t('helped')}</span>
                   <span className="text-[13px] font-semibold text-ink">
-                    {mentor.menteeCount} {pluralize(mentor.menteeCount, 'mentee')}
+                    {t('menteeCount', { count: mentor.menteeCount })}
                   </span>
                 </div>
               )}
@@ -338,8 +339,7 @@ export default function Mentor({
                   say so rather than passing them off as OpenMentor history (D28). */}
               {legacySessions > 0 && (
                 <span className="meta-mono text-[10px] leading-normal text-ink-mute">
-                  incl. {legacySessions} on getmentor.dev
-                </span>
+                  {t('legacySessions', { count: legacySessions })}</span>
               )}
             </div>
           </aside>
@@ -356,13 +356,11 @@ export default function Mentor({
               {/* Mobile-only mono meta line (design 02 · 390). The desktop
                   sidebar carries the same getmentor.dev disclosure (D28). */}
               <div className="meta-mono mt-2 text-ink-mute md:hidden">
-                {mentor.experience}y exp
-                {mentor.menteeCount > 0 &&
-                  ` · ${mentor.menteeCount} ${pluralize(mentor.menteeCount, 'mentee')}`}
+                {t('experienceShort', { count: mentor.experience })}{mentor.menteeCount > 0 &&
+                  ` · ${t('menteeCount', { count: mentor.menteeCount })}`}
                 {legacySessions > 0 && (
                   <span className="mt-1 block text-[10px]">
-                    incl. {legacySessions} on getmentor.dev
-                  </span>
+                    {t('legacySessions', { count: legacySessions })}</span>
                 )}
               </div>
             </div>
@@ -372,18 +370,18 @@ export default function Mentor({
                 {mentor.tags.map((tag) =>
                   isKnownTag(tag) ? (
                     <Link
-                      key={tag}
+                      key={translateLabel(locale, tag)}
                       href={tagPath(tag)}
                       className="rounded-full border border-line bg-surface px-[15px] py-2 text-[13px] font-semibold text-brand-navy transition-colors duration-120 hover:border-brand-cobalt/45"
                     >
-                      {tag}
+                      {translateLabel(locale, tag)}
                     </Link>
                   ) : (
                     <span
-                      key={tag}
+                      key={translateLabel(locale, tag)}
                       className="rounded-full border border-line bg-surface px-[15px] py-2 text-[13px] font-semibold text-brand-navy"
                     >
-                      {tag}
+                      {translateLabel(locale, tag)}
                     </span>
                   )
                 )}
@@ -392,7 +390,7 @@ export default function Mentor({
 
             {mentor.about && (
               <section>
-                <SectionLabel>About</SectionLabel>
+                <SectionLabel>{t('about')}</SectionLabel>
                 <HtmlContent
                   content={mentor.about}
                   className="prose max-w-[640px] text-[15px] leading-[1.65] text-ink"
@@ -402,7 +400,7 @@ export default function Mentor({
 
             {mentor.description && (
               <section>
-                <SectionLabel>How I can help</SectionLabel>
+                <SectionLabel>{t('howICanHelp')}</SectionLabel>
                 <HtmlContent
                   content={mentor.description}
                   className="prose max-w-[640px] text-[15px] leading-[1.65] text-ink"
@@ -412,7 +410,7 @@ export default function Mentor({
 
             {mentor.competencies && (
               <section>
-                <SectionLabel>Skills</SectionLabel>
+                <SectionLabel>{t('skills')}</SectionLabel>
                 <p className="my-0 max-w-[640px] text-[15px] leading-[1.65] text-ink-soft">
                   {mentor.competencies}
                 </p>
@@ -421,8 +419,7 @@ export default function Mentor({
 
             {!mentor.isVisible && (
               <div className="text-sm text-ink-soft md:hidden">
-                This mentor is temporarily not accepting new requests.
-              </div>
+                {t('thisMentorIsTemporarilyNotAcceptingNew')}</div>
             )}
           </div>
         </div>
@@ -432,12 +429,11 @@ export default function Mentor({
       {mentor.isVisible && (
         <div className="sticky bottom-0 z-10 flex items-center gap-2.5 border-t border-line bg-white/[0.94] px-5 py-3 backdrop-blur-md md:hidden">
           <div className="flex-none">
-            <div className="text-[11px] text-ink-soft">Per session</div>
+            <div className="text-[11px] text-ink-soft">{t('perSession')}</div>
             <PriceValue price={mentor.price} size="sm" />
           </div>
           <Link href={contactHref} className="button flex-1 py-[15px] text-[15px]">
-            Send request
-          </Link>
+            {t('sendRequest')}</Link>
         </div>
       )}
 

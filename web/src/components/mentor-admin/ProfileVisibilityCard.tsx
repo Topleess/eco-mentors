@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/mentor'
 /**
  * Profile visibility card for the mentor profile edit page (design 09).
  *
@@ -23,6 +25,7 @@ export default function ProfileVisibilityCard({
   initialStatus,
   onSuccess,
 }: ProfileVisibilityCardProps): JSX.Element {
+  const { t } = useTranslation(messages)
   const [status, setStatus] = useState<VisibilityStatus>(initialStatus)
   const [isSaving, setIsSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -62,7 +65,7 @@ export default function ProfileVisibilityCard({
     } catch (e) {
       // Roll back the optimistic update
       setStatus(previousStatus)
-      setError('Failed to update profile visibility. Please try again.')
+      setError(t('visibilityError'))
       if (e instanceof Error) {
         captureException(e, { page: 'edit-profile', action: 'visibility-toggle' })
       }
@@ -104,22 +107,22 @@ export default function ProfileVisibilityCard({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-baseline gap-2.5">
             <Switch.Label as="span" className="font-name text-base font-bold text-ink" passive>
-              {isActive ? 'Your profile is visible' : 'Your profile is hidden'}
+              {isActive ? t('visible') : t('hidden')}
             </Switch.Label>
             {isActive ? (
               <span className="rounded-full bg-brand-mint/15 px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.05em] text-mint-ink">
-                Live in search
+                {t('liveSearch')}
               </span>
             ) : (
               <span className="rounded-full bg-surface-deep px-2 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.05em] text-ink-mute">
-                Not in search
+                {t('notSearch')}
               </span>
             )}
           </div>
           <p className="my-0 mt-1 text-[13px] leading-normal text-ink-soft">
             {isActive
-              ? 'Mentees can find you in the catalog and send requests. Turn this off any time — your data stays, you just disappear from search.'
-              : "Your profile is hidden from the catalog. Mentees can't send you new requests, but you can still manage existing ones."}
+              ? t('visibleHelp')
+              : t('hiddenHelp')}
           </p>
         </div>
       </Switch.Group>

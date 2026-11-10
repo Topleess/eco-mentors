@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n'
+import { messages, translateFormError } from '@/i18n/messages/forms'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import classNames from 'classnames'
@@ -48,13 +50,14 @@ function FieldLabel({
   required?: boolean
   children: ReactNode
 }): JSX.Element {
+  const { t } = useTranslation(messages)
   return (
     <label htmlFor={htmlFor} className="text-[13px] font-semibold text-ink">
       {children}
       {required ? (
         <span className="text-danger"> *</span>
       ) : (
-        <span className="text-xs font-normal text-ink-soft"> (optional)</span>
+        <span className="text-xs font-normal text-ink-soft">{' '}{t('optional')}{' '}</span>
       )}
     </label>
   )
@@ -67,6 +70,7 @@ export default function ContactMentorForm({
   onSubmit,
   mentorFirstName,
 }: ContactMentorFormProps): JSX.Element {
+  const { t, locale } = useTranslation(messages)
   const {
     register,
     handleSubmit,
@@ -75,7 +79,7 @@ export default function ContactMentorForm({
     formState: { errors, submitCount },
   } = useForm<ContactFormData>()
 
-  const requiredText = 'This field is required.'
+  const requiredText = t('required')
   const introValue = watch('intro') || ''
 
   // Error shake: re-trigger the ±3px shake on every failed submit attempt
@@ -119,9 +123,7 @@ export default function ContactMentorForm({
     <form className="flex flex-col gap-5" onSubmit={handleSubmit(onSubmit)} noValidate>
       <div className="flex flex-col gap-4 sm:flex-row">
         <div className="flex flex-1 flex-col gap-1.5">
-          <FieldLabel htmlFor="name" required>
-            Your full name
-          </FieldLabel>
+          <FieldLabel htmlFor="name" required>{' '}{t('fullName')}{' '}</FieldLabel>
 
           <input
             type="text"
@@ -136,9 +138,7 @@ export default function ContactMentorForm({
         </div>
 
         <div className="flex flex-1 flex-col gap-1.5">
-          <FieldLabel htmlFor="email" required>
-            Your email
-          </FieldLabel>
+          <FieldLabel htmlFor="email" required>{' '}{t('email')}{' '}</FieldLabel>
 
           <input
             type="email"
@@ -151,15 +151,13 @@ export default function ContactMentorForm({
 
           {errors.email?.type === 'required' && <FieldError>{requiredText}</FieldError>}
           {errors.email?.type === 'pattern' && (
-            <FieldError>That doesn&apos;t look like a full email address.</FieldError>
+            <FieldError>{' '}{t('invalidEmail')}{' '}</FieldError>
           )}
         </div>
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <FieldLabel htmlFor="intro" required>
-          What would you like to talk about?
-        </FieldLabel>
+        <FieldLabel htmlFor="intro" required>{' '}{t('contactTopic')}{' '}</FieldLabel>
 
         <TextareaAutosize
           {...register('intro', { required: true, maxLength: INTRO_MAX_LENGTH, minLength: 10 })}
@@ -171,16 +169,14 @@ export default function ContactMentorForm({
 
         {errors.intro?.type === 'required' && <FieldError>{requiredText}</FieldError>}
         {errors.intro?.type === 'minLength' && (
-          <FieldError>The message must be at least 10 characters long.</FieldError>
+          <FieldError>{' '}{t('messageMinLength')}{' '}</FieldError>
         )}
         {errors.intro?.type === 'maxLength' && (
-          <FieldError>Character limit exceeded ({INTRO_MAX_LENGTH} max).</FieldError>
+          <FieldError>{' '}{t('characterLimitPrefix')}{' '}{INTRO_MAX_LENGTH}{' '}{t('characterLimitSuffix')}{' '}</FieldError>
         )}
 
         <div className="flex items-baseline justify-between gap-3">
-          <span className="text-xs text-ink-soft">
-            In a few words, tell the mentor exactly how they can help you.
-          </span>
+          <span className="text-xs text-ink-soft">{' '}{t('contactTopicHint')}{' '}</span>
           <span className="meta-mono flex-none text-ink-mute">
             {introValue.length}/{INTRO_MAX_LENGTH}
           </span>
@@ -188,21 +184,21 @@ export default function ContactMentorForm({
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <FieldLabel htmlFor="experience">How would you rate your level?</FieldLabel>
+        <FieldLabel htmlFor="experience">{' '}{t('menteeLevel')}{' '}</FieldLabel>
 
         <select {...register('experience')} id="experience" className="field">
           <option></option>
-          <option>Junior</option>
-          <option>Middle</option>
-          <option>Senior</option>
-          <option>Manager</option>
-          <option>Manager of managers</option>
-          <option>C-level</option>
+          <option value="Junior">{t('levelJunior')}</option>
+          <option value="Middle">{t('levelMiddle')}</option>
+          <option value="Senior">{t('levelSenior')}</option>
+          <option value="Manager">{t('levelManager')}</option>
+          <option value="Manager of managers">{t('levelManagerOfManagers')}</option>
+          <option value="C-level">{t('levelCLevel')}</option>
         </select>
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <FieldLabel htmlFor="contact">How can your mentor reach you?</FieldLabel>
+        <FieldLabel htmlFor="contact">{' '}{t('contactDetails')}{' '}</FieldLabel>
 
         <input
           type="text"
@@ -213,13 +209,10 @@ export default function ContactMentorForm({
         />
 
         {errors.contact?.type === 'maxLength' && (
-          <FieldError>The contact details must be 100 characters or fewer.</FieldError>
+          <FieldError>{' '}{t('contactMaxLength')}{' '}</FieldError>
         )}
 
-        <span className="text-xs text-ink-soft">
-          Email, Telegram, LinkedIn, whatever works for you. Your mentor will use your email
-          otherwise.
-        </span>
+        <span className="text-xs text-ink-soft">{' '}{t('contactDetailsHint')}{' '}</span>
       </div>
 
       <input type="hidden" {...register('captchaToken', { required: true })} id="captchaToken" />
@@ -230,11 +223,11 @@ export default function ContactMentorForm({
           siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
           onSuccess={handleCaptchaOnSuccess}
           onExpire={handleCaptchaOnExpire}
-          options={{ language: 'en' }}
+          options={{ language: locale }}
         />
 
         {errors.captchaToken?.type === 'required' && (
-          <FieldError>Please complete the verification above.</FieldError>
+          <FieldError>{' '}{t('captchaRequired')}{' '}</FieldError>
         )}
       </div>
 
@@ -243,18 +236,13 @@ export default function ContactMentorForm({
           role="alert"
           className="flex animate-dropdown-in items-start gap-2.5 rounded-field border border-danger/40 bg-danger/5 px-4 py-3.5 text-sm font-medium text-danger"
         >
-          {errorMessage || GENERIC_SUBMIT_ERROR}
+          {translateFormError(locale, errorMessage || GENERIC_SUBMIT_ERROR)}
         </div>
       )}
 
       <div className="mt-1.5 flex flex-col gap-3 sm:flex-row sm:items-center">
-        <button className="button px-7 py-[15px] text-[15px]" type="submit" disabled={isLoading}>
-          Send request
-        </button>
-        <span className="text-[13px] leading-normal text-ink-soft">
-          No account needed. We only share your email with {mentorFirstName || 'the mentor'} —
-          you&apos;ll agree on format and price directly with them.
-        </span>
+        <button className="button px-7 py-[15px] text-[15px]" type="submit" disabled={isLoading}>{' '}{t('sendRequest')}{' '}</button>
+        <span className="text-[13px] leading-normal text-ink-soft">{t('contactPrivacy', { name: mentorFirstName || t('mentorFallback') })}</span>
       </div>
     </form>
   )

@@ -1,3 +1,4 @@
+import { trackUmamiEvent } from '@/lib/umami'
 import { getPostHogClient } from '@/lib/posthog'
 
 type AnalyticsProperties = Record<string, unknown>
@@ -7,7 +8,7 @@ type PendingCommand =
   | { type: 'identify'; distinctId: string; properties?: AnalyticsProperties }
   | { type: 'reset' }
 
-type AnalyticsProvider = 'none' | 'posthog'
+type AnalyticsProvider = 'none' | 'posthog' | 'umami'
 
 interface PostHogClient {
   capture: (name: string, properties?: AnalyticsProperties) => void
@@ -100,9 +101,10 @@ const blockedPropertyKeys = new Set([
 // review — it must not become a PostHog property.
 const blockedPropertyKeySuffixes = ['requestid', 'token', 'secret', 'password']
 
-function resolveProvider(): AnalyticsProvider {
+export function resolveProvider(): AnalyticsProvider {
   const explicit = ANALYTICS_PROVIDER
 
+  if (explicit === 'umami') return 'umami'
   if (explicit === 'none') return 'none'
   if (explicit === 'posthog') return 'posthog'
 
@@ -242,6 +244,7 @@ const analytics: Analytics = {
   events: analyticsEvents,
 
   event(name: AnalyticsEventName | string, params?: AnalyticsProperties): void {
+    if (provider === 'umami') { trackUmamiEvent(name, params); return }
     const eventName = name.trim()
     if (!eventName || typeof window === 'undefined') return
 
@@ -255,6 +258,7 @@ const analytics: Analytics = {
   },
 
   identify(distinctId: string, params?: AnalyticsProperties): void {
+    if (provider === 'umami') return
     const normalizedDistinctId = distinctId.trim()
     if (!normalizedDistinctId || typeof window === 'undefined') return
 
@@ -268,6 +272,7 @@ const analytics: Analytics = {
   },
 
   reset(): void {
+    if (provider === 'umami') return
     if (typeof window === 'undefined') return
 
     if (canFlush(provider)) {

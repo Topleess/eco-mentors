@@ -1,3 +1,4 @@
+import { useLocale } from '@/i18n'
 /**
  * Request Card component
  *
@@ -31,6 +32,7 @@ const AVATAR_CLASSES: Record<RequestStatus, string> = {
 }
 
 export default function RequestCard({ request }: RequestCardProps): JSX.Element {
+  const locale = useLocale()
   const isPending = request.status === 'pending'
   const isClosed =
     request.status === 'done' || request.status === 'declined' || request.status === 'unavailable'
@@ -64,7 +66,7 @@ export default function RequestCard({ request }: RequestCardProps): JSX.Element 
             {request.name}
           </span>
           <time dateTime={request.createdAt} className="meta-mono flex-none text-ink-mute">
-            {formatCompactTime(request.createdAt)}
+            {formatCompactTime(request.createdAt, locale)}
           </time>
         </div>
         <p className="my-0 mt-0.5 truncate text-[13.5px] leading-normal text-ink-soft">

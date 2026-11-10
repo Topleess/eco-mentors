@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/public-pages'
 import Head from 'next/head'
 import { useEffect } from 'react'
 import { Footer, MetaHeader, NavHeader } from '@/components'
@@ -6,7 +8,8 @@ import { pageTitle } from '@/config/seo'
 import analytics from '@/lib/analytics'
 
 export default function Donate(): JSX.Element {
-  const title = pageTitle('Support us')
+  const { t } = useTranslation(messages)
+  const title = pageTitle(t('supportUs2'))
   const kofi = donates[0]
 
   useEffect(() => {
@@ -23,9 +26,9 @@ export default function Donate(): JSX.Element {
         <title>{title}</title>
       </Head>
 
-      <MetaHeader customTitle="Support us" />
+      <MetaHeader customTitle={t('supportUs2')} />
 
-      <NavHeader backLink={{ href: '/', label: 'Back to mentors' }} />
+      <NavHeader backLink={{ href: '/', label: t('backToMentors') }} />
 
       <main className="mx-auto flex w-full max-w-[960px] flex-col items-center px-5 pb-16 pt-9 text-center sm:px-8 sm:pb-24 sm:pt-16">
         {/* Logomark echo (ring + cobalt stroke + mint node), animated once
@@ -43,23 +46,17 @@ export default function Donate(): JSX.Element {
         </div>
 
         <h1 className="my-0 text-[30px] leading-[1.05] tracking-[-0.02em] sm:text-5xl sm:leading-[1.02] sm:tracking-[-0.03em]">
-          Keep mentorship
-          <br className="hidden sm:block" /> <span className="text-brand-cobalt">free</span> for
-          everyone
-        </h1>
+          {t('keepMentorship')}<br className="hidden sm:block" /> <span className="text-brand-cobalt">{t('free')}</span> {t('forEveryone')}</h1>
 
         <p className="mb-0 mt-3 max-w-[520px] text-sm leading-[1.55] text-ink-soft sm:mt-[18px] sm:text-base sm:leading-[1.6]">
-          OpenMentor takes zero commission and shows no ads. The servers and email delivery that
-          keep mentors and mentees connected are paid for by people like you.
-        </p>
+          {t('openmentorTakesZeroCommissionAndShowsNo')}</p>
 
         {/* ── Ko-fi card ──────────────────────────────────────────────── */}
         <div className="mt-6 flex w-full max-w-[520px] flex-col gap-3.5 rounded-panel border border-line bg-white p-5 shadow-card-hover sm:mt-9 sm:gap-[18px] sm:rounded-[18px] sm:p-7">
           <div className="flex items-center justify-between">
             <span className="font-display text-[15px] font-extrabold uppercase tracking-[0.02em] text-ink">
-              Buy us a coffee
-            </span>
-            <span className="meta-mono text-ink-mute">Via Ko-fi</span>
+              {t('buyUsACoffee')}</span>
+            <span className="meta-mono text-ink-mute">{t('viaKoFi')}</span>
           </div>
 
           <a
@@ -69,15 +66,13 @@ export default function Donate(): JSX.Element {
             onClick={handleDonateClick}
             className="button w-full py-4 text-[15px]"
           >
-            Donate on Ko-fi ↗
-          </a>
+            {t('donateOnKoFi')}</a>
 
           {/* The amount is chosen on Ko-fi: it has no documented URL parameter
               to preselect one, so an on-page picker here could not do anything
               beyond relabelling this button. */}
           <span className="text-xs leading-[1.5] text-ink-soft">
-            Opens ko-fi.com in a new tab · pick any amount · one-time or monthly · no account needed
-          </span>
+            {t('opensKoFiComInANew')}</span>
         </div>
 
         {/* ── Where the money goes ────────────────────────────────────── */}
@@ -87,30 +82,25 @@ export default function Donate(): JSX.Element {
               $0
             </div>
             <div className="mt-1 text-[13px] leading-[1.5] text-ink-soft">
-              Commission — mentors and mentees never pay us a cent
-            </div>
+              {t('commissionMentorsAndMenteesNeverPayUs')}</div>
           </div>
           <div className="rounded-card border border-line p-[18px] text-left">
             <div className="font-name text-[22px] font-bold leading-tight text-brand-navy">0</div>
             <div className="mt-1 text-[13px] leading-[1.5] text-ink-soft">
-              Ads or premium tiers — donations are our only income
-            </div>
+              {t('adsOrPremiumTiersDonationsAreOur')}</div>
           </div>
           <div className="rounded-card border border-line p-[18px] text-left">
             <div className="font-name text-[22px] font-bold leading-tight text-mint-ink">100%</div>
             <div className="mt-1 text-[13px] leading-[1.5] text-ink-soft">
-              Of donations go to running costs — the team is volunteers
-            </div>
+              {t('ofDonationsGoToRunningCostsThe')}</div>
           </div>
         </div>
 
         <p className="mb-0 mt-8 max-w-[520px] text-sm leading-[1.6] text-ink-soft sm:mt-10">
-          If Ko-fi doesn&apos;t work for you —{' '}
+          {t('ifKoFiDoesnTWorkFor')}{' '}
           <a className="link" href="mailto:hello@openmentor.io">
-            drop us an email
-          </a>
-          . We&apos;ll figure something out.
-        </p>
+            {t('dropUsAnEmail')}</a>
+          {t('weLlFigureSomethingOut')}</p>
       </main>
 
       <Footer />

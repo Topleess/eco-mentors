@@ -32,6 +32,7 @@ type Config struct {
 	Observability ObservabilityConfig
 	Profiling     ProfilingConfig
 	MentorSession MentorSessionConfig
+	DemoAuth      DemoAuthConfig
 	Worker        WorkerConfig
 	Email         EmailConfig
 }
@@ -197,6 +198,11 @@ type MentorSessionConfig struct {
 	CookieSecure         bool
 }
 
+type DemoAuthConfig struct {
+	Enabled         bool
+	SessionTTLHours int
+}
+
 // WorkerConfig configures the background worker binary (cmd/worker).
 // The worker runs as a separate container from the same image (decision D6):
 // an internal HTTP server for async event triggers plus a cron scheduler
@@ -333,6 +339,8 @@ func load() *Config {
 	// Defaulting this to false would break every review link already in a
 	// mentee's inbox the moment this ships.
 	v.SetDefault("REVIEW_LEGACY_REQUEST_ID_LINKS_ENABLED", true)
+	v.SetDefault("DEMO_AUTH_ENABLED", false)
+	v.SetDefault("DEMO_AUTH_SESSION_TTL_HOURS", 4)
 
 	// Worker defaults (background worker binary, cmd/worker)
 	v.SetDefault("WORKER_PORT", "8090")
@@ -471,6 +479,10 @@ func load() *Config {
 			CookieDomain:         v.GetString("COOKIE_DOMAIN"),
 			CookieSecure:         v.GetBool("COOKIE_SECURE"),
 		},
+		DemoAuth: DemoAuthConfig{
+			Enabled:         v.GetBool("DEMO_AUTH_ENABLED"),
+			SessionTTLHours: v.GetInt("DEMO_AUTH_SESSION_TTL_HOURS"),
+		},
 		Worker: WorkerConfig{
 			Port:        v.GetString("WORKER_PORT"),
 			DBMaxConns:  v.GetInt32("WORKER_DB_MAX_CONNS"),
@@ -522,6 +534,9 @@ func (c *Config) ValidateForAPI() error {
 		return err
 	}
 	if err := c.validateServerConfig(); err != nil {
+		return err
+	}
+	if err := c.validateDemoAuthConfig(); err != nil {
 		return err
 	}
 	if err := c.validateSessionConfig(); err != nil {
@@ -882,6 +897,22 @@ func (c *Config) validateServerConfig() error {
 func (c *Config) validateProfilingConfig() error {
 	if c.Profiling.Enabled && c.Profiling.Endpoint == "" {
 		return fmt.Errorf("O11Y_PROFILING_ENDPOINT is required when profiling is enabled")
+	}
+	return nil
+}
+
+func (c *Config) validateDemoAuthConfig() error {
+	if !c.DemoAuth.Enabled {
+		return nil
+	}
+	if c.Server.AppEnv != "staging" && c.Server.AppEnv != "development" {
+		return fmt.Errorf("DEMO_AUTH_ENABLED may only be true when APP_ENV is staging or development")
+	}
+	if c.DemoAuth.SessionTTLHours < 1 || c.DemoAuth.SessionTTLHours > 24 {
+		return fmt.Errorf("DEMO_AUTH_SESSION_TTL_HOURS must be between 1 and 24")
+	}
+	if strings.TrimSpace(c.MentorSession.JWTSecret) == "" {
+		return fmt.Errorf("JWT_SECRET is required when DEMO_AUTH_ENABLED is true")
 	}
 	return nil
 }

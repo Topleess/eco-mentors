@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n'
+import { messages, translateFormError } from '@/i18n/messages/forms'
 /**
  * New Review Page
  *
@@ -74,6 +76,7 @@ function takeReviewTokenFromFragment(): string {
 }
 
 export default function NewReviewPage(): JSX.Element {
+  const { t, locale } = useTranslation(messages)
   const router = useRouter()
   const { request_id } = router.query
   const [isLoading, setIsLoading] = useState(false)
@@ -137,7 +140,7 @@ export default function NewReviewPage(): JSX.Element {
     const requestId = request_id as string | undefined
     if (!token && !requestId) {
       setIsChecking(false)
-      setCheckError('This review link is not valid. Please use the link from your email.')
+      setCheckError(t('invalidReviewLink'))
       return
     }
 
@@ -153,7 +156,7 @@ export default function NewReviewPage(): JSX.Element {
         const data = (await response.json()) as ReviewCheckResponse
 
         if (!response.ok || !data.canSubmit) {
-          setCheckError(data.error || 'A review cannot be submitted for this request')
+          setCheckError(data.error || t('reviewNotAllowed'))
           if (data.mentorName) {
             setMentorName(data.mentorName)
           }
@@ -161,14 +164,14 @@ export default function NewReviewPage(): JSX.Element {
           setMentorName(data.mentorName || '')
         }
       } catch {
-        setCheckError('We could not verify the request. Please try again later.')
+        setCheckError(t('reviewCheckError'))
       } finally {
         setIsChecking(false)
       }
     }
 
     checkReview()
-  }, [router.isReady, request_id])
+  }, [router.isReady, request_id, t])
 
   const handleCaptchaOnSuccess = (token: string): void => {
     setValue('captchaToken', token)
@@ -201,12 +204,12 @@ export default function NewReviewPage(): JSX.Element {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to submit the review')
+        throw new Error(errorData.error || t('reviewSubmitError'))
       }
 
       setIsSuccess(true)
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Something went wrong')
+      setSubmitError(err instanceof Error ? err.message : t('genericError'))
       turnstileRef.current?.reset()
       setValue('captchaToken', '')
     } finally {
@@ -214,12 +217,12 @@ export default function NewReviewPage(): JSX.Element {
     }
   }
 
-  const requiredText = 'This field is required.'
+  const requiredText = t('required')
 
   return (
     <>
       <Head>
-        <title>{pageTitle('Leave a review')}</title>
+        <title>{pageTitle(t('leaveReview'))}</title>
         {/* nofollow (not the usual noindex,follow): one-time tokenised link */}
         <meta name="robots" content="noindex,nofollow" />
       </Head>
@@ -246,7 +249,7 @@ export default function NewReviewPage(): JSX.Element {
                 icon={faCircleNotch}
                 className="animate-spin text-gray-400 text-3xl mb-4"
               />
-              <p className="text-gray-600">Loading...</p>
+              <p className="text-gray-600">{' '}{t('loading')}{' '}</p>
             </div>
           )}
 
@@ -259,16 +262,12 @@ export default function NewReviewPage(): JSX.Element {
                   className="text-yellow-500 text-5xl"
                 />
               </div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-3">
-                We could not open the review form
-              </h2>
-              <p className="text-gray-600 mb-6">{checkError}</p>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-3">{' '}{t('reviewOpenError')}{' '}</h2>
+              <p className="text-gray-600 mb-6">{translateFormError(locale, checkError)}</p>
               <a
                 href="https://openmentor.io"
                 className="inline-block px-6 py-3 bg-brand-navy text-white font-medium rounded-md hover:bg-brand-navy/90 transition-colors"
-              >
-                Back to home
-              </a>
+              >{' '}{t('backHome')}{' '}</a>
             </div>
           )}
 
@@ -278,19 +277,12 @@ export default function NewReviewPage(): JSX.Element {
               <div className="mb-4">
                 <FontAwesomeIcon icon={faCheckCircle} className="text-brand-mint text-5xl" />
               </div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-3">
-                Thank you for your review!
-              </h2>
-              <p className="text-gray-600 mb-6">
-                Your feedback means a lot to us. It helps mentors get better and lets us improve the
-                service.
-              </p>
+              <h2 className="text-2xl font-semibold text-gray-900 mb-3">{' '}{t('reviewThanks')}{' '}</h2>
+              <p className="text-gray-600 mb-6">{' '}{t('reviewThanksText')}{' '}</p>
               <a
                 href="https://openmentor.io"
                 className="inline-block px-6 py-3 bg-brand-navy text-white font-medium rounded-md hover:bg-brand-navy/90 transition-colors"
-              >
-                Back to home
-              </a>
+              >{' '}{t('backHome')}{' '}</a>
             </div>
           )}
 
@@ -299,13 +291,10 @@ export default function NewReviewPage(): JSX.Element {
             <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
               <h2 className="text-2xl font-semibold text-gray-900 mb-2">
                 {mentorName
-                  ? `Leave a review about your session with ${mentorName}`
-                  : 'How was your session with the mentor?'}
+                  ? t('reviewWithMentor', { name: mentorName })
+                  : t('reviewHeading')}
               </h2>
-              <p className="text-gray-600 mb-6">
-                We&apos;re glad you used our service. Please tell us how the session went — your
-                feedback means a lot to us and to the mentor.
-              </p>
+              <p className="text-gray-600 mb-6">{' '}{t('reviewIntro')}{' '}</p>
 
               <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
                 {/* Mentor Review (required) */}
@@ -313,22 +302,17 @@ export default function NewReviewPage(): JSX.Element {
                   <label
                     htmlFor="mentorReview"
                     className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Review of the mentor <span className="text-red-500">*</span>
+                  >{' '}{t('mentorReview')}{' '}<span className="text-red-500">*</span>
                   </label>
 
                   {errors.mentorReview?.type === 'required' && (
                     <div className="text-sm text-red-700 mb-2">{requiredText}</div>
                   )}
                   {errors.mentorReview?.type === 'minLength' && (
-                    <div className="text-sm text-red-700 mb-2">
-                      The review must be at least 10 characters long.
-                    </div>
+                    <div className="text-sm text-red-700 mb-2">{' '}{t('reviewMinLength')}{' '}</div>
                   )}
                   {errors.mentorReview?.type === 'maxLength' && (
-                    <div className="text-sm text-red-700 mb-2">
-                      Character limit exceeded (5000 max).
-                    </div>
+                    <div className="text-sm text-red-700 mb-2">{' '}{t('reviewMaxLength')}{' '}</div>
                   )}
 
                   <textarea
@@ -339,7 +323,7 @@ export default function NewReviewPage(): JSX.Element {
                     })}
                     id="mentorReview"
                     rows={6}
-                    placeholder="Tell us how the session went: what you liked, what was useful, whether the mentor helped..."
+                    placeholder={t('mentorReviewPlaceholder')}
                     className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-cobalt focus:border-brand-cobalt resize-vertical"
                     disabled={isLoading}
                   />
@@ -350,21 +334,17 @@ export default function NewReviewPage(): JSX.Element {
                   <label
                     htmlFor="platformReview"
                     className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    Review of the platform
-                  </label>
+                  >{' '}{t('platformReview')}{' '}</label>
 
                   {errors.platformReview?.type === 'maxLength' && (
-                    <div className="text-sm text-red-700 mb-2">
-                      Character limit exceeded (5000 max).
-                    </div>
+                    <div className="text-sm text-red-700 mb-2">{' '}{t('reviewMaxLength')}{' '}</div>
                   )}
 
                   <textarea
                     {...register('platformReview', { maxLength: 5000 })}
                     id="platformReview"
                     rows={3}
-                    placeholder="What do you think of the OpenMentor service? (optional)"
+                    placeholder={t('platformReviewPlaceholder')}
                     className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-cobalt focus:border-brand-cobalt resize-vertical"
                     disabled={isLoading}
                   />
@@ -375,21 +355,17 @@ export default function NewReviewPage(): JSX.Element {
                   <label
                     htmlFor="improvements"
                     className="block text-sm font-medium text-gray-700 mb-2"
-                  >
-                    What could we improve?
-                  </label>
+                  >{' '}{t('improvements')}{' '}</label>
 
                   {errors.improvements?.type === 'maxLength' && (
-                    <div className="text-sm text-red-700 mb-2">
-                      Character limit exceeded (5000 max).
-                    </div>
+                    <div className="text-sm text-red-700 mb-2">{' '}{t('reviewMaxLength')}{' '}</div>
                   )}
 
                   <textarea
                     {...register('improvements', { maxLength: 5000 })}
                     id="improvements"
                     rows={3}
-                    placeholder="Your suggestions for improvement (optional)"
+                    placeholder={t('improvementsPlaceholder')}
                     className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-cobalt focus:border-brand-cobalt resize-vertical"
                     disabled={isLoading}
                   />
@@ -399,7 +375,7 @@ export default function NewReviewPage(): JSX.Element {
                 <input type="hidden" {...register('captchaToken', { required: true })} />
 
                 {errors.captchaToken?.type === 'required' && (
-                  <div className="text-sm text-red-700">Please confirm you are not a robot.</div>
+                  <div className="text-sm text-red-700">{' '}{t('reviewCaptchaConfirm')}{' '}</div>
                 )}
 
                 <Turnstile
@@ -407,13 +383,13 @@ export default function NewReviewPage(): JSX.Element {
                   siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
                   onSuccess={handleCaptchaOnSuccess}
                   onExpire={handleCaptchaOnExpire}
-                  options={{ language: 'en' }}
+                  options={{ language: locale }}
                 />
 
                 {/* Submit Error */}
                 {submitError && (
                   <div className="p-4 rounded-md bg-red-50 border border-red-200">
-                    <p className="text-sm text-red-600">{submitError}</p>
+                    <p className="text-sm text-red-600">{translateFormError(locale, submitError)}</p>
                   </div>
                 )}
 
@@ -424,18 +400,15 @@ export default function NewReviewPage(): JSX.Element {
                 >
                   {isLoading ? (
                     <>
-                      <FontAwesomeIcon icon={faCircleNotch} className="animate-spin mr-2" />
-                      Submitting...
-                    </>
+                      <FontAwesomeIcon icon={faCircleNotch} className="animate-spin mr-2" />{' '}{t('submitting')}{' '}</>
                   ) : (
-                    'Submit review'
+                    t('submitReview')
                   )}
                 </button>
               </form>
 
               <div className="mt-6 pt-6 border-t border-gray-200">
-                <p className="text-sm text-gray-500 text-center">
-                  If you run into any issues, write to us:{' '}
+                <p className="text-sm text-gray-500 text-center">{' '}{t('supportPrefix')}{' '}{' '}
                   <a
                     href="mailto:hello@openmentor.io"
                     className="text-brand-cobalt hover:text-brand-cobalt/80"

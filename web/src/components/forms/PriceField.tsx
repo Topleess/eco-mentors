@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/forms'
 import { useId, useRef, useState, type ChangeEvent, type JSX, type Ref } from 'react'
 import classNames from 'classnames'
 import {
@@ -87,6 +89,7 @@ export default function PriceField({
   name = 'price-kind',
   inputRef,
 }: PriceFieldProps): JSX.Element {
+  const { t } = useTranslation(messages)
   const groupId = useId()
   const amountId = `${groupId}-amount`
   const hintId = `${groupId}-hint`
@@ -141,14 +144,14 @@ export default function PriceField({
   }
 
   const pills: { kind: PriceKind; label: string; ariaLabel: string; wide: boolean }[] = [
-    { kind: 'free', label: 'Free', ariaLabel: 'Free', wide: false },
-    { kind: 'negotiable', label: 'Negotiable', ariaLabel: 'Negotiable', wide: false },
+    { kind: 'free', label: t('priceFree'), ariaLabel: t('priceFree'), wide: false },
+    { kind: 'negotiable', label: t('priceNegotiable'), ariaLabel: t('priceNegotiable'), wide: false },
     {
       kind: 'fixed',
-      label: isValidAmount(amount) ? `$${amount}` : 'Set an amount',
+      label: isValidAmount(amount) ? `$${amount}` : t('priceSetAmount'),
       // The visible label changes once an amount exists, so the accessible name
       // keeps a stable stem instead of turning into a bare number.
-      ariaLabel: isValidAmount(amount) ? `Fixed amount, $${amount}` : 'Set a fixed amount',
+      ariaLabel: isValidAmount(amount) ? t('priceFixedAmount', { amount: amount ?? '' }) : t('priceSetFixed'),
       wide: true,
     },
   ]
@@ -203,14 +206,14 @@ export default function PriceField({
               inputMode="numeric"
               autoComplete="off"
               value={amountText}
-              aria-label="Price in US dollars per one-hour session"
+              aria-label={t('priceInput')}
               aria-describedby={hintId}
               onChange={(event: ChangeEvent<HTMLInputElement>) => handleAmountChange(event.target.value)}
               className={classNames('field pl-7', (invalid || showDraft) && 'field-error')}
             />
           </div>
           <p id={hintId} className="mt-1.5 text-sm text-ink-soft">
-            Any whole amount from ${MIN_AMOUNT} to ${MAX_AMOUNT}.
+            {t('priceHint', { min: MIN_AMOUNT, max: MAX_AMOUNT })}
           </p>
         </div>
       )}

@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/forms'
 import { useEditor, useEditorState, EditorContent, type Editor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import classNames from 'classnames'
@@ -56,6 +58,7 @@ const toolbarButtonClass =
 const toolbarButtonActiveClass = 'bg-brand-navy !text-white hover:bg-brand-navy'
 
 function MenuBar({ editor }: MenuBarProps): JSX.Element | null {
+  const { t } = useTranslation(messages)
   // Tiptap v3 stopped re-rendering consumers on every transaction: useEditor's
   // `shouldRerenderOnTransaction` now defaults to false and is documented as
   // legacy behaviour due for removal. Calling editor.isActive() straight from
@@ -99,7 +102,7 @@ function MenuBar({ editor }: MenuBarProps): JSX.Element | null {
         <div className="-my-1 space-x-1">
           <button
             type="button"
-            title="Bold"
+            title={t('editorBold')}
             className={classNames(toolbarButtonClass, {
               [toolbarButtonActiveClass]: active.bold,
             })}
@@ -118,7 +121,7 @@ function MenuBar({ editor }: MenuBarProps): JSX.Element | null {
 
           <button
             type="button"
-            title="Italic"
+            title={t('editorItalic')}
             className={classNames(toolbarButtonClass, {
               [toolbarButtonActiveClass]: active.italic,
             })}
@@ -137,7 +140,7 @@ function MenuBar({ editor }: MenuBarProps): JSX.Element | null {
 
           <button
             type="button"
-            title="Strike"
+            title={t('editorStrike')}
             className={classNames(toolbarButtonClass, {
               [toolbarButtonActiveClass]: active.strike,
             })}
@@ -156,7 +159,7 @@ function MenuBar({ editor }: MenuBarProps): JSX.Element | null {
 
           <button
             type="button"
-            title="Link"
+            title={t('editorLink')}
             className={classNames(toolbarButtonClass, {
               [toolbarButtonActiveClass]: active.link,
             })}
@@ -177,7 +180,7 @@ function MenuBar({ editor }: MenuBarProps): JSX.Element | null {
                 }
               })
 
-              const url = window.prompt('URL', existingUrl)
+              const url = window.prompt(t('editorUrl'), existingUrl)
               if (url === null) {
                 return // user canceled
               } else if (url === '') {
@@ -202,7 +205,7 @@ function MenuBar({ editor }: MenuBarProps): JSX.Element | null {
         <div className="-my-1 space-x-1">
           <button
             type="button"
-            title="Heading 2"
+            title={t('editorHeading2')}
             className={classNames(toolbarButtonClass, {
               [toolbarButtonActiveClass]: active.heading2,
             })}
@@ -221,7 +224,7 @@ function MenuBar({ editor }: MenuBarProps): JSX.Element | null {
 
           <button
             type="button"
-            title="Heading 3"
+            title={t('editorHeading3')}
             className={classNames(toolbarButtonClass, {
               [toolbarButtonActiveClass]: active.heading3,
             })}
@@ -240,7 +243,7 @@ function MenuBar({ editor }: MenuBarProps): JSX.Element | null {
 
           <button
             type="button"
-            title="Paragraph"
+            title={t('editorParagraph')}
             className={classNames(toolbarButtonClass, {
               [toolbarButtonActiveClass]: active.paragraph,
             })}
@@ -259,7 +262,7 @@ function MenuBar({ editor }: MenuBarProps): JSX.Element | null {
 
           <button
             type="button"
-            title="Bullet List"
+            title={t('editorBulletList')}
             className={classNames(toolbarButtonClass, {
               [toolbarButtonActiveClass]: active.bulletList,
             })}
@@ -278,7 +281,7 @@ function MenuBar({ editor }: MenuBarProps): JSX.Element | null {
 
           <button
             type="button"
-            title="Ordered List"
+            title={t('editorOrderedList')}
             className={classNames(toolbarButtonClass, {
               [toolbarButtonActiveClass]: active.orderedList,
             })}
@@ -301,7 +304,7 @@ function MenuBar({ editor }: MenuBarProps): JSX.Element | null {
         <div className="-my-1 space-x-1">
           <button
             type="button"
-            title="Hard Break"
+            title={t('editorHardBreak')}
             className={toolbarButtonClass}
             onClick={() => {
               chain().setHardBreak().run()
@@ -318,7 +321,7 @@ function MenuBar({ editor }: MenuBarProps): JSX.Element | null {
 
           <button
             type="button"
-            title="Clear Format"
+            title={t('editorClearFormat')}
             className={toolbarButtonClass}
             onClick={() => {
               chain().clearNodes().run()

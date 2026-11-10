@@ -1,8 +1,12 @@
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/catalog'
 import type { ChangeEvent } from 'react'
 
 interface MentorsSearchProps {
   value: string
   onChange: (value: string) => void
+  placeholder?: string
+  ariaLabel?: string
 }
 
 /**
@@ -10,7 +14,8 @@ interface MentorsSearchProps {
  * radius, inline search glyph. Focus swaps the border to cobalt and adds
  * the soft focus ring (120ms).
  */
-export default function MentorsSearch({ value, onChange }: MentorsSearchProps): JSX.Element {
+export default function MentorsSearch({ value, onChange, placeholder, ariaLabel }: MentorsSearchProps): JSX.Element {
+  const { t } = useTranslation(messages)
   return (
     <div className="relative w-full">
       <svg
@@ -28,8 +33,8 @@ export default function MentorsSearch({ value, onChange }: MentorsSearchProps): 
       <input
         type="search"
         className="w-full rounded-card border-[1.5px] border-line bg-surface py-[13px] pl-11 pr-4 text-[15px] font-medium text-ink transition-[border-color,box-shadow] duration-120 placeholder:text-ink-soft focus:border-brand-cobalt focus:shadow-focus-field focus:outline-none focus:ring-0"
-        placeholder="Role, skill, or company…"
-        aria-label="Search mentors by role, skill, or company"
+        placeholder={placeholder ?? t('searchPlaceholder')}
+        aria-label={ariaLabel ?? t('searchLabel')}
         autoComplete="off"
         value={value}
         onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}

@@ -1,3 +1,6 @@
+import { translateLabel } from '@/i18n/labels'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/forms'
 import Select, { type MultiValue, type StylesConfig } from 'react-select'
 import Image from 'next/image'
 import { useForm, Controller } from 'react-hook-form'
@@ -109,11 +112,8 @@ const selectStyles: StylesConfig<TagOption, true> = {
 }
 
 // Convert string array to option array for react-select
-const tagsToOptions = (tags: string[]): TagOption[] =>
-  tags.map((tag) => ({ value: tag, label: tag }))
-
-// All available tags as options
-const tagOptions = tagsToOptions(filters.tags)
+const tagsToOptions = (tags: string[], locale: 'ru' | 'en'): TagOption[] =>
+  tags.map((tag) => ({ value: tag, label: translateLabel(locale, tag) }))
 
 type SelectOption = [value: string, label: string]
 
@@ -130,13 +130,14 @@ type SelectOption = [value: string, label: string]
  */
 function withStoredOption(
   options: SelectOption[],
-  stored: string | null | undefined
+  stored: string | null | undefined,
+  placeholder: string
 ): SelectOption[] {
   const value = stored ?? ''
   if (options.some(([optionValue]) => optionValue === value)) return options
   // An unset column becomes a placeholder the (required) field rejects, rather
   // than saving whichever suggestion happens to be listed first.
-  return [[value, value || 'Please choose one'], ...options]
+  return [[value, value || placeholder], ...options]
 }
 
 export default function ProfileForm({
@@ -148,6 +149,7 @@ export default function ProfileForm({
   imageUploadStatus,
   tempImagePreview,
 }: ProfileFormProps): JSX.Element {
+  const { t, locale } = useTranslation(messages)
   const {
     control,
     register,
@@ -157,12 +159,13 @@ export default function ProfileForm({
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [imageError, setImageError] = useState('')
+  const [imageError, setImageError] = useState<keyof typeof messages | ''>('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const experienceOptions = withStoredOption(
-    Object.entries(filters.experience).map(([label, value]): SelectOption => [value, label]),
-    mentor.experience
+    Object.entries(filters.experience).map(([label, value]): SelectOption => [value, translateLabel(locale, label)]),
+    mentor.experience,
+    t('chooseOne')
   )
   // An unparseable stored price stays unselected rather than being coerced to a
   // real one: silently rewriting what a mentor charges is the D44 failure, and
@@ -180,14 +183,14 @@ export default function ProfileForm({
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
     if (!allowedTypes.includes(file.type)) {
-      setImageError('Please choose a JPEG, PNG, or WebP image.')
+      setImageError('imageTypeError')
       return
     }
 
     // The limit is the RAW file; the request that carries it is ~4/3 bigger
     // because the photo goes out base64-encoded inside JSON. See config/uploads.
     if (file.size > MAX_IMAGE_FILE_BYTES) {
-      setImageError(`The file size must not exceed ${MAX_IMAGE_FILE_LABEL}.`)
+      setImageError('imageSizeError')
       return
     }
 
@@ -203,7 +206,7 @@ export default function ProfileForm({
 
   const handleImageUploadClick = async (): Promise<void> => {
     if (!selectedImage) {
-      setImageError('Please choose an image to upload.')
+      setImageError('imageRequired')
       return
     }
 
@@ -250,12 +253,10 @@ export default function ProfileForm({
   return (
     <form className="space-y-8" onSubmit={handleSubmit(handleFormSubmit)}>
       <div>
-        <label htmlFor="name" className="block mb-2 font-medium text-ink">
-          Your full name
-        </label>
+        <label htmlFor="name" className="block mb-2 font-medium text-ink">{' '}{t('fullName')}{' '}</label>
 
         {errors.name && (
-          <div className="text-sm text-danger mt-3 mb-2">This field is required.</div>
+          <div className="text-sm text-danger mt-3 mb-2">{' '}{t('required')}{' '}</div>
         )}
 
         <input
@@ -269,19 +270,13 @@ export default function ProfileForm({
       </div>
 
       <div>
-        <label htmlFor="profilePicture" className="block mb-2 font-medium text-ink">
-          Profile photo{' '}
+        <label htmlFor="profilePicture" className="block mb-2 font-medium text-ink">{' '}{t('profilePhoto')}{' '}{' '}
           <a data-tooltip-id="photo-tip">
             <FontAwesomeIcon icon={faQuestionCircle} />
           </a>
           <Tooltip id="photo-tip" place="right">
-            <span>
-              Upload your profile photo. JPEG, PNG, and WebP formats are supported. The maximum file
-              size is {MAX_IMAGE_FILE_LABEL}.
-              <br />
-              This feature is still experimental. If something goes wrong, drop us a line at
-              hello@openmentor.io.
-            </span>
+            <span>{' '}{t('photoHintPrefix')}{' '}{MAX_IMAGE_FILE_LABEL}.
+              <br />{' '}{t('photoExperimental')}{' '}</span>
           </Tooltip>
         </label>
 
@@ -292,7 +287,7 @@ export default function ProfileForm({
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={tempImagePreview}
-                  alt="Current profile"
+                  alt={t('currentProfile')}
                   className="w-24 h-24 rounded-full object-cover"
                 />
               ) : (
@@ -302,7 +297,7 @@ export default function ProfileForm({
                     quality: 'full',
                     version: updatedAtToVersion(mentor.updatedAt),
                   })}
-                  alt="Current profile"
+                  alt={t('currentProfile')}
                   className="w-24 h-24 rounded-full object-cover"
                   width={40}
                   height={40}
@@ -310,7 +305,7 @@ export default function ProfileForm({
                   key={mentor.updatedAt ?? mentor.photo_url}
                 />
               )}
-              <span className="text-sm text-ink-soft">Current photo</span>
+              <span className="text-sm text-ink-soft">{' '}{t('currentPhoto')}{' '}</span>
             </div>
           )}
 
@@ -318,13 +313,13 @@ export default function ProfileForm({
             <div className="flex items-center space-x-4">
               <Image
                 src={imagePreview}
-                alt="Preview"
+                alt={t('preview')}
                 className="w-24 h-24 rounded-full object-cover"
                 unoptimized
                 width={40}
                 height={40}
               />
-              <span className="text-sm text-ink-soft">Preview</span>
+              <span className="text-sm text-ink-soft">{' '}{t('preview')}{' '}</span>
             </div>
           )}
 
@@ -350,10 +345,10 @@ export default function ProfileForm({
                 {imageUploadStatus === 'loading' ? (
                   <>
                     <FontAwesomeIcon className="animate-spin" icon={faCircleNotch} />
-                    <span className="ml-2">Uploading...</span>
+                    <span className="ml-2">{' '}{t('uploading')}{' '}</span>
                   </>
                 ) : (
-                  <span>Upload photo</span>
+                  <span>{' '}{t('uploadPhoto')}{' '}</span>
                 )}
               </button>
 
@@ -362,22 +357,16 @@ export default function ProfileForm({
                 onClick={handleCancelImage}
                 className="text-sm text-ink-soft hover:text-ink"
                 disabled={imageUploadStatus === 'loading'}
-              >
-                Cancel
-              </button>
+              >{' '}{t('cancel')}{' '}</button>
             </div>
           )}
 
           {imageUploadStatus === 'success' && (
-            <div className="text-sm text-mint-ink">
-              Photo uploaded successfully! Your profile will be updated shortly.
-            </div>
+            <div className="text-sm text-mint-ink">{' '}{t('photoUploaded')}{' '}</div>
           )}
 
           {imageUploadStatus === 'error' && (
-            <div className="text-sm text-danger">
-              Failed to upload the photo. Please try again.
-            </div>
+            <div className="text-sm text-danger">{' '}{t('photoUploadError')}{' '}</div>
           )}
 
           {imageError && (
@@ -389,12 +378,10 @@ export default function ProfileForm({
       </div>
 
       <div>
-        <label htmlFor="job" className="block mb-2 font-medium text-ink">
-          Job title
-        </label>
+        <label htmlFor="job" className="block mb-2 font-medium text-ink">{' '}{t('jobTitle')}{' '}</label>
 
         {errors.job && (
-          <div className="text-sm text-danger mt-3 mb-2">This field is required.</div>
+          <div className="text-sm text-danger mt-3 mb-2">{' '}{t('required')}{' '}</div>
         )}
 
         <input
@@ -408,21 +395,17 @@ export default function ProfileForm({
       </div>
 
       <div>
-        <label htmlFor="workplace" className="block mb-2 font-medium text-ink">
-          Company{' '}
+        <label htmlFor="workplace" className="block mb-2 font-medium text-ink">{' '}{t('company')}{' '}{' '}
           <a data-tooltip-id="workplace-tip">
             <FontAwesomeIcon icon={faQuestionCircle} />
           </a>
           <Tooltip id="workplace-tip" place="right">
-            <span>
-              If you work in several places, name your main company and list the rest in the
-              &quot;About you&quot; section
-            </span>
+            <span>{' '}{t('companyHint')}{' '}</span>
           </Tooltip>
         </label>
 
         {errors.workplace && (
-          <div className="text-sm text-danger mt-3 mb-2">This field is required.</div>
+          <div className="text-sm text-danger mt-3 mb-2">{' '}{t('required')}{' '}</div>
         )}
 
         <input
@@ -437,12 +420,10 @@ export default function ProfileForm({
 
       <div className="flex space-x-8">
         <div>
-          <label htmlFor="experience" className="block mb-2 font-medium text-ink">
-            Experience
-          </label>
+          <label htmlFor="experience" className="block mb-2 font-medium text-ink">{' '}{t('experience')}{' '}</label>
 
           {errors.experience && (
-            <div className="text-sm text-danger mt-3 mb-2">This field is required.</div>
+            <div className="text-sm text-danger mt-3 mb-2">{' '}{t('required')}{' '}</div>
           )}
 
           <select
@@ -470,12 +451,12 @@ export default function ProfileForm({
                 value={field.value}
                 onChange={field.onChange}
                 inputRef={field.ref}
-                label="Price per one-hour session"
+                label={t('priceLabel')}
                 labelClassName="block mb-2 font-medium text-ink"
                 invalid={Boolean(errors.price)}
                 error={
                   errors.price
-                    ? 'Choose Free, Negotiable, or a whole amount from $1 to $1000.'
+                    ? t('priceValidation')
                     : undefined
                 }
               />
@@ -485,22 +466,12 @@ export default function ProfileForm({
       </div>
 
       <div>
-        <label htmlFor="tags" className="block mb-2 font-medium text-ink">
-          Specialization{' '}
+        <label htmlFor="tags" className="block mb-2 font-medium text-ink">{' '}{t('specialization')}{' '}{' '}
           <a data-tooltip-id="tags-tip">
             <FontAwesomeIcon icon={faQuestionCircle} />
           </a>
           <Tooltip id="tags-tip" place="right">
-            <span>
-              Pick your main current specialization plus any areas you know well and are ready to
-              help with.
-              <br />
-              Mentees will find you by these tags in the search block.
-              <br />
-              They will also be shown on your profile.
-              <br />
-              Choose at least 1 and at most 5 tags.
-            </span>
+            <span>{' '}{t('specializationHint')}{' '}<br />{' '}{t('tagsSearchHint')}{' '}<br />{' '}{t('tagsProfileHint')}{' '}<br />{' '}{t('tagsValidation')}{' '}</span>
           </Tooltip>
         </label>
 
@@ -510,17 +481,18 @@ export default function ProfileForm({
           defaultValue={mentor.tags}
           render={({ field }) => (
             <Select<TagOption, true>
+              instanceId="mentor-profile-tags"
               isMulti
-              value={tagsToOptions(field.value || [])}
+              value={tagsToOptions(field.value || [], locale)}
               onChange={(newValue: MultiValue<TagOption>) => {
                 if (newValue.length < field.value.length || newValue.length <= MAX_TAGS) {
                   field.onChange(newValue.map((opt) => opt.value))
                 }
               }}
-              options={tagOptions}
+              options={tagsToOptions(filters.tags, locale)}
               closeMenuOnSelect={false}
-              placeholder="Select tags..."
-              noOptionsMessage={() => 'No options available'}
+              placeholder={t('selectTags')}
+              noOptionsMessage={() => t('noOptions')}
               styles={selectStyles}
               classNamePrefix="react-select"
             />
@@ -529,21 +501,17 @@ export default function ProfileForm({
       </div>
 
       <div>
-        <label htmlFor="about" className="block mb-2 font-medium text-ink">
-          About you{' '}
+        <label htmlFor="about" className="block mb-2 font-medium text-ink">{' '}{t('about')}{' '}{' '}
           <a data-tooltip-id="about-tip">
             <FontAwesomeIcon icon={faQuestionCircle} />
           </a>
           <Tooltip id="about-tip" place="right">
-            <span>
-              Two or three paragraphs work best: where you&apos;ve worked, what interests you
-              professionally, and what mentoring approach you follow
-            </span>
+            <span>{' '}{t('aboutHint')}{' '}</span>
           </Tooltip>
         </label>
 
         {errors.about && (
-          <div className="text-sm text-danger mt-3 mb-2">This field is required.</div>
+          <div className="text-sm text-danger mt-3 mb-2">{' '}{t('required')}{' '}</div>
         )}
 
         <div className="mt-1">
@@ -563,35 +531,29 @@ export default function ProfileForm({
       </div>
 
       <div>
-        <label htmlFor="description" className="block mb-2 font-medium text-ink">
-          How can you help?{' '}
+        <label htmlFor="description" className="block mb-2 font-medium text-ink">{' '}{t('help')}{' '}{' '}
           <a data-tooltip-id="description-tip">
             <FontAwesomeIcon icon={faQuestionCircle} />
           </a>
           <Tooltip id="description-tip" place="right">
-            <span>
-              It&apos;s best to break the text into bullet points. For example,
-              <br />
+            <span>{' '}{t('helpHint')}{' '}<br />
             </span>
             <em>
-              <span>I can help you:</span>
+              <span>{' '}{t('helpExampleIntro')}{' '}</span>
               <ul>
-                <li>— get comfortable with Kubernetes;</li>
-                <li>— improve your team&apos;s processes;</li>
-                <li>— choose the right strategy to grow your startup;</li>
+                <li>{' '}{t('helpExampleKubernetes')}{' '}</li>
+                <li>{' '}{t('helpExampleProcesses')}{' '}</li>
+                <li>{' '}{t('helpExampleStartup')}{' '}</li>
               </ul>
             </em>
             <br />
-            <span>
-              It&apos;s also great to mention which levels of mentees can come to you for help:
-              Junior-Middle-Senior, team leads, C-level executives, and so on. One line is enough,
-              for example: <em>I help Senior engineers and team leads.</em>
+            <span>{' '}{t('menteeLevelsHint')}{' '}<em>{' '}{t('menteeLevelsExample')}{' '}</em>
             </span>
           </Tooltip>
         </label>
 
         {errors.description && (
-          <div className="text-sm text-danger mt-3 mb-2">This field is required.</div>
+          <div className="text-sm text-danger mt-3 mb-2">{' '}{t('required')}{' '}</div>
         )}
 
         <div className="mt-1">
@@ -611,21 +573,17 @@ export default function ProfileForm({
       </div>
 
       <div>
-        <label htmlFor="competencies" className="block mb-2 font-medium text-ink">
-          Skills and technologies (comma-separated){' '}
+        <label htmlFor="competencies" className="block mb-2 font-medium text-ink">{' '}{t('skills')}{' '}{' '}
           <a data-tooltip-id="competencies-tip">
             <FontAwesomeIcon icon={faQuestionCircle} />
           </a>
           <Tooltip id="competencies-tip" place="right">
-            <span>
-              List the skills you&apos;d like to consult on, separated by commas. For example:
-              JavaScript, React, Leadership, Code Review. Mentees will be able to find you by them.
-            </span>
+            <span>{' '}{t('skillsHint')}{' '}</span>
           </Tooltip>
         </label>
 
         {errors.competencies && (
-          <div className="text-sm text-danger mt-3 mb-2">This field is required.</div>
+          <div className="text-sm text-danger mt-3 mb-2">{' '}{t('required')}{' '}</div>
         )}
 
         <input
@@ -638,31 +596,23 @@ export default function ProfileForm({
       </div>
 
       <div>
-        <label htmlFor="calendarUrl" className="block mb-2 font-medium text-ink">
-          Booking link to your calendar (
-          <Link href="https://koalendar.com" target="_blank" className="link" rel="noreferrer">
+        <label htmlFor="calendarUrl" className="block mb-2 font-medium text-ink">{' '}{t('calendarLabelPrefix')}{' '}<Link href="https://koalendar.com" target="_blank" className="link" rel="noreferrer">
             Koalendar
           </Link>
           ,{' '}
           <Link href="https://calendly.com" target="_blank" className="link" rel="noreferrer">
             Calendly
-          </Link>{' '}
-          or anything else){' '}
+          </Link>{' '}{' '}{t('calendarLabelSuffix')}{' '}{' '}
           <a data-tooltip-id="calendar-tip">
             <FontAwesomeIcon icon={faQuestionCircle} />
           </a>
           <Tooltip id="calendar-tip" place="right">
-            <span>
-              If you use a calendar scheduling tool, add your booking link here so mentees can book
-              a session with you directly. We recommend Calendly, Koalendar, or CalendLab — they are
-              integrated with our platform, and the booking form will appear right after a mentee
-              submits a request.
-            </span>
+            <span>{' '}{t('calendarHint')}{' '}</span>
           </Tooltip>
         </label>
 
         {errors.calendarUrl && (
-          <div className="text-sm text-danger mt-3 mb-2">This must be a valid https:// URL</div>
+          <div className="text-sm text-danger mt-3 mb-2">{' '}{t('calendarValidation')}{' '}</div>
         )}
 
         <input
@@ -682,20 +632,17 @@ export default function ProfileForm({
       </div>
 
       {isError && (
-        <div className="text-danger">
-          Something went wrong. We&apos;re probably already fixing it — please try saving again
-          later.
-        </div>
+        <div className="text-danger">{' '}{t('saveError')}{' '}</div>
       )}
 
       <button type="submit" className="button" disabled={isLoading}>
         {isLoading ? (
           <>
             <FontAwesomeIcon className="animate-spin" icon={faCircleNotch} />
-            <span className="ml-2">Saving...</span>
+            <span className="ml-2">{' '}{t('saving')}{' '}</span>
           </>
         ) : (
-          <span>Save</span>
+          <span>{' '}{t('save')}{' '}</span>
         )}
       </button>
     </form>

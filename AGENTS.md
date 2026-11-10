@@ -8,9 +8,22 @@ Instructions for any coding agent working in the openmentor monorepo. Agent-agno
 and `grafana/` is in the sections below. It is long on purpose: `AGENTS.md` has no import
 mechanism, so a split file is invisible to any agent that starts at the repo root.
 
+## Local editable environment
+
+Use `./infra/local/start.sh` for isolated writable dashboard development; see `infra/local/README.md`.
+Do not reuse `infra/.env` or the upstream dev database for this mode: Docker Desktop may automatically
+restart an older stack on ports 3000/8081/5433, and accidentally connecting to it makes local edits
+and synthetic login target the wrong database. The dedicated editing environment uses 3100/18081/5544.
+
 ## What this is
 
-An open-source mentorship platform (AGPL-3.0), a fork of getmentor.dev, **live in production**
+This checkout is **Eco Mentors**, a modified edition of OpenMentor. Its source repository is
+`https://github.com/Topleess/eco-mentors`; upstream remains `https://github.com/openmentor-io/openmentor`.
+Client production infrastructure is not configured yet. References below to upstream production and
+historical decisions are context, not authorization to access or deploy to upstream systems. Keep
+source-code links pointed at this edition while retaining upstream attribution and the AGPL license.
+
+The upstream project is an open-source mentorship platform (AGPL-3.0), a fork of getmentor.dev, **live in production**
 with real user data on a single VM. Short planned downtime is acceptable; extended downtime is
 not. Treat every change as reaching real mentors and mentees.
 

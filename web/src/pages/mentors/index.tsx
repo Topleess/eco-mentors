@@ -1,3 +1,6 @@
+import { translateLabel } from '@/i18n/labels'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/public-pages'
 import Head from 'next/head'
 import Link from 'next/link'
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
@@ -60,13 +63,16 @@ export const getServerSideProps = withSSRObservability(_getServerSideProps, 'men
 export default function MentorsDirectory({
   mentors,
 }: InferGetServerSidePropsType<typeof getServerSideProps>): JSX.Element {
+  const { t, locale, intlLocale } = useTranslation(messages)
+  const localizedBase = `${constants.BASE_URL}${locale === 'en' ? 'en/' : ''}`
   // Kept to the three properties schema.org needs for a ListItem — this list
   // runs to hundreds of entries, so anything more would bloat the HTML.
   const mentorsJsonLd: Record<string, unknown> = {
     '@context': 'https://schema.org',
     '@type': 'CollectionPage',
-    name: 'All mentors',
-    url: `${constants.BASE_URL}mentors`,
+    inLanguage: locale,
+    name: t('allMentors'),
+    url: `${localizedBase}mentors`,
     mainEntity: {
       '@type': 'ItemList',
       numberOfItems: mentors.length,
@@ -74,7 +80,7 @@ export default function MentorsDirectory({
         '@type': 'ListItem',
         position: index + 1,
         name: mentor.name,
-        url: `${constants.BASE_URL}mentor/${mentor.slug}`,
+        url: `${localizedBase}mentor/${mentor.slug}`,
       })),
     },
   }
@@ -88,14 +94,14 @@ export default function MentorsDirectory({
       {
         '@type': 'ListItem',
         position: 1,
-        name: 'Home',
-        item: constants.BASE_URL,
+        name: t('home'),
+        item: localizedBase,
       },
       {
         '@type': 'ListItem',
         position: 2,
-        name: 'All mentors',
-        item: `${constants.BASE_URL}mentors`,
+        name: t('allMentors'),
+        item: `${localizedBase}mentors`,
       },
     ],
   }
@@ -103,26 +109,24 @@ export default function MentorsDirectory({
   return (
     <>
       <Head>
-        <title>{pageTitle('All mentors')}</title>
+        <title>{pageTitle(t('allMentors'))}</title>
         <script {...jsonLdScriptProps(mentorsJsonLd)} />
         <script {...jsonLdScriptProps(breadcrumbJsonLd)} />
       </Head>
 
       <MetaHeader
-        customTitle="All mentors"
-        customDescription="Browse OpenMentor by topic or the full alphabetical directory — every mentor, their job title and company, one click from a profile."
+        customTitle={t('allMentors')}
+        customDescription={t('browseOpenmentorByTopicOrTheFull')}
       />
 
       <NavHeader />
 
       <Section className="border-b border-line bg-surface" id="header">
         <div className="mx-auto max-w-[720px] py-4 text-center sm:py-8">
-          <p className="meta-mono my-0 text-ink-mute">OpenMentor.io · Directory</p>
-          <h1 className="my-0 mt-3 text-3xl sm:text-[40px]">All mentors</h1>
+          <p className="meta-mono my-0 text-ink-mute">{t('openmentorIoDirectory')}</p>
+          <h1 className="my-0 mt-3 text-3xl sm:text-[40px]">{t('allMentors')}</h1>
           <p className="mb-0 mt-3 text-[15px] text-ink-soft">
-            Every one of our {mentors.length.toLocaleString('en-US')} mentors, alphabetically —
-            pick a name to open their full profile.
-          </p>
+            {t('directoryIntro', { count: mentors.length.toLocaleString(intlLocale) })}</p>
         </div>
       </Section>
 
@@ -131,26 +135,24 @@ export default function MentorsDirectory({
             these links is the only inbound link the /mentors/<tag> pages get
             outside the sitemap, so it needs to be crawled before the A–Z list. */}
         <section className="mb-12 sm:mb-16">
-          <h2 className="my-0 text-2xl">Browse by topic</h2>
+          <h2 className="my-0 text-2xl">{t('browseByTopic')}</h2>
           <p className="mt-2 max-w-[640px] text-[15px] text-ink-soft">
-            Mentors are tagged by what they help with — pick an area to see everyone who covers
-            it.
-          </p>
+            {t('mentorsAreTaggedByWhatTheyHelp')}</p>
 
           <div className="mt-6 grid grid-cols-1 gap-x-10 gap-y-8 sm:grid-cols-2">
             {TAG_CATEGORIES.map((category) => (
-              <div key={category.label}>
+              <div key={translateLabel(locale, category.label)}>
                 <h3 className="my-0 text-[13px] font-bold uppercase tracking-wide text-ink-mute">
-                  {category.label}
+                  {translateLabel(locale, category.label)}
                 </h3>
                 <ul className="mt-3 flex flex-wrap gap-2">
                   {category.tags.map((tag) => (
-                    <li key={tag}>
+                    <li key={translateLabel(locale, tag)}>
                       <Link
                         href={tagPath(tag)}
                         className="block rounded-full border border-line bg-surface px-[15px] py-2 text-[13px] font-semibold text-brand-navy hover:border-brand-cobalt hover:text-brand-cobalt"
                       >
-                        {tag}
+                        {translateLabel(locale, tag)}
                       </Link>
                     </li>
                   ))}
@@ -160,7 +162,7 @@ export default function MentorsDirectory({
           </div>
         </section>
 
-        <h2 className="my-0 text-2xl">Every mentor, A–Z</h2>
+        <h2 className="my-0 text-2xl">{t('everyMentorAZ')}</h2>
         <ul className="mt-6 grid grid-cols-1 gap-x-10 sm:grid-cols-2">
           {mentors.map((mentor) => (
             <li key={mentor.id} className="border-b border-line py-3">

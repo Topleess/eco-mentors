@@ -26,7 +26,7 @@ VALUES
    '<p>I lead two platform teams at Zalando and spent the previous decade shipping backend systems at scale. I moved from senior engineer to manager the hard way — without a mentor — and I''d like to make that transition easier for you.</p><p>Expect direct, structured conversations with homework in between.</p>',
    '<ul><li><p>preparing for your first engineering-management role;</p></li><li><p>running 1:1s, feedback and delegation that actually works;</p></li><li><p>navigating promotion cases and org politics.</p></li></ul>',
    'Engineering management, team topologies, feedback, delegation, backend architecture',
-   '5-10', '$50', 'active', 'jonas.weber@example.com', 'Telegram: @jonasweber', false, 10,
+   '5-10', '$50', 'active', 'jonas.weber@example.com', 'Synthetic contact: mentor@example.com', false, 10,
    'frame', now() - interval '200 days', now() - interval '199 days', 'dev-login-active', now() + interval '365 days', NULL),
 
   (1002, 'amara-okafor-1002', 'Amara Okafor', 'Staff Engineer', 'Spotify',
@@ -200,7 +200,7 @@ SELECT m.id, seed.email, seed.name, seed.description, seed.level, seed.status, s
 FROM (VALUES
   ('daria.kova@example.com', 'Daria K.',
    'I''m a senior engineer at a fintech startup, and I''ve been offered a team-lead role. I''d like 2–3 sessions to decide whether to take it and how to negotiate the transition.',
-   'Senior', 'pending', 'Telegram: @dariak'),
+   'Senior', 'pending', 'Synthetic contact: mentee@example.com'),
   ('mike.chen@example.com', 'Mike Chen',
    'Looking for help preparing an engineering-manager interview loop at a FAANG-adjacent company.',
    'Senior', 'contacted', NULL),

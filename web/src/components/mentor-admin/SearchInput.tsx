@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/mentor'
 /**
  * Search Input component
  *
@@ -16,8 +18,9 @@ interface SearchInputProps {
 export default function SearchInput({
   value,
   onChange,
-  placeholder = 'Search...',
+  placeholder,
 }: SearchInputProps): JSX.Element {
+  const { t } = useTranslation(messages)
   return (
     <div className="relative">
       <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4">
@@ -27,14 +30,14 @@ export default function SearchInput({
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
+        placeholder={placeholder ?? t('searchDefault')}
         className="field pl-10 pr-10"
       />
       {value && (
         <button
           onClick={() => onChange('')}
           className="absolute inset-y-0 right-0 flex items-center pr-4 text-ink-soft transition-colors duration-120 hover:text-ink"
-          aria-label="Clear search"
+          aria-label={t('clearSearch')}
         >
           <FontAwesomeIcon icon={faTimes} className="text-sm" />
         </button>

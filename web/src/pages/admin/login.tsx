@@ -7,12 +7,17 @@ import { faCircleNotch, faEnvelope } from '@fortawesome/free-solid-svg-icons'
 import { AuthGateScreen, NoIndexHead } from '@/components'
 import { AdminAuthProvider, useAdminAuth } from '@/components/admin-moderation'
 import analytics from '@/lib/analytics'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/admin'
+import { adminMessage } from '@/i18n/admin'
+import LanguageSwitcher from '@/components/layout/LanguageSwitcher'
 
 interface LoginFormData {
   email: string
 }
 
 function LoginForm(): JSX.Element {
+  const { t, locale } = useTranslation(messages)
   const router = useRouter()
   const { isAuthenticated, isLoading: authLoading, requestLogin } = useAdminAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -71,15 +76,16 @@ function LoginForm(): JSX.Element {
   }
 
   if (authLoading) {
-    return <AuthGateScreen title="Moderation — sign in" />
+    return <AuthGateScreen title={t('loginTitle')} />
   }
 
   return (
     <div className="flex min-h-screen flex-col justify-center bg-surface px-5 py-12">
-      <NoIndexHead title="Moderation — sign in" />
+      <NoIndexHead title={t('loginTitle')} />
 
       <div className="mx-auto w-full max-w-[440px]">
         <div className="rounded-[20px] border border-line bg-white p-7 shadow-[0_20px_50px_-24px_rgba(19,42,82,0.22)] sm:p-10">
+          <div className="mb-4 flex justify-end"><LanguageSwitcher /></div>
           <div className="mb-5 flex items-center gap-2.5">
             <Image
               src="/brand/logo/svg/logomark.svg"
@@ -93,15 +99,15 @@ function LoginForm(): JSX.Element {
             </span>
           </div>
 
-          <h1 className="text-[26px] tracking-[-0.02em] text-ink">Moderation</h1>
+          <h1 className="text-[26px] tracking-[-0.02em] text-ink">{t('moderation')}</h1>
           <p className="my-0 mb-5 mt-2 text-sm leading-normal text-ink-soft">
-            Sign in with a one-time link.
+            {t('loginHint')}
           </p>
 
           {expired === 'true' && (
             <div className="mb-5 rounded-field border border-line bg-surface p-3.5">
               <p className="my-0 text-sm text-ink">
-                Your session has expired. Please sign in again.
+                {t('sessionExpired')}
               </p>
             </div>
           )}
@@ -110,8 +116,8 @@ function LoginForm(): JSX.Element {
             <div className="mb-5 rounded-field border border-danger/40 bg-danger/5 p-3.5">
               <p className="my-0 text-sm text-danger">
                 {callback_error === 'invalid_token'
-                  ? 'The link is invalid or has expired. Please request a new one.'
-                  : 'Something went wrong. Please try again.'}
+                  ? t('invalidLinkHint')
+                  : t('genericError')}
               </p>
             </div>
           )}
@@ -121,22 +127,22 @@ function LoginForm(): JSX.Element {
               <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-brand-mint/15">
                 <FontAwesomeIcon icon={faEnvelope} className="text-mint-ink" />
               </div>
-              <h2 className="mb-2 text-lg text-ink">Check your email</h2>
+              <h2 className="mb-2 text-lg text-ink">{t('checkEmail')}</h2>
               <p className="my-0 mb-4 text-sm text-ink-soft">
-                If the email is registered as a moderator, a login link is already on its way.
+                {t('loginSent')}
               </p>
               <button
                 onClick={() => setSubmitSuccess(false)}
                 className="text-[13px] font-semibold text-brand-cobalt transition-colors duration-120 hover:text-brand-navy"
               >
-                Send again
+                {t('sendAgain')}
               </button>
             </div>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-5" noValidate>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="email" className="text-[13px] font-semibold text-ink">
-                  Email
+                  {t('email')}
                 </label>
                 <input
                   id="email"
@@ -144,24 +150,24 @@ function LoginForm(): JSX.Element {
                   autoComplete="email"
                   placeholder="moderator@openmentor.io"
                   {...register('email', {
-                    required: 'Enter your email',
+                    required: t('emailRequired'),
                     pattern: {
                       value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                      message: 'Enter a valid email',
+                      message: t('emailInvalid'),
                     },
                   })}
                   className={errors.email ? 'field field-error animate-shake' : 'field'}
                 />
                 {errors.email && (
                   <p className="my-0 text-xs font-medium text-danger" role="alert">
-                    {errors.email.message}
+                    {adminMessage(locale, errors.email.message ?? '')}
                   </p>
                 )}
               </div>
 
               {submitError && (
                 <p className="my-0 text-sm font-medium text-danger" role="alert">
-                  {submitError}
+                  {adminMessage(locale, submitError)}
                 </p>
               )}
 
@@ -169,10 +175,10 @@ function LoginForm(): JSX.Element {
                 {isSubmitting ? (
                   <>
                     <FontAwesomeIcon icon={faCircleNotch} className="mr-2 animate-spin" />
-                    Sending...
+                    {t('sending')}
                   </>
                 ) : (
-                  'Email me a magic link'
+                  t('sendLogin')
                 )}
               </button>
             </form>

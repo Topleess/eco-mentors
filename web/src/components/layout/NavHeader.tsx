@@ -1,4 +1,8 @@
 import { useState } from 'react'
+import { useTranslation } from '@/i18n'
+import { SOURCE_REPOSITORY_URL } from '@/config/source'
+import { messages } from '@/i18n/messages/common'
+import LanguageSwitcher from './LanguageSwitcher'
 import classNames from 'classnames'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -16,7 +20,7 @@ export function Wordmark({ compact = false }: { compact?: boolean }): JSX.Elemen
     <span
       className={classNames(
         'font-display font-extrabold uppercase tracking-[-0.02em] text-brand-navy',
-        compact ? 'text-[15px]' : 'text-[15px] sm:text-xl'
+        compact ? 'text-[15px]' : 'text-[15px] sm:text-xl',
       )}
     >
       openmentor<span className="text-brand-cobalt">.io</span>
@@ -35,6 +39,7 @@ interface NavHeaderProps {
 
 export default function NavHeader({ className, backLink }: NavHeaderProps): JSX.Element {
   const [open, setOpen] = useState(false)
+  const { t } = useTranslation(messages)
 
   return (
     <header className={classNames('border-b border-line bg-white', className)}>
@@ -60,25 +65,43 @@ export default function NavHeader({ className, backLink }: NavHeaderProps): JSX.
           ) : (
             <>
               <Link
-                href="https://github.com/openmentor-io/openmentor"
+                href={SOURCE_REPOSITORY_URL}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label="OpenMentor on GitHub"
+                aria-label={t('github')}
                 className="text-ink-soft transition-colors duration-120 hover:text-ink"
               >
                 <GitHubIcon className="h-5 w-5" />
               </Link>
-              <Link href="/about" className="text-sm font-semibold text-ink hover:text-brand-cobalt">
-                About
+              <Link
+                href="/vacancies"
+                className="inline-flex min-h-11 items-center text-sm font-semibold text-ink hover:text-brand-cobalt"
+              >
+                {t('vacancies')}
               </Link>
-              <Link href="/donate" className="text-sm font-semibold text-ink hover:text-brand-cobalt">
-                Support us
+              <Link
+                href="/research"
+                className="inline-flex min-h-11 items-center text-sm font-semibold text-ink hover:text-brand-cobalt"
+              >
+                {t('research')}
+              </Link>
+              <Link
+                href="/about"
+                className="text-sm font-semibold text-ink hover:text-brand-cobalt"
+              >
+                {t('about')}
+              </Link>
+              <Link
+                href="/donate"
+                className="text-sm font-semibold text-ink hover:text-brand-cobalt"
+              >
+                {t('support')}
               </Link>
               <Link
                 href="/mentor/login"
                 className="text-sm font-semibold text-ink hover:text-brand-cobalt"
               >
-                Log in
+                {t('login')}
               </Link>
             </>
           )}
@@ -86,14 +109,16 @@ export default function NavHeader({ className, backLink }: NavHeaderProps): JSX.
             href="/bementor"
             className="rounded-btn bg-brand-navy px-5 py-3 text-sm font-bold !text-white transition-colors hover:bg-[#1B3A6E]"
           >
-            Become a mentor
+            {t('becomeMentor')}
           </Link>
         </nav>
+
+        <LanguageSwitcher />
 
         {/* mobile hamburger */}
         <button
           type="button"
-          aria-label={open ? 'Close menu' : 'Open menu'}
+          aria-label={open ? t('closeMenu') : t('openMenu')}
           aria-expanded={open}
           onClick={() => setOpen(!open)}
           className="flex h-11 w-11 flex-col items-center justify-center gap-[5px] md:hidden"
@@ -101,19 +126,19 @@ export default function NavHeader({ className, backLink }: NavHeaderProps): JSX.
           <span
             className={classNames(
               'h-0.5 w-5 rounded-full bg-ink transition-transform duration-180',
-              open && 'translate-y-[7px] rotate-45'
+              open && 'translate-y-[7px] rotate-45',
             )}
           />
           <span
             className={classNames(
               'h-0.5 w-5 rounded-full bg-ink transition-opacity duration-120',
-              open && 'opacity-0'
+              open && 'opacity-0',
             )}
           />
           <span
             className={classNames(
               'h-0.5 w-5 rounded-full bg-ink transition-transform duration-180',
-              open && '-translate-y-[7px] -rotate-45'
+              open && '-translate-y-[7px] -rotate-45',
             )}
           />
         </button>
@@ -132,7 +157,7 @@ export default function NavHeader({ className, backLink }: NavHeaderProps): JSX.
             </Link>
           )}
           <Link
-            href="https://github.com/openmentor-io/openmentor"
+            href={SOURCE_REPOSITORY_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-2.5 rounded-field px-3 py-3 text-sm font-semibold text-ink hover:bg-surface"
@@ -142,32 +167,46 @@ export default function NavHeader({ className, backLink }: NavHeaderProps): JSX.
             GitHub
           </Link>
           <Link
+            href="/vacancies"
+            className="flex min-h-11 items-center rounded-field px-3 py-3 text-sm font-semibold text-ink hover:bg-surface"
+            onClick={() => setOpen(false)}
+          >
+            {t('vacancies')}
+          </Link>
+          <Link
+            href="/research"
+            className="flex min-h-11 items-center rounded-field px-3 py-3 text-sm font-semibold text-ink hover:bg-surface"
+            onClick={() => setOpen(false)}
+          >
+            {t('research')}
+          </Link>
+          <Link
             href="/about"
             className="rounded-field px-3 py-3 text-sm font-semibold text-ink hover:bg-surface"
             onClick={() => setOpen(false)}
           >
-            About
+            {t('about')}
           </Link>
           <Link
             href="/donate"
             className="rounded-field px-3 py-3 text-sm font-semibold text-ink hover:bg-surface"
             onClick={() => setOpen(false)}
           >
-            Support us
+            {t('support')}
           </Link>
           <Link
             href="/mentor/login"
             className="rounded-field px-3 py-3 text-sm font-semibold text-ink hover:bg-surface"
             onClick={() => setOpen(false)}
           >
-            Log in
+            {t('login')}
           </Link>
           <Link
             href="/bementor"
             className="mt-2 rounded-btn bg-brand-navy px-5 py-3.5 text-center text-sm font-bold !text-white"
             onClick={() => setOpen(false)}
           >
-            Become a mentor
+            {t('becomeMentor')}
           </Link>
         </nav>
       )}

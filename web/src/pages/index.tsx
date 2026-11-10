@@ -1,3 +1,6 @@
+import { translateLabel } from '@/i18n/labels'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/public-pages'
 import Head from 'next/head'
 import Link from 'next/link'
 import { useEffect, useMemo, useState } from 'react'
@@ -18,8 +21,6 @@ import type { MentorsSortOption } from '@/components'
 import { getAllMentors } from '@/server/mentors-data'
 import { toCatalogItem } from '@/server/mentor-projection'
 import analytics from '@/lib/analytics'
-import pluralize from '@/lib/pluralize'
-import seo from '@/config/seo'
 import constants from '@/config/constants'
 import { jsonLdScriptProps } from '@/lib/json-ld'
 import { withSSRObservability } from '@/lib/with-ssr-observability'
@@ -30,16 +31,6 @@ import type { MentorCatalogItem } from '@/types'
 // declared in _app.tsx by @id rather than re-declaring them. No ItemList
 // here — this page renders only the first page of mentors, the full list
 // lives on the /mentors directory page.
-const homeJsonLd: Record<string, unknown> = {
-  '@context': 'https://schema.org',
-  '@type': 'CollectionPage',
-  name: seo.title,
-  description: seo.description,
-  url: constants.BASE_URL,
-  isPartOf: { '@id': `${constants.BASE_URL}#website` },
-  about: { '@id': `${constants.BASE_URL}#organization` },
-}
-
 interface HomePageProps {
   [key: string]: unknown
   /**
@@ -86,10 +77,10 @@ export const getServerSideProps = withSSRObservability(_getServerSideProps, 'ind
  * Rounded community-size phrasing for the hero copy: exact under 10,
  * otherwise rounded down ("140+", "5,200+") — never overstates.
  */
-function roundedCountLabel(count: number): string {
+function roundedCountLabel(count: number, intlLocale: string): string {
   if (count < 10) return `${count}`
   const step = count >= 100 ? 100 : 10
-  return `${(Math.floor(count / step) * step).toLocaleString('en-US')}+`
+  return `${(Math.floor(count / step) * step).toLocaleString(intlLocale)}+`
 }
 
 interface HowItWorksCardProps {
@@ -128,6 +119,19 @@ function HowItWorksCard({ glyph, title, step, copy, copyShort }: HowItWorksCardP
 export default function Home({
   pageMentors,
 }: InferGetServerSidePropsType<typeof getServerSideProps>): JSX.Element {
+  const { t, locale, intlLocale } = useTranslation(messages)
+const homeJsonLd: Record<string, unknown> = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  inLanguage: locale,
+  name: t('homeTitle'),
+  description: t('homeDescription'),
+  url: `${constants.BASE_URL}${locale === 'en' ? 'en/' : ''}`,
+  isPartOf: { '@id': `${constants.BASE_URL}#website` },
+  about: { '@id': `${constants.BASE_URL}#organization` },
+}
+
+
   const [sort, setSort] = useState<MentorsSortOption>('relevance')
 
   // Sort the whole catalog before useMentors paginates it — sorting the
@@ -164,22 +168,22 @@ export default function Home({
     document.getElementById('list')?.scrollIntoView({ behavior: 'smooth' })
   }
 
-  const countLabel = roundedCountLabel(pageMentors.length)
+  const countLabel = roundedCountLabel(pageMentors.length, intlLocale)
 
   // Results meta: the narrowed tag wins over the category label.
   const activeFilterLabel = appliedFilters.tags.values.length
-    ? appliedFilters.tags.values.join(' · ')
-    : (appliedFilters.category.values ?? null)
+    ? appliedFilters.tags.values.map((tag) => translateLabel(locale, tag)).join(' · ')
+    : (appliedFilters.category.values ? translateLabel(locale, appliedFilters.category.values) : null)
 
   return (
     <>
       <Head>
-        <title>{seo.title}</title>
+        <title>{t('homeTitle')}</title>
 
         <script {...jsonLdScriptProps(homeJsonLd)} />
       </Head>
 
-      <MetaHeader />
+      <MetaHeader customTitle={t('homeTitle')} customDescription={t('homeDescription')} />
 
       <NavHeader />
 
@@ -187,12 +191,10 @@ export default function Home({
         {/* ── Hero ─────────────────────────────────────────────────────── */}
         <section data-section="header" className="px-5 pt-7 sm:px-8 sm:pt-12 lg:px-16 lg:pt-16">
           <h1 className="text-[38px] leading-none sm:text-5xl md:text-6xl lg:text-7xl lg:leading-[0.98]">
-            Your mentorship
-            <br className="hidden md:block" /> journey{' '}
-            <span className="text-brand-cobalt">starts</span>{' '}
+            {t('yourMentorship')}<br className="hidden md:block" /> {t('journey')}{' '}
+            <span className="text-brand-cobalt">{t('starts')}</span>{' '}
             <span className="relative z-0">
-              here
-              <span
+              {t('here')}<span
                 aria-hidden="true"
                 className="absolute inset-x-0 bottom-0.5 -z-10 h-2 bg-brand-mint opacity-[0.55] lg:bottom-1 lg:h-3"
               />
@@ -200,9 +202,7 @@ export default function Home({
           </h1>
 
           <p className="my-0 mt-3 max-w-[520px] text-sm leading-[1.5] text-ink-soft sm:mt-5 sm:text-[17px] sm:leading-[1.55]">
-            An open community of {countLabel} tech mentors ready to share their experience one on one.
-            Free to browse, zero commission — many mentors are free.
-          </p>
+            {t('heroDescription', { count: countLabel })}</p>
 
           <div className="mt-[18px] flex flex-col gap-2.5 sm:mt-[30px] sm:flex-row sm:items-center sm:gap-3">
             <div className="w-full sm:max-w-[460px]">
@@ -213,19 +213,18 @@ export default function Home({
               className="button whitespace-nowrap px-[26px] py-[15px] text-[15px] sm:py-4"
               onClick={scrollToList}
             >
-              Find a mentor
-            </button>
+              {t('findAMentor')}</button>
           </div>
 
           {/* Trust strip: the mission in one glance, visible without scrolling. */}
           <p className="meta-mono mb-0 mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-ink-mute sm:mt-5">
-            <span>No account needed</span>
+            <span>{t('noAccountNeeded')}</span>
             <span aria-hidden="true">·</span>
-            <span>0% commission</span>
+            <span>{t('0Commission')}</span>
             <span aria-hidden="true">·</span>
-            <span>Many mentors free</span>
+            <span>{t('manyMentorsFree')}</span>
             <span aria-hidden="true">·</span>
-            <span>Donation-funded</span>
+            <span>{t('donationFunded')}</span>
           </p>
         </section>
 
@@ -235,13 +234,13 @@ export default function Home({
           data-section="list"
           className="scroll-mt-4 px-5 pt-[18px] sm:px-8 sm:pt-[34px] lg:px-16"
         >
-          <h2 className="sr-only">Our mentors</h2>
+          <h2 className="sr-only">{t('ourMentors')}</h2>
 
           <MentorsFilters appliedFilters={appliedFilters} mentors={pageMentors} />
 
           <div className="flex items-baseline justify-between gap-4 pb-3 pt-[18px] sm:pb-3.5 sm:pt-[26px]">
             <span className="font-display text-sm font-extrabold uppercase tracking-[0.02em] text-ink sm:text-[17px]">
-              {filteredCount.toLocaleString('en-US')} {pluralize(filteredCount, 'mentor')}
+              {t('mentorCount', { count: filteredCount })}
               {activeFilterLabel && <span className="text-brand-cobalt"> · {activeFilterLabel}</span>}
             </span>
 
@@ -263,49 +262,43 @@ export default function Home({
           className="border-t border-line bg-surface px-5 py-7 sm:px-8 sm:py-14 lg:px-16"
         >
           <h2 className="mb-[18px] text-2xl leading-none sm:mb-[34px] sm:text-[34px]">
-            How it works
-          </h2>
+            {t('howItWorks')}</h2>
 
           <div className="grid gap-2.5 sm:grid-cols-3 sm:gap-7">
             <HowItWorksCard
               step={1}
-              title="Browse freely"
+              title={t('browseFreely')}
               glyph={
                 <div className="h-[26px] w-[26px] rounded-full border-4 border-brand-navy sm:h-10 sm:w-10 sm:border-[5px]" />
               }
-              copy={`No account needed. Search ${countLabel} mentors by role, skill, or company and read their full profiles.`}
-              copyShort="No account needed."
+              copy={t('browseMentorsCopy', { count: countLabel })}
+              copyShort={t('noAccountNeeded2')}
             />
 
             <HowItWorksCard
               step={2}
-              title="Send a request"
+              title={t('sendARequest')}
               glyph={
                 <div className="h-1.5 w-6 origin-left -rotate-[35deg] rounded-full bg-brand-cobalt sm:h-2 sm:w-10" />
               }
-              copy="Tell the mentor what you want to work on. They reply by email — usually within a couple of days."
-              copyShort="Mentors reply by email."
+              copy={t('tellTheMentorWhatYouWantTo')}
+              copyShort={t('mentorsReplyByEmail')}
             />
 
             <HowItWorksCard
               step={3}
-              title="Meet & grow"
+              title={t('meetGrow')}
               glyph={<div className="h-3 w-3 rounded-full bg-brand-mint sm:h-4 sm:w-4" />}
-              copy="Agree on format and price together. Many mentors are free; if you pay, you pay the mentor directly — we never touch the money."
-              copyShort="Zero commission, ever."
+              copy={t('agreeOnFormatAndPriceTogetherMany')}
+              copyShort={t('zeroCommissionEver')}
             />
           </div>
 
           {/* The mission behind the mechanics, in one breath (full story: /about). */}
           <p className="my-0 mt-5 max-w-[760px] text-sm leading-[1.6] text-ink-soft sm:mt-8 sm:text-[15px]">
-            <span className="font-semibold text-ink">Built on community.</span> No ads, no commission,
-            no premium tier — donations cover the servers, and mentors who give their time for free
-            are the heart of this place. Every mentor is a working practitioner, reviewed by hand
-            before they appear: no gurus, no 10x promises. We make the connection, then get out of the
-            way.{' '}
+            <span className="font-semibold text-ink">{t('builtOnCommunity')}</span> {t('noAdsNoCommissionNoPremiumTier')}{' '}
             <Link href="/about" className="whitespace-nowrap font-semibold text-brand-cobalt">
-              Read the full story →
-            </Link>
+              {t('readTheFullStory')}</Link>
           </p>
         </section>
 
@@ -315,19 +308,15 @@ export default function Home({
           className="border-t border-line bg-white px-5 py-8 text-center sm:px-8 sm:py-14 lg:px-16"
         >
           <h2 className="my-0 text-2xl leading-none sm:text-[34px]">
-            Been there? <span className="text-brand-cobalt">Pass it on</span>
+            {t('beenThere')}{' '}<span className="text-brand-cobalt">{t('passItOn')}</span>
           </h2>
           <p className="mx-auto mb-0 mt-2.5 max-w-[520px] text-sm leading-[1.55] text-ink-soft sm:mt-4 sm:text-[15px] sm:leading-[1.6]">
-            Share what you know one on one — you choose the format and the price, and mentoring for
-            free is warmly encouraged. Reviews are done by hand, usually within a week.
-          </p>
+            {t('shareWhatYouKnowOneOnOne')}</p>
           <div className="mt-5 flex flex-col items-center justify-center gap-2.5 sm:mt-7 sm:flex-row">
             <Link href="/bementor" className="button px-[30px] py-[15px] text-[15px]">
-              Become a mentor
-            </Link>
+              {t('becomeAMentor')}</Link>
             <Link href="/faq#mentors" className="button-ghost px-[26px] py-[15px] text-[15px]">
-              Read the mentor FAQ
-            </Link>
+              {t('readTheMentorFaq')}</Link>
           </div>
         </section>
 
@@ -352,15 +341,11 @@ export default function Home({
 
             <div className="relative flex-1">
               <h2 className="my-0 text-xl leading-[1.05] sm:text-[26px] lg:text-[32px] lg:leading-[1.02]">
-                Free because <span className="text-brand-cobalt">you</span> keep it free
-              </h2>
+                {t('freeBecause')}{' '}<span className="text-brand-cobalt">{t('you')}</span> {t('keepItFree')}</h2>
               <p className="mx-auto my-0 mt-2 max-w-[520px] text-[13px] leading-[1.5] text-ink-mute lg:mx-0 lg:mt-2.5 lg:hidden">
-                Donations are our only income. No ads, no commission.
-              </p>
+                {t('donationsAreOurOnlyIncomeNoAds')}</p>
               <p className="my-0 mt-2.5 hidden max-w-[520px] text-[15px] leading-[1.55] text-ink-mute lg:block">
-                Donations are our only income — no ads, no commission, no premium tier. A few dollars
-                covers servers and email for everyone.
-              </p>
+                {t('donationsAreOurOnlyIncomeNoAds2')}</p>
             </div>
 
             <div className="relative flex w-full flex-none flex-col items-center gap-2.5 lg:w-auto">
@@ -368,9 +353,8 @@ export default function Home({
                 href="/donate"
                 className="button w-full px-[30px] py-[15px] text-[15px] lg:w-auto lg:py-4"
               >
-                Support us ↗
-              </Link>
-              <span className="meta-mono hidden text-ink-mute lg:block">VIA KO-FI · ANY AMOUNT</span>
+                {t('supportUs')}</Link>
+              <span className="meta-mono hidden text-ink-mute lg:block">{t('viaKoFiAnyAmount')}</span>
             </div>
           </div>
         </section>

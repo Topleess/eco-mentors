@@ -1,3 +1,6 @@
+import { mentorMessage } from '@/components/mentor-admin/utils'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/mentor'
 /**
  * Danger-zone card on the mentor profile edit page (D70).
  *
@@ -34,6 +37,7 @@ export default function DeleteProfileCard({
   canHideInstead = false,
   onDeleted,
 }: DeleteProfileCardProps): JSX.Element {
+  const { t, locale } = useTranslation(messages)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
 
   const onConfirm = async (typedUsername: string): Promise<void> => {
@@ -54,7 +58,7 @@ export default function DeleteProfileCard({
         // Surface the server's message: the two it can send here — a username
         // mismatch and an already-deleted profile — are both things the mentor
         // can act on, and a generic failure would hide that.
-        throw new Error(data?.error || 'Failed to delete your profile. Please try again.')
+        throw new Error(mentorMessage(locale, data?.error || t('failedToDeleteYourProfilePlease')))
       }
 
       setIsDialogOpen(false)
@@ -77,18 +81,14 @@ export default function DeleteProfileCard({
         />
         <div className="min-w-0 flex-1">
           <p className="my-0 font-name text-base font-bold tracking-[-0.015em] text-ink">
-            Delete your profile
+            {t('deleteYourProfile')}
           </p>
           <p className="my-0 mt-1 text-[13px] leading-normal text-ink-soft">
-            Your profile disappears from the site, your login link stops working, and any
-            outstanding review invitations are cancelled. This cannot be undone — only an admin can
-            bring a deleted profile back, and it is eventually erased for good along with your
-            requests and reviews.
+            {t('yourProfileDisappearsFromTheSite')}
           </p>
           {canHideInstead && (
             <p className="my-0 mt-3 text-[13px] leading-normal text-ink-mute">
-              Only want to step away for a while? Switch your profile to hidden with the visibility
-              toggle above instead — that takes you out of search and keeps everything else.
+              {t('onlyWantToStepAwayFor')}
             </p>
           )}
           <button
@@ -96,7 +96,7 @@ export default function DeleteProfileCard({
             onClick={() => setIsDialogOpen(true)}
             className="button-destructive mt-4"
           >
-            Delete profile
+            {t('deleteProfile')}
           </button>
         </div>
       </div>
@@ -106,16 +106,13 @@ export default function DeleteProfileCard({
         onClose={() => setIsDialogOpen(false)}
         onConfirm={onConfirm}
         username={username}
-        title="Delete your profile"
+        title={t('deleteYourProfile')}
       >
         <p className="my-0">
-          Your public page will return a 404, your login link will stop working, and any review
-          invitations still with your mentees will be cancelled.
+          {t('yourPublicPageWillReturnA')}
         </p>
         <p className="my-0 mt-2">
-          Your profile and everything attached to it — requests and reviews — are then permanently
-          erased. If you change your mind, contact us as soon as possible: once it is erased it
-          cannot be undone.
+          {t('yourProfileAndEverythingAttachedTo')}
         </p>
       </DeleteProfileDialog>
     </div>

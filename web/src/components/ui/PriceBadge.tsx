@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/common'
 import { parsePrice } from '@/lib/price'
 import type { JSX } from 'react'
 
@@ -14,12 +16,13 @@ import type { JSX } from 'react'
  * - NEGOTIABLE — mono 500, ink-mute on surface, radius 999
  */
 export default function PriceBadge({ price }: { price: string }): JSX.Element {
+  const { t } = useTranslation(messages)
   const value = parsePrice(price)
 
   if (value?.kind === 'free') {
     return (
       <span className="inline-block rounded-full bg-brand-mint/[0.14] px-[11px] py-1.5 font-mono text-xs font-bold uppercase tracking-[0.04em] text-mint-ink">
-        Free
+        {t('free')}
       </span>
     )
   }
@@ -27,7 +30,7 @@ export default function PriceBadge({ price }: { price: string }): JSX.Element {
   if (value?.kind === 'negotiable') {
     return (
       <span className="inline-block rounded-full bg-surface px-[11px] py-1.5 font-mono text-xs font-medium uppercase tracking-[0.04em] text-ink-mute">
-        Negotiable
+        {t('negotiable')}
       </span>
     )
   }

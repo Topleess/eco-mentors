@@ -1,7 +1,8 @@
-[![Build and Test](https://github.com/openmentor-io/openmentor/api/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/openmentor-io/openmentor/api/actions/workflows/build-and-test.yml)
-[![PR Checks](https://github.com/openmentor-io/openmentor/api/actions/workflows/pr-checks.yml/badge.svg)](https://github.com/openmentor-io/openmentor/api/actions/workflows/pr-checks.yml)
+[![CI / API](https://github.com/Topleess/eco-mentors/actions/workflows/ci-api.yml/badge.svg)](https://github.com/Topleess/eco-mentors/actions/workflows/ci-api.yml)
 
-# OpenMentor API (Go)
+# Eco Mentors API (Go)
+
+Modified OpenMentor backend; see the [project README](../README.md) for this edition and its local setup. The architecture notes below originate from upstream.
 
 Backend for [openmentor.io](https://openmentor.io): a Go API server plus a
 background worker, backed by PostgreSQL. One Docker image ships three

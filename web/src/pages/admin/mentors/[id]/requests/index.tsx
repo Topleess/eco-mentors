@@ -6,6 +6,10 @@
  * opens the request page, where the status can be edited.
  */
 
+import { useTranslation } from '@/i18n'
+import { translateLabel } from '@/i18n/labels'
+import { messages } from '@/i18n/messages/admin-requests'
+import { statusLabel } from '@/components/mentor-admin/utils'
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
@@ -18,7 +22,7 @@ import type {
   MentorClientRequest,
   RequestStatus,
 } from '@/types'
-import { ALL_REQUEST_STATUSES, STATUS_LABELS } from '@/types'
+import { ALL_REQUEST_STATUSES } from '@/types'
 import { AuthGateScreen, NoIndexHead } from '@/components'
 import { AdminAuthProvider, AdminLayout, useAdminAuth } from '@/components/admin-moderation'
 import { StatusBadge, formatDateTime, formatRelativeTime } from '@/components/mentor-admin'
@@ -31,6 +35,7 @@ function matchesQuery(request: MentorClientRequest, query: string): boolean {
 }
 
 function AdminMentorRequestsContent(): JSX.Element {
+  const { t, locale } = useTranslation(messages)
   const router = useRouter()
   const { id } = router.query
   const mentorId = Array.isArray(id) ? id[0] : id
@@ -68,14 +73,14 @@ function AdminMentorRequestsContent(): JSX.Element {
         ])
         if (!mounted) return
         if (!mentorData) {
-          setError('Mentor not found')
+          setError('mentorNotFound')
           return
         }
         setMentor(mentorData)
         setRequests(requestsData)
-      } catch (err) {
+      } catch {
         if (mounted) {
-          setError(err instanceof Error ? err.message : 'Failed to load requests')
+          setError('loadRequestsError')
         }
       } finally {
         if (mounted) setIsLoading(false)
@@ -94,14 +99,14 @@ function AdminMentorRequestsContent(): JSX.Element {
       counts.set(request.status, (counts.get(request.status) || 0) + 1)
     }
     return [
-      { value: 'all' as AdminRequestStatusFilter, label: 'All', count: requests.length },
+      { value: 'all' as AdminRequestStatusFilter, label: t('all'), count: requests.length },
       ...ALL_REQUEST_STATUSES.map((status) => ({
         value: status as AdminRequestStatusFilter,
-        label: STATUS_LABELS[status],
+        label: statusLabel(status, locale),
         count: counts.get(status) || 0,
       })),
     ]
-  }, [requests])
+  }, [requests, t, locale])
 
   const visibleRequests = useMemo(() => {
     const query = searchQuery.trim().toLowerCase()
@@ -111,13 +116,13 @@ function AdminMentorRequestsContent(): JSX.Element {
     )
   }, [requests, statusFilter, searchQuery])
 
-  if (authLoading || !isAuthenticated) {
-    return <AuthGateScreen title="Mentor requests" />
+  if (authLoading || !isAuthenticated || session?.role !== 'admin') {
+    return <AuthGateScreen title={t('listTitle')} />
   }
 
   return (
-    <AdminLayout title="Mentor requests">
-      <NoIndexHead title="Mentor requests" />
+    <AdminLayout title={t('listTitle')}>
+      <NoIndexHead title={t('listTitle')} />
 
       {mentorId && (
         <div className="mb-4">
@@ -125,7 +130,7 @@ function AdminMentorRequestsContent(): JSX.Element {
             href={`/admin/mentors/${encodeURIComponent(mentorId)}`}
             className="text-sm font-semibold text-brand-cobalt transition-colors duration-120 hover:text-brand-navy"
           >
-            ← Back to mentor
+            {t('backMentor')}
           </Link>
         </div>
       )}
@@ -140,7 +145,7 @@ function AdminMentorRequestsContent(): JSX.Element {
       )}
 
       {isLoading && (
-        <div className="flex items-center justify-center py-12">
+        <div role="status" aria-label={t('loading')} className="flex items-center justify-center py-12">
           <FontAwesomeIcon
             icon={faCircleNotch}
             className="animate-spin text-2xl text-brand-cobalt"
@@ -150,7 +155,7 @@ function AdminMentorRequestsContent(): JSX.Element {
 
       {error && !isLoading && (
         <div className="rounded-card border border-danger/40 bg-white p-4 text-sm font-medium text-danger">
-          {error}
+          {t(error as keyof typeof messages)}
         </div>
       )}
 
@@ -159,7 +164,7 @@ function AdminMentorRequestsContent(): JSX.Element {
           <div
             className="no-scrollbar mb-4 flex gap-1.5 overflow-x-auto"
             role="group"
-            aria-label="Filter by status"
+            aria-label={t('filterStatus')}
           >
             {filterOptions.map((option) => {
               const isActive = option.value === statusFilter
@@ -187,20 +192,20 @@ function AdminMentorRequestsContent(): JSX.Element {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by name, email, contact, message"
+              placeholder={t('search')}
               className="field"
             />
           </div>
 
           <div className="meta-mono mb-4 text-ink-mute">
-            Showing {visibleRequests.length} of {requests.length}
+            {t('showing', { visible: visibleRequests.length, total: requests.length })}
           </div>
 
           {visibleRequests.length === 0 && (
             <div className="rounded-card border border-line bg-white p-6 text-sm text-ink-soft">
               {requests.length === 0
-                ? 'This mentor has not received any requests yet.'
-                : 'No requests match the current filter.'}
+                ? t('empty')
+                : t('noMatches')}
             </div>
           )}
 
@@ -218,13 +223,13 @@ function AdminMentorRequestsContent(): JSX.Element {
                         {request.name}
                       </p>
                       <p className="my-0 text-sm text-ink-soft">{request.email}</p>
-                      {request.level && <p className="my-0 text-sm text-ink-mute">{request.level}</p>}
+                      {request.level && <p className="my-0 text-sm text-ink-mute">{translateLabel(locale, request.level)}</p>}
                     </div>
                     <StatusBadge status={request.status} />
                   </div>
                   <p className="my-0 mt-3 line-clamp-2 text-sm text-ink">{request.details}</p>
                   <p className="meta-mono my-0 mt-2 text-ink-mute">
-                    {formatDateTime(request.createdAt)} · {formatRelativeTime(request.createdAt)}
+                    {formatDateTime(request.createdAt, locale)} · {formatRelativeTime(request.createdAt, locale)}
                   </p>
                 </Link>
               ))}

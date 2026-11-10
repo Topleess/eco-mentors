@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/forms'
 import { useEffect, useRef, useState } from 'react'
 import Head from 'next/head'
 import Link from 'next/link'
@@ -18,8 +20,9 @@ type ConfirmState =
   | 'error'
 
 export default function ConfirmMentorEmail(): JSX.Element {
+  const { t } = useTranslation(messages)
   const router = useRouter()
-  const title = pageTitle('Confirm your email')
+  const title = pageTitle(t('confirmTitle'))
 
   const rawToken = router.query.token
   const token = (Array.isArray(rawToken) ? rawToken[0] : rawToken ?? '').trim()
@@ -110,94 +113,70 @@ export default function ConfirmMentorEmail(): JSX.Element {
       </Head>
 
       {/* Personal confirmation links only — keep out of search results */}
-      <MetaHeader customTitle="Confirm your email" noIndex />
+      <MetaHeader customTitle={t('confirmTitle')} noIndex />
 
       <NavHeader />
 
       <Section id="confirm">
         <div className="mx-auto max-w-2xl pt-10">
-          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Confirm your email</h1>
+          <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">{' '}{t('confirmTitle')}{' '}</h1>
 
           {state === 'confirming' && (
             <div className="mt-8 rounded-2xl bg-surface p-6 sm:p-8">
-              <p className="mt-0 text-lg font-medium text-ink">Confirming…</p>
-              <p className="text-ink-soft">Hold on a second while we check your link.</p>
+              <p className="mt-0 text-lg font-medium text-ink">{' '}{t('confirming')}{' '}</p>
+              <p className="text-ink-soft">{' '}{t('confirmWait')}{' '}</p>
             </div>
           )}
 
           {state === 'success' && (
             <div className="mt-8 rounded-2xl bg-surface p-6 sm:p-8">
-              <p className="mt-0 text-lg font-medium text-ink">
-                🎉 Profile submitted for review — we&apos;ll email you
-              </p>
-              <p>
-                Thanks for confirming your email. Our moderators will review your application and
-                you&apos;ll get an email as soon as it&apos;s done. Nothing else to do for now.
-              </p>
-              <Link href="/" className="link">
-                Browse OpenMentor in the meantime
-              </Link>
+              <p className="mt-0 text-lg font-medium text-ink">{' '}{t('confirmSuccess')}{' '}</p>
+              <p>{' '}{t('confirmSuccessText')}{' '}</p>
+              <Link href="/" className="link">{' '}{t('browseMeanwhile')}{' '}</Link>
             </div>
           )}
 
           {state === 'already' && (
             <div className="mt-8 rounded-2xl bg-surface p-6 sm:p-8">
-              <p className="mt-0 text-lg font-medium text-ink">Already confirmed ✔</p>
-              <p>
-                Your email is already confirmed and your application is with our moderators (or
-                further along). We&apos;ll email you about the outcome — no need to do anything
-                else.
-              </p>
+              <p className="mt-0 text-lg font-medium text-ink">{' '}{t('confirmAlready')}{' '}</p>
+              <p>{' '}{t('confirmAlreadyText')}{' '}</p>
             </div>
           )}
 
           {state === 'invalid' && (
             <div className="mt-8 rounded-2xl bg-surface p-6 sm:p-8">
-              <p className="mt-0 text-lg font-medium text-ink">This link doesn&apos;t work</p>
-              <p>
-                The confirmation link is invalid or was already used. Please open the most recent
-                confirmation email we sent you, or write to us at {supportLink} and we&apos;ll sort
-                it out.
-              </p>
+              <p className="mt-0 text-lg font-medium text-ink">{' '}{t('confirmInvalid')}{' '}</p>
+              <p>{' '}{t('confirmInvalidPrefix')}{' '}{supportLink}{' '}{t('supportSuffix')}{' '}</p>
             </div>
           )}
 
           {(state === 'expired' || state === 'resending') && (
             <div className="mt-8 rounded-2xl bg-surface p-6 sm:p-8">
-              <p className="mt-0 text-lg font-medium text-ink">This link has expired</p>
-              <p>
-                Confirmation links are valid for 24 hours. No worries — we can send you a fresh
-                one to the same address.
-              </p>
+              <p className="mt-0 text-lg font-medium text-ink">{' '}{t('confirmExpired')}{' '}</p>
+              <p>{' '}{t('confirmExpiredText')}{' '}</p>
               <button
                 className="button mt-4"
                 type="button"
                 onClick={handleResend}
                 disabled={state === 'resending'}
               >
-                {state === 'resending' ? 'Sending…' : 'Resend confirmation email'}
+                {state === 'resending' ? 'Sending…' : t('confirmResend')}
               </button>
             </div>
           )}
 
           {state === 'resent' && (
             <div className="mt-8 rounded-2xl bg-surface p-6 sm:p-8">
-              <p className="mt-0 text-lg font-medium text-ink">📬 Fresh link sent</p>
-              <p>
-                Check your inbox — a new confirmation email is on its way. The link is valid for
-                24 hours. If it doesn&apos;t arrive, please check your spam folder or write to us
-                at {supportLink}.
+              <p className="mt-0 text-lg font-medium text-ink">{' '}{t('confirmResent')}{' '}</p>
+              <p>{' '}{t('confirmResentPrefix')}{' '}{supportLink}.
               </p>
             </div>
           )}
 
           {state === 'error' && (
             <div className="mt-8 rounded-2xl bg-surface p-6 sm:p-8">
-              <p className="mt-0 text-lg font-medium text-ink">Something went wrong</p>
-              <p>
-                Please try again in a minute, or write to us at {supportLink} and we&apos;ll sort
-                it out.
-              </p>
+              <p className="mt-0 text-lg font-medium text-ink">{' '}{t('genericError')}{' '}</p>
+              <p>{' '}{t('confirmErrorPrefix')}{' '}{supportLink}{' '}{t('supportSuffix')}{' '}</p>
             </div>
           )}
         </div>

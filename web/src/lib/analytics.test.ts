@@ -19,6 +19,24 @@ describe('analytics', () => {
     mockPostHogClient.current = null
   })
 
+  it('routes Umami events without PostHog or identity calls or queued retries', async () => {
+    process.env.NEXT_PUBLIC_ANALYTICS_PROVIDER = 'umami'
+    process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID = '12345678-1234-1234-1234-123456789abc'
+    const track = jest.fn()
+    Object.assign(window, { umami: { track } })
+    const { setConsent } = await import('@/lib/consent')
+    setConsent('accepted')
+    const capture = jest.fn()
+    mockPostHogClient.current = { capture, identify: jest.fn() } as unknown as typeof posthog
+    const { default: analytics } = await import('@/lib/analytics')
+    analytics.event('donate_cta_clicked', { email: 'private' })
+    analytics.identify('private-user')
+    analytics.reset()
+    expect(track).toHaveBeenCalledTimes(1)
+    expect(capture).not.toHaveBeenCalled()
+    expect(jest.getTimerCount()).toBe(0)
+  })
+
   it('sanitizes properties and adds common metadata', async () => {
     process.env.NEXT_PUBLIC_ANALYTICS_PROVIDER = 'posthog'
 

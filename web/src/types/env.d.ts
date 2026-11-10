@@ -48,6 +48,13 @@ declare namespace NodeJS {
     NEXT_PUBLIC_ANALYTICS_PROVIDER?: string
     NEXT_PUBLIC_ANALYTICS_EVENT_VERSION?: string
 
+    // Umami: API token is server-only.
+    UMAMI_API_URL?: string
+    UMAMI_API_TOKEN?: string
+    UMAMI_WEBSITE_ID?: string
+    NEXT_PUBLIC_UMAMI_URL?: string
+    NEXT_PUBLIC_UMAMI_WEBSITE_ID?: string
+
     // PostHog
     NEXT_PUBLIC_POSTHOG_KEY?: string
     NEXT_PUBLIC_POSTHOG_HOST?: string

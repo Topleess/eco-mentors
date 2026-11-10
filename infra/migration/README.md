@@ -1,4 +1,6 @@
-# Migration tooling
+# Migration tooling — historical upstream utilities
+
+**Not part of the Eco Mentors installation procedure.** These scripts can write to a source database, copy files and send notifications. Never run them against upstream or third-party systems without explicit operator authorization; do not reuse upstream credentials. Use only isolated databases under your control.
 
 Two scripts live here:
 

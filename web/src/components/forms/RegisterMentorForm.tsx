@@ -1,3 +1,6 @@
+import { translateLabel } from '@/i18n/labels'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/forms'
 import Select, { type MultiValue, type StylesConfig } from 'react-select'
 import Image from 'next/image'
 import classNames from 'classnames'
@@ -124,11 +127,8 @@ const selectStyles: StylesConfig<TagOption, true> = {
 }
 
 // Convert string array to option array for react-select
-const tagsToOptions = (tags: string[]): TagOption[] =>
-  tags.map((tag) => ({ value: tag, label: tag }))
-
-// All available tags as options
-const tagOptions = tagsToOptions(filters.tags)
+const tagsToOptions = (tags: string[], locale: 'ru' | 'en'): TagOption[] =>
+  tags.map((tag) => ({ value: tag, label: translateLabel(locale, tag) }))
 const MAX_TAGS = 5
 
 interface RailSection {
@@ -165,6 +165,7 @@ export default function RegisterMentorForm({
   isError,
   onSubmit,
 }: RegisterMentorFormProps): JSX.Element {
+  const { t, locale } = useTranslation(messages)
   const {
     control,
     register,
@@ -189,7 +190,7 @@ export default function RegisterMentorForm({
 
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
-  const [imageError, setImageError] = useState('')
+  const [imageError, setImageError] = useState<keyof typeof messages | ''>('')
   const [isDragOver, setIsDragOver] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [captchaToken, setCaptchaToken] = useState<string>('')
@@ -216,14 +217,14 @@ export default function RegisterMentorForm({
     // Validate file type
     const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']
     if (!allowedTypes.includes(file.type)) {
-      setImageError('Please choose a JPEG, PNG, or WebP image.')
+      setImageError('imageTypeError')
       return
     }
 
     // The limit is the RAW file; the request that carries it is ~4/3 bigger
     // because the photo goes out base64-encoded inside JSON. See config/uploads.
     if (file.size > MAX_IMAGE_FILE_BYTES) {
-      setImageError(`The file size must not exceed ${MAX_IMAGE_FILE_LABEL}.`)
+      setImageError('imageSizeError')
       return
     }
 
@@ -266,7 +267,7 @@ export default function RegisterMentorForm({
 
   const handleFormSubmit = (data: RegisterFormData): void => {
     if (!selectedImage || !imagePreview) {
-      setImageError('Please choose a profile photo.')
+      setImageError('profilePhotoRequired')
       return
     }
 
@@ -313,7 +314,7 @@ export default function RegisterMentorForm({
   const sections: RailSection[] = [
     {
       id: 'reg-contact',
-      label: 'Contact details',
+      label: t('contactSection'),
       complete:
         Boolean(values.name?.trim()) &&
         /^\S+@\S+$/i.test(values.email || '') &&
@@ -321,7 +322,7 @@ export default function RegisterMentorForm({
     },
     {
       id: 'reg-profile',
-      label: 'Your profile',
+      label: t('profileSection'),
       complete: Boolean(
         selectedImage &&
           values.job?.trim() &&
@@ -336,7 +337,7 @@ export default function RegisterMentorForm({
     },
     {
       id: 'reg-expertise',
-      label: 'Your expertise',
+      label: t('expertiseSection'),
       complete:
         (values.tags?.length ?? 0) >= 1 &&
         hasRichText(values.about) &&
@@ -345,14 +346,14 @@ export default function RegisterMentorForm({
     },
     {
       id: 'reg-scheduling',
-      label: 'Scheduling',
+      label: t('scheduling'),
       complete: Boolean(captchaToken) && isValidCalendarUrl(values.calendarUrl),
     },
   ]
   const currentIndex = sections.findIndex((section) => !section.complete)
   const completeCount = sections.filter((section) => section.complete).length
 
-  const requiredText = 'This field is required.'
+  const requiredText = t('required')
 
   const requiredMark = <span className="text-danger"> *</span>
 
@@ -369,12 +370,10 @@ export default function RegisterMentorForm({
     <div className="lg:flex lg:items-start lg:gap-14">
       {/* ── Section rail: desktop-only, sticky (design 04) ─────────────── */}
       <nav
-        aria-label="Form sections"
+        aria-label={t('formSections')}
         className="hidden w-[220px] flex-none flex-col gap-0.5 lg:sticky lg:top-6 lg:flex"
       >
-        <div className="mb-2.5 font-display text-[13px] font-extrabold uppercase tracking-[0.04em] text-ink">
-          Become a mentor
-        </div>
+        <div className="mb-2.5 font-display text-[13px] font-extrabold uppercase tracking-[0.04em] text-ink">{' '}{t('becomeMentor')}{' '}</div>
         {sections.map((section, index) => {
           const isCurrent = index === currentIndex
           return (
@@ -393,9 +392,7 @@ export default function RegisterMentorForm({
             </a>
           )
         })}
-        <p className="mb-0 mt-3.5 px-3.5 text-xs leading-[1.55] text-ink-soft">
-          Everything is editable later from your dashboard.
-        </p>
+        <p className="mb-0 mt-3.5 px-3.5 text-xs leading-[1.55] text-ink-soft">{' '}{t('editableHint')}{' '}</p>
       </nav>
 
       <div className="min-w-0 flex-1 lg:max-w-[620px]">
@@ -417,19 +414,16 @@ export default function RegisterMentorForm({
             ))}
           </div>
           <div className="meta-mono mt-1.5 text-[10px] text-ink-mute">
-            {completeCount} of 4 sections complete
-          </div>
+            {completeCount}{' '}{t('sectionsCompleteSuffix')}{' '}</div>
         </div>
 
         <form className="space-y-9" onSubmit={handleSubmit(handleFormSubmit)}>
           <section id="reg-contact" className="scroll-mt-6 space-y-5">
-            <h2 className={sectionHeadingClass}>1 · Contact details</h2>
+            <h2 className={sectionHeadingClass}>{' '}{t('contactSectionNumbered')}{' '}</h2>
 
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <label htmlFor="name" className={labelClass}>
-                  Your full name
-                  {requiredMark}
+                <label htmlFor="name" className={labelClass}>{' '}{t('fullName')}{' '}{requiredMark}
                 </label>
 
                 <input
@@ -444,10 +438,8 @@ export default function RegisterMentorForm({
               </div>
 
               <div>
-                <label htmlFor="email" className={labelClass}>
-                  Your email
-                  {requiredMark}{' '}
-                  <span className="font-normal text-ink-soft">(never shown publicly)</span>
+                <label htmlFor="email" className={labelClass}>{' '}{t('email')}{' '}{requiredMark}{' '}
+                  <span className="font-normal text-ink-soft">{' '}{t('emailPrivate')}{' '}</span>
                 </label>
 
                 <input
@@ -461,14 +453,12 @@ export default function RegisterMentorForm({
                 {errors.email && errors.email.type === 'required' && fieldError(requiredText)}
                 {errors.email &&
                   errors.email.type === 'pattern' &&
-                  fieldError('Please enter a valid email address.')}
+                  fieldError(t('emailValidation'))}
               </div>
             </div>
 
             <div>
-              <label htmlFor="contact" className={labelClass}>
-                How can we reach you?
-              </label>
+              <label htmlFor="contact" className={labelClass}>{' '}{t('registrationContact')}{' '}</label>
 
               <input
                 type="text"
@@ -477,18 +467,13 @@ export default function RegisterMentorForm({
                 className={classNames('field', errors.contact && 'field-error')}
               />
 
-              {errors.contact && fieldError('The contact details must be 100 characters or fewer.')}
+              {errors.contact && fieldError(t('contactMaxLength'))}
 
-              <p className="mb-0 mt-2 text-sm text-ink-soft">
-                Optional — email, Telegram, LinkedIn, whatever works for you. Otherwise we&apos;ll
-                reach out by email.
-              </p>
+              <p className="mb-0 mt-2 text-sm text-ink-soft">{' '}{t('registrationContactHint')}{' '}</p>
             </div>
 
             <div>
-              <label htmlFor="username" className={labelClass}>
-                Your profile link
-              </label>
+              <label htmlFor="username" className={labelClass}>{' '}{t('profileLink')}{' '}</label>
 
               <div
                 className={classNames(
@@ -522,46 +507,40 @@ export default function RegisterMentorForm({
                     },
                   })}
                   className="w-full min-w-0 border-0 bg-transparent py-2.5 pl-0 pr-3.5 font-mono text-sm text-ink outline-none placeholder:text-ink-soft/60"
-                  placeholder="your-name"
+                  placeholder={t('usernamePlaceholder')}
                 />
               </div>
 
               <div className="mt-2 min-h-[1.25rem] text-sm" role="status" aria-live="polite">
                 {usernameAvailability.status === 'checking' && (
                   <span className="text-ink-soft">
-                    <FontAwesomeIcon icon={faCircleNotch} spin className="mr-1.5" />
-                    Checking availability…
-                  </span>
+                    <FontAwesomeIcon icon={faCircleNotch} spin className="mr-1.5" />{' '}{t('usernameChecking')}{' '}</span>
                 )}
                 {usernameAvailability.status === 'available' && (
-                  <span className="font-medium text-mint-ink">✓ Available</span>
+                  <span className="font-medium text-mint-ink">{' '}{t('usernameAvailable')}{' '}</span>
                 )}
                 {usernameAvailability.status === 'unavailable' && (
                   <span className="font-medium text-danger">
                     {usernameAvailability.reason === 'taken'
-                      ? 'That link is already taken — try another.'
+                      ? t('usernameTaken')
                       : usernameAvailability.reason === 'reserved'
-                        ? 'That word is reserved — please pick another.'
-                        : 'Use 3–40 letters, numbers and hyphens (e.g. anna-smith).'}
+                        ? t('usernameReserved')
+                        : t('usernameFormat')}
                   </span>
                 )}
                 {usernameAvailability.status === 'idle' && (
-                  <span className="text-ink-soft">
-                    This becomes your public profile URL. You can change it later.
-                  </span>
+                  <span className="text-ink-soft">{' '}{t('profileLinkHint')}{' '}</span>
                 )}
               </div>
             </div>
           </section>
 
           <section id="reg-profile" className="scroll-mt-6 space-y-5">
-            <h2 className={sectionHeadingClass}>2 · Your profile</h2>
+            <h2 className={sectionHeadingClass}>{' '}{t('profileSectionNumbered')}{' '}</h2>
 
             <div className="flex flex-col gap-5 sm:flex-row sm:items-start">
               <div className="w-full sm:w-[180px] sm:flex-none">
-                <label htmlFor="profilePicture" className={labelClass}>
-                  Profile photo
-                  {requiredMark}
+                <label htmlFor="profilePicture" className={labelClass}>{' '}{t('profilePhoto')}{' '}{requiredMark}
                 </label>
 
                 <input
@@ -593,7 +572,7 @@ export default function RegisterMentorForm({
                   {imagePreview ? (
                     <Image
                       src={imagePreview}
-                      alt="Preview"
+                      alt={t('preview')}
                       className="h-[130px] w-[130px] animate-rise-in rounded-card object-cover"
                       unoptimized
                       width={130}
@@ -623,44 +602,33 @@ export default function RegisterMentorForm({
                           strokeLinecap="round"
                         />
                       </svg>
-                      <span className="text-[13px] font-semibold text-brand-cobalt">
-                        Upload photo
-                      </span>
-                      <span className="text-[11px] leading-[1.45] text-ink-soft">
-                        Face forward, a light plain background works best. We&apos;ll cut it out
-                        automatically.
-                      </span>
+                      <span className="text-[13px] font-semibold text-brand-cobalt">{' '}{t('uploadPhoto')}{' '}</span>
+                      <span className="text-[11px] leading-[1.45] text-ink-soft">{' '}{t('photoBackgroundHint')}{' '}</span>
                     </>
                   )}
                 </label>
 
-                <p className="meta-mono mb-0 mt-2 text-[10px] text-ink-mute">
-                  JPEG · PNG · WebP · max {MAX_IMAGE_FILE_LABEL}
+                <p className="meta-mono mb-0 mt-2 text-[10px] text-ink-mute">{' '}{t('photoFormats')}{' '}{MAX_IMAGE_FILE_LABEL}
                 </p>
 
                 {selectedImage && (
                   <div className="mt-2 flex items-baseline gap-2">
-                    <span className="min-w-0 break-words text-xs text-mint-ink">
-                      Photo selected: {selectedImage.name}
+                    <span className="min-w-0 break-words text-xs text-mint-ink">{' '}{t('photoSelected')}{' '}{selectedImage.name}
                     </span>
                     <button
                       type="button"
                       onClick={handleCancelImage}
                       className="text-xs font-semibold text-ink-soft underline hover:text-ink"
-                    >
-                      Cancel
-                    </button>
+                    >{' '}{t('cancel')}{' '}</button>
                   </div>
                 )}
 
-                {imageError && fieldError(imageError)}
+                {imageError && fieldError(t(imageError, { size: MAX_IMAGE_FILE_LABEL }))}
               </div>
 
               <div className="min-w-0 flex-1 space-y-5">
                 <div>
-                  <label htmlFor="job" className={labelClass}>
-                    Job title
-                    {requiredMark}
+                  <label htmlFor="job" className={labelClass}>{' '}{t('jobTitle')}{' '}{requiredMark}
                   </label>
 
                   <input
@@ -675,17 +643,12 @@ export default function RegisterMentorForm({
                 </div>
 
                 <div>
-                  <label htmlFor="workplace" className={labelClass}>
-                    Company
-                    {requiredMark}{' '}
+                  <label htmlFor="workplace" className={labelClass}>{' '}{t('company')}{' '}{requiredMark}{' '}
                     <a data-tooltip-id="workplace-tip">
                       <FontAwesomeIcon icon={faQuestionCircle} className="text-ink-soft" />
                     </a>
                     <Tooltip id="workplace-tip" place="right" className="z-50">
-                      <span>
-                        If you work in several places, name your main company and list the rest in
-                        the &quot;About you&quot; section
-                      </span>
+                      <span>{' '}{t('companyHint')}{' '}</span>
                     </Tooltip>
                   </label>
 
@@ -704,9 +667,7 @@ export default function RegisterMentorForm({
 
             <div className="grid gap-5 sm:grid-cols-2">
               <div>
-                <label htmlFor="experience" className={labelClass}>
-                  Experience
-                  {requiredMark}
+                <label htmlFor="experience" className={labelClass}>{' '}{t('experience')}{' '}{requiredMark}
                 </label>
 
                 <select
@@ -714,13 +675,13 @@ export default function RegisterMentorForm({
                   id="experience"
                   className={classNames('field', errors.experience && 'field-error')}
                 >
-                  <option value="">Select experience</option>
+                  <option value="">{' '}{t('selectExperience')}{' '}</option>
                   {Object.keys(filters.experience).map((item) => (
                     <option
                       key={filters.experience[item as keyof typeof filters.experience]}
                       value={filters.experience[item as keyof typeof filters.experience]}
                     >
-                      {item}
+                      {translateLabel(locale, item)}
                     </option>
                   ))}
                 </select>
@@ -739,13 +700,13 @@ export default function RegisterMentorForm({
                       value={field.value}
                       onChange={field.onChange}
                       inputRef={field.ref}
-                      label="Price per one-hour session"
+                      label={t('priceLabel')}
                       labelClassName={labelClass}
                       requiredMark={requiredMark}
                       invalid={Boolean(errors.price)}
                       error={
                         errors.price
-                          ? 'Choose Free, Negotiable, or a whole amount from $1 to $1000.'
+                          ? t('priceValidation')
                           : undefined
                       }
                     />
@@ -756,32 +717,19 @@ export default function RegisterMentorForm({
           </section>
 
           <section id="reg-expertise" className="scroll-mt-6 space-y-5">
-            <h2 className={sectionHeadingClass}>3 · Your expertise</h2>
+            <h2 className={sectionHeadingClass}>{' '}{t('expertiseSectionNumbered')}{' '}</h2>
 
             <div>
-              <label htmlFor="tags" className={labelClass}>
-                Specialization
-                {requiredMark}{' '}
+              <label htmlFor="tags" className={labelClass}>{' '}{t('specialization')}{' '}{requiredMark}{' '}
                 <a data-tooltip-id="tags-tip">
                   <FontAwesomeIcon icon={faQuestionCircle} className="text-ink-soft" />
                 </a>
                 <Tooltip id="tags-tip" place="right" className="z-50">
-                  <span>
-                    Pick your main current specialization plus any areas you know well and are
-                    ready to help with.
-                    <br />
-                    Mentees will find you by these tags in the search block.
-                    <br />
-                    They will also be shown on your profile.
-                    <br />
-                    Choose at least 1 and at most 5 tags.
-                  </span>
+                  <span>{' '}{t('specializationHint')}{' '}<br />{' '}{t('tagsSearchHint')}{' '}<br />{' '}{t('tagsProfileHint')}{' '}<br />{' '}{t('tagsValidation')}{' '}</span>
                 </Tooltip>
               </label>
 
-              <p className="mb-1.5 mt-0 text-[13px] text-ink-soft">
-                Pick up to {MAX_TAGS} — these drive search and the category filters.
-              </p>
+              <p className="mb-1.5 mt-0 text-[13px] text-ink-soft">{' '}{t('tagsMaxPrefix')}{' '}{MAX_TAGS}{' '}{t('tagsMaxSuffix')}{' '}</p>
 
               <Controller
                 name="tags"
@@ -790,21 +738,22 @@ export default function RegisterMentorForm({
                 rules={{
                   required: true,
                   validate: (value) =>
-                    (value.length >= 1 && value.length <= 5) || 'Select 1 to 5 tags',
+                    (value.length >= 1 && value.length <= 5) || t('tagsChoiceValidationStem'),
                 }}
                 render={({ field }) => (
                   <Select<TagOption, true>
+                    instanceId="register-mentor-tags"
                     isMulti
-                    value={tagsToOptions(field.value || [])}
+                    value={tagsToOptions(field.value || [], locale)}
                     onChange={(newValue: MultiValue<TagOption>) => {
                       if (newValue.length <= MAX_TAGS) {
                         field.onChange(newValue.map((opt) => opt.value))
                       }
                     }}
-                    options={tagOptions}
+                    options={tagsToOptions(filters.tags, locale)}
                     closeMenuOnSelect={false}
-                    placeholder="Select tags..."
-                    noOptionsMessage={() => 'No options available'}
+                    placeholder={t('selectTags')}
+                    noOptionsMessage={() => t('noOptions')}
                     styles={selectStyles}
                     classNamePrefix="react-select"
                   />
@@ -812,23 +761,16 @@ export default function RegisterMentorForm({
               />
 
               {errors.tags && errors.tags.type !== 'validate' && fieldError(requiredText)}
-              {errors.tags && errors.tags.type === 'validate' && fieldError('Select 1 to 5 tags.')}
+              {errors.tags && errors.tags.type === 'validate' && fieldError(t('tagsChoiceValidation'))}
             </div>
 
             <div>
-              <label htmlFor="about" className={labelClass}>
-                About you
-                {requiredMark}{' '}
+              <label htmlFor="about" className={labelClass}>{' '}{t('about')}{' '}{requiredMark}{' '}
                 <a data-tooltip-id="about-tip">
                   <FontAwesomeIcon icon={faQuestionCircle} className="text-ink-soft" />
                 </a>
                 <Tooltip id="about-tip" place="right" className="z-50">
-                  <span>
-                    Two or three paragraphs work best: where you&apos;ve worked, what interests you
-                    professionally,
-                    <br />
-                    and what mentoring approach you follow.
-                  </span>
+                  <span>{' '}{t('aboutHintPrefix')}{' '}<br />{' '}{t('aboutHintSuffix')}{' '}</span>
                 </Tooltip>
               </label>
 
@@ -849,30 +791,23 @@ export default function RegisterMentorForm({
             </div>
 
             <div>
-              <label htmlFor="description" className={labelClass}>
-                How can you help?
-                {requiredMark}{' '}
+              <label htmlFor="description" className={labelClass}>{' '}{t('help')}{' '}{requiredMark}{' '}
                 <a data-tooltip-id="description-tip">
                   <FontAwesomeIcon icon={faQuestionCircle} className="text-ink-soft" />
                 </a>
                 <Tooltip id="description-tip" place="right" className="z-50">
-                  <span>
-                    It&apos;s best to break the text into bullet points. For example,
-                    <br />
+                  <span>{' '}{t('helpHint')}{' '}<br />
                   </span>
                   <em>
-                    <span>I can help you:</span>
+                    <span>{' '}{t('helpExampleIntro')}{' '}</span>
                     <ul>
-                      <li>— get comfortable with Kubernetes;</li>
-                      <li>— improve your team&apos;s processes;</li>
-                      <li>— choose the right strategy to grow your startup;</li>
+                      <li>{' '}{t('helpExampleKubernetes')}{' '}</li>
+                      <li>{' '}{t('helpExampleProcesses')}{' '}</li>
+                      <li>{' '}{t('helpExampleStartup')}{' '}</li>
                     </ul>
                   </em>
                   <br />
-                  <span>
-                    It&apos;s also great to mention which levels of mentees can come to you for
-                    help: Junior-Middle-Senior, team leads, C-level executives, and so on. One line
-                    is enough, for example: <em>I help Senior engineers and team leads.</em>
+                  <span>{' '}{t('menteeLevelsHint')}{' '}<em>{' '}{t('menteeLevelsExample')}{' '}</em>
                   </span>
                 </Tooltip>
               </label>
@@ -894,18 +829,12 @@ export default function RegisterMentorForm({
             </div>
 
             <div>
-              <label htmlFor="competencies" className={labelClass}>
-                Skills and technologies (comma-separated)
-                {requiredMark}{' '}
+              <label htmlFor="competencies" className={labelClass}>{' '}{t('skills')}{' '}{requiredMark}{' '}
                 <a data-tooltip-id="competencies-tip">
                   <FontAwesomeIcon icon={faQuestionCircle} className="text-ink-soft" />
                 </a>
                 <Tooltip id="competencies-tip" place="right" className="z-50">
-                  <span>
-                    List the skills you&apos;d like to consult on, separated by commas. For
-                    example: JavaScript, React, Leadership, Code Review. Mentees will be able to
-                    find you by them.
-                  </span>
+                  <span>{' '}{t('skillsHint')}{' '}</span>
                 </Tooltip>
               </label>
 
@@ -921,12 +850,10 @@ export default function RegisterMentorForm({
           </section>
 
           <section id="reg-scheduling" className="scroll-mt-6 space-y-5">
-            <h2 className={sectionHeadingClass}>4 · Scheduling</h2>
+            <h2 className={sectionHeadingClass}>{' '}{t('schedulingSection')}{' '}</h2>
 
             <div>
-              <label htmlFor="calendarUrl" className={labelClass}>
-                Booking link to your calendar (
-                <Link
+              <label htmlFor="calendarUrl" className={labelClass}>{' '}{t('calendarLabelPrefix')}{' '}<Link
                   href="https://koalendar.com"
                   target="_blank"
                   className="link"
@@ -937,18 +864,12 @@ export default function RegisterMentorForm({
                 ,{' '}
                 <Link href="https://calendly.com" target="_blank" className="link" rel="noreferrer">
                   Calendly
-                </Link>{' '}
-                or anything else){' '}
+                </Link>{' '}{' '}{t('calendarLabelSuffix')}{' '}{' '}
                 <a data-tooltip-id="calendar-tip">
                   <FontAwesomeIcon icon={faQuestionCircle} className="text-ink-soft" />
                 </a>
                 <Tooltip id="calendar-tip" place="right" className="z-50">
-                  <span>
-                    If you use a calendar scheduling tool, add your booking link here so mentees
-                    can book a session with you directly. We recommend Calendly or Koalendar - they 
-                    are integrated with our platform, and the booking form will
-                    appear right after a mentee submits a request.
-                  </span>
+                  <span>{' '}{t('registerCalendarHint')}{' '}</span>
                 </Tooltip>
               </label>
 
@@ -968,7 +889,7 @@ export default function RegisterMentorForm({
                 className={classNames('field', errors.calendarUrl && 'field-error')}
               />
 
-              {errors.calendarUrl && fieldError('This must be a valid https:// URL')}
+              {errors.calendarUrl && fieldError(t('calendarValidation'))}
             </div>
 
             <div>
@@ -977,21 +898,17 @@ export default function RegisterMentorForm({
                 siteKey={process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY || ''}
                 onSuccess={handleCaptchaOnSuccess}
                 onExpire={handleCaptchaOnExpire}
-                options={{ language: 'en' }}
+                options={{ language: locale }}
               />
 
               {!captchaToken && errors.name && (
-                <div className="mt-2 text-sm font-medium text-danger">
-                  Please confirm that you are not a robot.
-                </div>
+                <div className="mt-2 text-sm font-medium text-danger">{' '}{t('captchaConfirm')}{' '}</div>
               )}
             </div>
           </section>
 
           {isError && (
-            <div className="rounded-field border-[1.5px] border-danger/40 bg-danger/5 px-4 py-3 text-sm font-medium text-danger">
-              Something went wrong. We&apos;re probably already fixing it — please try again later.
-            </div>
+            <div className="rounded-field border-[1.5px] border-danger/40 bg-danger/5 px-4 py-3 text-sm font-medium text-danger">{' '}{t('submitError')}{' '}</div>
           )}
 
           <div className="flex flex-col gap-3 border-t border-line pt-6 sm:flex-row sm:items-center sm:gap-4">
@@ -1003,16 +920,14 @@ export default function RegisterMentorForm({
               {isLoading ? (
                 <>
                   <FontAwesomeIcon className="animate-spin" icon={faCircleNotch} />
-                  <span className="ml-2">Submitting...</span>
+                  <span className="ml-2">{' '}{t('submitting')}{' '}</span>
                 </>
               ) : (
-                <span>Create my profile</span>
+                <span>{' '}{t('createProfile')}{' '}</span>
               )}
             </button>
 
-            <span className="text-[13px] leading-[1.5] text-ink-soft">
-              You&apos;ll confirm via a magic link — no password to remember.
-            </span>
+            <span className="text-[13px] leading-[1.5] text-ink-soft">{' '}{t('magicLinkHint')}{' '}</span>
           </div>
         </form>
       </div>

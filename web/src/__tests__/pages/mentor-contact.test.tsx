@@ -111,6 +111,18 @@ describe('Mentor contact page error surface', () => {
     window.localStorage.clear()
   })
 
+  it('shows a read-only notice instead of a request form in demo mode', () => {
+    render(<OrderMentor mentor={mentor} demoReadOnly />)
+
+    expect(screen.getByText(/This demo is read-only/i)).toBeInTheDocument()
+    expect(screen.getByText(/mentor account already contains synthetic examples/i)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /view mentor demo/i })).toHaveAttribute(
+      'href',
+      '/demo-login'
+    )
+    expect(screen.queryByLabelText(/Your email/i)).not.toBeInTheDocument()
+  })
+
   // The route forwards the upstream 4xx body; if the page drops it, the mentee
   // is told "something went wrong" about a problem they could have fixed.
   it.each([
@@ -119,7 +131,7 @@ describe('Mentor contact page error surface', () => {
     [429, 'Too many requests, try again later', 'Too many requests, try again later.'],
   ])('shows the upstream %i reason to the mentee', async (status, error, expected) => {
     respondWith(status, { success: false, error })
-    render(<OrderMentor mentor={mentor} />)
+    render(<OrderMentor mentor={mentor} demoReadOnly={false} />)
 
     await submitContactForm()
 
@@ -135,7 +147,7 @@ describe('Mentor contact page error surface', () => {
     [504, undefined], // gateway HTML: res.json() rejects
   ])('never renders a %i body', async (status, body) => {
     respondWith(status, body)
-    render(<OrderMentor mentor={mentor} />)
+    render(<OrderMentor mentor={mentor} demoReadOnly={false} />)
 
     await submitContactForm()
 
@@ -146,7 +158,7 @@ describe('Mentor contact page error surface', () => {
 
   it('still shows the success state on a 200', async () => {
     respondWith(200, { success: true, requestId: 'req-42' })
-    render(<OrderMentor mentor={mentor} />)
+    render(<OrderMentor mentor={mentor} demoReadOnly={false} />)
 
     await submitContactForm()
 
@@ -157,7 +169,7 @@ describe('Mentor contact page error surface', () => {
 
   it('falls back to the generic message when the network call fails outright', async () => {
     global.fetch = jest.fn().mockRejectedValue(new TypeError('Failed to fetch'))
-    render(<OrderMentor mentor={mentor} />)
+    render(<OrderMentor mentor={mentor} demoReadOnly={false} />)
 
     await submitContactForm()
 

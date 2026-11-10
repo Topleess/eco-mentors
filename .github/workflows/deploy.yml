@@ -1,5 +1,8 @@
 name: Deploy
 
+# Disabled by default in this modified edition. Every job requires the explicit
+# repository variable ENABLE_PRODUCTION_DEPLOY=true in addition to a manual run.
+# Do not enable it before configuring the client's own infrastructure.
 # Monorepo deploy: both images build from local subdirectories (web/ and
 # api/), and the infra/ subdirectory is synced to the VM in place of the old
 # separate infrastructure repository.
@@ -55,6 +58,7 @@ jobs:
   # misconfigured deploy dies before the first credential, push or VM change.
   # The vetted tag reaches every other job through this job's output.
   validate-inputs:
+    if: vars.ENABLE_PRODUCTION_DEPLOY == 'true'
     name: Preflight
     runs-on: ubuntu-latest
     outputs:
@@ -111,7 +115,7 @@ jobs:
     name: Build & Push Frontend
     runs-on: ubuntu-latest
     needs: [validate-inputs]
-    if: github.event.inputs.service == 'frontend' || github.event.inputs.service == 'both'
+    if: vars.ENABLE_PRODUCTION_DEPLOY == 'true' && (github.event.inputs.service == 'frontend' || github.event.inputs.service == 'both')
     steps:
       - name: Checkout code
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -179,7 +183,7 @@ jobs:
             NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ secrets.TURNSTILE_SITE_KEY }}
             NEXT_PUBLIC_CDN_ENDPOINT=${{ secrets.NEXT_PUBLIC_CDN_ENDPOINT }}
             NEXT_PUBLIC_APP_ENV=production
-            NEXT_PUBLIC_ANALYTICS_PROVIDER=posthog
+            NEXT_PUBLIC_ANALYTICS_PROVIDER=${{ vars.NEXT_PUBLIC_ANALYTICS_PROVIDER || 'posthog' }}
             NEXT_PUBLIC_ANALYTICS_EVENT_VERSION=v1
             NEXT_PUBLIC_O11Y_SERVICE_NAMESPACE=openmentor-frontend
             NEXT_PUBLIC_O11Y_FE_SERVICE_VERSION=${{ needs.validate-inputs.outputs.tag }}
@@ -188,6 +192,8 @@ jobs:
             NEXT_PUBLIC_FARO_SAMPLE_RATE=0.5
             NEXT_PUBLIC_POSTHOG_KEY=${{ secrets.NEXT_PUBLIC_POSTHOG_KEY }}
             NEXT_PUBLIC_POSTHOG_HOST=${{ secrets.NEXT_PUBLIC_POSTHOG_HOST }}
+            NEXT_PUBLIC_UMAMI_URL=${{ vars.NEXT_PUBLIC_UMAMI_URL }}
+            NEXT_PUBLIC_UMAMI_WEBSITE_ID=${{ vars.NEXT_PUBLIC_UMAMI_WEBSITE_ID }}
             POSTHOG_PROJECT_ID=${{ secrets.POSTHOG_PROJECT_ID }}
             FARO_API_ENDPOINT=${{ secrets.FARO_API_ENDPOINT }}
             FARO_APP_ID=${{ secrets.FARO_APP_ID }}
@@ -210,7 +216,7 @@ jobs:
     name: Build & Push Backend
     runs-on: ubuntu-latest
     needs: [validate-inputs]
-    if: github.event.inputs.service == 'backend' || github.event.inputs.service == 'both'
+    if: vars.ENABLE_PRODUCTION_DEPLOY == 'true' && (github.event.inputs.service == 'backend' || github.event.inputs.service == 'both')
     steps:
       - name: Checkout code
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -257,7 +263,8 @@ jobs:
     # all — the .env.lastgood scheme (H9) keeps such a tag from becoming a
     # rollback target, but it still must not be deployed.
     if: >-
-      !cancelled()
+      vars.ENABLE_PRODUCTION_DEPLOY == 'true'
+      && !cancelled()
       && needs.validate-inputs.result == 'success'
       && needs.build-frontend.result != 'failure'
       && needs.build-backend.result != 'failure'
@@ -524,7 +531,7 @@ jobs:
     name: Notify on Failure
     runs-on: ubuntu-latest
     needs: [deploy]
-    if: failure()
+    if: failure() && vars.ENABLE_PRODUCTION_DEPLOY == 'true'
     steps:
       - name: Record deployment failure
         env:

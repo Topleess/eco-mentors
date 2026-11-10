@@ -1,11 +1,8 @@
 blank_issues_enabled: true
 contact_links:
-  - name: 🔒 Report a security vulnerability
-    url: https://github.com/openmentor-io/openmentor/security/advisories/new
-    about: Please report security issues privately, never as a public issue. See SECURITY.md.
-  - name: 🙋 Become a mentor
-    url: https://openmentor.io/bementor
-    about: The most valuable contribution most people can make. No issue needed — sign up here.
-  - name: 💬 Question about using the site
-    url: https://openmentor.io/faq
-    about: Check the FAQ first, or email hello@openmentor.io. The issue tracker is for the code.
+  - name: Report a security vulnerability privately
+    url: https://github.com/Topleess/eco-mentors/security/advisories/new
+    about: Do not post vulnerabilities, credentials or personal data in public issues. See SECURITY.md.
+  - name: Development and local setup
+    url: https://github.com/Topleess/eco-mentors#локальный-запуск
+    about: This modified edition does not yet have a client production domain. Start with the repository README.

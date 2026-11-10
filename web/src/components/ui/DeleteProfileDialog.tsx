@@ -18,6 +18,8 @@
  */
 
 import { useEffect, useRef, useState } from 'react'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/common'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircleNotch, faTimes, faTriangleExclamation } from '@fortawesome/free-solid-svg-icons'
 
@@ -57,8 +59,9 @@ export default function DeleteProfileDialog({
   username,
   title,
   children,
-  confirmLabel = 'Delete profile permanently',
+  confirmLabel,
 }: DeleteProfileDialogProps): JSX.Element | null {
+  const { t } = useTranslation(messages)
   const [typed, setTyped] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -99,7 +102,7 @@ export default function DeleteProfileDialog({
     try {
       await onConfirm(typed)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete the profile')
+      setError(err instanceof Error ? err.message : t('deleteFailed'))
       setIsSubmitting(false)
     }
   }
@@ -136,7 +139,7 @@ export default function DeleteProfileDialog({
               onClick={onClose}
               disabled={isSubmitting}
               className="text-ink-soft transition-colors duration-120 hover:text-ink disabled:opacity-50"
-              aria-label="Close"
+              aria-label={t('close')}
             >
               <FontAwesomeIcon icon={faTimes} />
             </button>
@@ -156,7 +159,7 @@ export default function DeleteProfileDialog({
                   />
                 </div>
                 <p className="my-0 mt-4 font-name text-lg font-bold tracking-[-0.015em] text-ink">
-                  This cannot be undone
+                  {t('irreversible')}
                 </p>
                 <div className="mt-2 text-sm leading-relaxed text-ink-soft">{children}</div>
               </div>
@@ -166,8 +169,7 @@ export default function DeleteProfileDialog({
                   htmlFor="delete-confirm-username"
                   className="mb-1.5 block text-[13px] font-semibold text-ink"
                 >
-                  Type <span className="font-mono font-bold text-danger">{username}</span> to
-                  confirm
+                  {t('typeUsername')} <span className="font-mono font-bold text-danger">{username}</span> {t('toConfirm')}
                 </label>
                 <input
                   id="delete-confirm-username"
@@ -185,8 +187,8 @@ export default function DeleteProfileDialog({
                 />
                 <p id="delete-confirm-help" className="my-0 mt-1.5 text-[13px] text-ink-mute">
                   {canConfirm
-                    ? 'Username matches — the delete button is now enabled.'
-                    : 'The delete button stays disabled until this matches.'}
+                    ? t('usernameMatches')
+                    : t('usernameMustMatch')}
                 </p>
               </div>
 
@@ -204,7 +206,7 @@ export default function DeleteProfileDialog({
                 disabled={isSubmitting}
                 className="button-secondary disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Cancel
+                {t('cancel')}
               </button>
               <button
                 type="submit"
@@ -214,10 +216,10 @@ export default function DeleteProfileDialog({
                 {isSubmitting ? (
                   <>
                     <FontAwesomeIcon icon={faCircleNotch} className="mr-2 animate-spin" />
-                    Deleting...
+                    {t('deleting')}
                   </>
                 ) : (
-                  confirmLabel
+                  confirmLabel ?? t('deletePermanently')
                 )}
               </button>
             </div>

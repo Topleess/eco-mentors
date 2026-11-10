@@ -1,3 +1,7 @@
+import { mentorMessage } from '@/components/mentor-admin/utils'
+import { statusLabel } from '@/components/mentor-admin/utils'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/mentor'
 /**
  * Mentor Active Requests Page (design 07 — requests inbox)
  *
@@ -9,7 +13,7 @@ import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import type { MentorClientRequest, RequestStatus, SortOrder } from '@/types'
-import { ACTIVE_STATUSES, STATUS_LABELS } from '@/types'
+import { ACTIVE_STATUSES } from '@/types'
 import {
   MentorAuthProvider,
   useMentorAuth,
@@ -54,6 +58,7 @@ function sortRequests(requests: MentorClientRequest[], order: SortOrder): Mentor
 }
 
 function ActiveRequestsContent(): JSX.Element {
+  const { t, locale } = useTranslation(messages)
   const router = useRouter()
   const { isAuthenticated, isLoading: authLoading } = useMentorAuth()
   const [requests, setRequests] = useState<MentorClientRequest[]>([])
@@ -81,7 +86,7 @@ function ActiveRequestsContent(): JSX.Element {
         const data = await getActiveRequests()
         setRequests(data)
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load requests')
+        setError(err instanceof Error ? err.message : messages.failedToLoadRequests.en)
       } finally {
         setIsLoading(false)
       }
@@ -93,14 +98,14 @@ function ActiveRequestsContent(): JSX.Element {
   // Status filter pill options with counts
   const pillOptions = useMemo(
     () => [
-      { value: 'all' as StatusFilter, label: 'All', count: requests.length },
+      { value: 'all' as StatusFilter, label: t('all'), count: requests.length },
       ...ACTIVE_STATUSES.map((status) => ({
         value: status as StatusFilter,
-        label: STATUS_LABELS[status],
+        label: statusLabel(status, locale),
         count: requests.filter((r) => r.status === status).length,
       })),
     ],
-    [requests]
+    [requests, t, locale]
   )
 
   // Filter and sort requests
@@ -114,15 +119,15 @@ function ActiveRequestsContent(): JSX.Element {
 
   // Show loading while checking auth
   if (authLoading || !isAuthenticated) {
-    return <AuthGateScreen title="Requests" />
+    return <AuthGateScreen title={t('requests')} />
   }
 
   return (
     <>
-      <NoIndexHead title="Requests" />
+      <NoIndexHead title={t('requests')} />
 
       <MentorAdminLayout
-        title="Requests"
+        title={t('requests')}
         actions={
           !isLoading && !error && requests.length > 0 ? (
             <FilterPills options={pillOptions} value={statusFilter} onChange={setStatusFilter} />
@@ -136,7 +141,7 @@ function ActiveRequestsContent(): JSX.Element {
               <SearchInput
                 value={searchQuery}
                 onChange={setSearchQuery}
-                placeholder="Search by name, email, contact..."
+                placeholder={t('searchByNameEmailContact')}
               />
             </div>
             <SortToggle value={sortOrder} onChange={setSortOrder} />
@@ -149,12 +154,12 @@ function ActiveRequestsContent(): JSX.Element {
         {/* Error state */}
         {error && !isLoading && (
           <div className="rounded-card border border-danger/40 bg-white p-5">
-            <p className="my-0 text-sm font-medium text-danger">{error}</p>
+            <p className="my-0 text-sm font-medium text-danger">{mentorMessage(locale, error)}</p>
             <button
               onClick={() => window.location.reload()}
               className="mt-2 text-sm font-semibold text-brand-cobalt transition-colors duration-120 hover:text-brand-navy"
             >
-              Try again
+              {t('tryAgain')}
             </button>
           </div>
         )}
@@ -166,17 +171,16 @@ function ActiveRequestsContent(): JSX.Element {
               <div className="m-[9px] h-[70px] w-[70px] rounded-full border-[9px] border-line" />
               <div className="absolute -left-3.5 bottom-3 h-[9px] w-10 -rotate-[35deg] rounded-full bg-brand-cobalt opacity-35" />
             </div>
-            <h2 className="mt-5 text-[22px] tracking-[-0.01em] text-ink">No requests yet</h2>
+            <h2 className="mt-5 text-[22px] tracking-[-0.01em] text-ink">{t('noRequestsYet')}</h2>
             <p className="my-0 mt-2.5 max-w-[400px] text-sm leading-relaxed text-ink-soft">
-              Most mentors get their first request within two weeks — complete profiles with a
-              photo get them noticeably faster.
+              {t('mostMentorsGetTheirFirstRequest')}
             </p>
             <div className="mt-6 flex flex-wrap justify-center gap-2.5">
               <Link href="/mentor/profile/edit" className="button">
-                Improve my profile
+                {t('improveMyProfile')}
               </Link>
               <Link href="/mentor/past" className="button-secondary">
-                View the archive
+                {t('viewTheArchive')}
               </Link>
             </div>
           </div>
@@ -186,7 +190,7 @@ function ActiveRequestsContent(): JSX.Element {
         {!isLoading && !error && requests.length > 0 && filteredRequests.length === 0 && (
           <div className="rounded-panel border border-line bg-white py-12 text-center">
             <p className="my-0 text-sm text-ink-soft">
-              {searchQuery ? `Nothing found for "${searchQuery}"` : 'Nothing here with this status'}
+              {searchQuery ? t('nothingFound', { query: searchQuery }) : t('nothingHereWithThisStatus')}
             </p>
             <button
               onClick={() => {
@@ -195,7 +199,7 @@ function ActiveRequestsContent(): JSX.Element {
               }}
               className="mt-2 text-sm font-semibold text-brand-cobalt transition-colors duration-120 hover:text-brand-navy"
             >
-              Clear filters
+              {t('clearFilters')}
             </button>
           </div>
         )}

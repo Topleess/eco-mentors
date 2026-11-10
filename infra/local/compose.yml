@@ -1,0 +1,95 @@
+name: openmentor-local-edit
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: openmentor_local
+      POSTGRES_USER: openmentor_local
+      POSTGRES_PASSWORD: ${LOCAL_DB_PASSWORD:?Run start.sh first}
+    ports: ["127.0.0.1:5544:5432"]
+    volumes: ["database:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U openmentor_local -d openmentor_local"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  storage:
+    build: ./storage
+    volumes: ["objects:/data"]
+    networks:
+      default:
+        aliases: ["s3.storage", "research-media.s3.storage"]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:9000').then(()=>process.exit(0)).catch(()=>process.exit(1))"]
+      interval: 3s
+      timeout: 3s
+      retries: 30
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "2"}
+  migrate:
+    image: ${LOCAL_RUNTIME_IMAGE:-openmentor-backend:dev-b759084}
+    command: ["/local-bin/local-migrate"]
+    environment:
+      DATABASE_URL: postgres://openmentor_local:${LOCAL_DB_PASSWORD}@postgres:5432/openmentor_local?sslmode=disable
+      LOG_DIR: /tmp
+    volumes:
+      - ../../api/bin:/local-bin:ro
+      - ../../api/migrations:/app/migrations:ro
+    depends_on:
+      postgres: {condition: service_healthy}
+  backend:
+    image: ${LOCAL_RUNTIME_IMAGE:-openmentor-backend:dev-b759084}
+    command: ["/local-bin/local-api"]
+    environment:
+      APP_ENV: development
+      GIN_MODE: release
+      PORT: "8081"
+      BASE_URL: http://localhost:3100
+      ALLOWED_CORS_ORIGINS: http://localhost:3100,http://127.0.0.1:3100
+      DATABASE_URL: postgres://openmentor_local:${LOCAL_DB_PASSWORD}@postgres:5432/openmentor_local?sslmode=disable
+      JWT_SECRET: ${LOCAL_JWT_SECRET:?Run start.sh first}
+      COOKIE_SECURE: "false"
+      COOKIE_DOMAIN: ""
+      DEMO_AUTH_ENABLED: "true"
+      DEMO_AUTH_SESSION_TTL_HOURS: "24"
+      INTERNAL_MENTORS_API: ${LOCAL_API_TOKEN:?Run start.sh first}
+      MENTORS_API_LIST_AUTH_TOKEN: ${LOCAL_API_TOKEN}
+      TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA
+      ANALYTICS_PROVIDER: none
+      POSTHOG_ENABLED: "false"
+      O11Y_EXPORTER_ENDPOINT: ""
+      O11Y_PROFILING_ENABLED: "false"
+      LOG_DIR: /tmp
+      LOG_LEVEL: info
+      # s3rver credentials are public development constants, never production secrets.
+      S3_STORAGE_ACCESS_KEY: S3RVER
+      S3_STORAGE_SECRET_KEY: S3RVER
+      S3_STORAGE_BUCKET: research-media
+      S3_STORAGE_ENDPOINT: http://s3.storage:9000
+      S3_STORAGE_REGION: us-east-1
+      MENTOR_CREATED_TRIGGER_URL: ""
+      MENTOR_LOGIN_EMAIL_TRIGGER_URL: ""
+      MODERATOR_LOGIN_EMAIL_TRIGGER_URL: ""
+      MENTOR_MODERATION_TRIGGER_URL: ""
+      MENTOR_REQUEST_CREATED_TRIGGER_URL: ""
+      REQUEST_PROCESS_FINISHED_TRIGGER_URL: ""
+      REVIEW_CREATED_TRIGGER_URL: ""
+    ports: ["127.0.0.1:18081:8081"]
+    volumes: ["../../api/bin:/local-bin:ro"]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+      storage: {condition: service_healthy}
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8081/api/healthcheck"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    logging:
+      driver: json-file
+      options: {max-size: "10m", max-file: "2"}
+volumes:
+  database:
+  objects:

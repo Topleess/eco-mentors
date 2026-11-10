@@ -13,6 +13,7 @@ const PHOTO_ROUTES = [
   'src/pages/api/register-mentor.ts',
   'src/pages/api/mentor/profile/picture.ts',
   'src/pages/api/admin/mentors/[id]/picture.ts',
+  'src/pages/api/admin/research/covers.ts',
 ]
 
 function parseBytes(limit: string): number {

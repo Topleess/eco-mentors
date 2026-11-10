@@ -3,7 +3,7 @@ import Document, { Html, Head, Main, NextScript } from 'next/document'
 export default class MyDocument extends Document {
   render(): JSX.Element {
     return (
-      <Html lang="en">
+      <Html lang={this.props.__NEXT_DATA__.locale ?? 'ru'}>
         <Head>
           {/* Favicons from the Fresh Signal brand pack (../brand in the monorepo) */}
           <link rel="icon" href="/favicon.ico" sizes="any" />

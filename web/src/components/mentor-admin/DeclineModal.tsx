@@ -1,3 +1,6 @@
+import { mentorMessage } from '@/components/mentor-admin/utils'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/mentor'
 /**
  * Decline Modal component
  *
@@ -24,6 +27,7 @@ export default function DeclineModal({
   onConfirm,
   menteName,
 }: DeclineModalProps): JSX.Element | null {
+  const { t, locale } = useTranslation(messages)
   const [reason, setReason] = useState<DeclineReasonValue | ''>('')
   const [comment, setComment] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -65,7 +69,7 @@ export default function DeclineModal({
     e.preventDefault()
 
     if (!reason) {
-      setError('Please select a decline reason')
+      setError(t('pleaseSelectADeclineReason'))
       return
     }
 
@@ -76,7 +80,7 @@ export default function DeclineModal({
       await onConfirm(reason, comment.trim() || undefined)
       onClose()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong')
+      setError(err instanceof Error ? err.message : t('somethingWentWrong'))
     } finally {
       setIsSubmitting(false)
     }
@@ -109,13 +113,13 @@ export default function DeclineModal({
               id="decline-modal-title"
               className="font-display text-sm font-extrabold uppercase tracking-[0.03em] text-ink"
             >
-              Decline request
+              {t('declineRequest')}
             </h3>
             <button
               onClick={onClose}
               disabled={isSubmitting}
               className="text-ink-soft transition-colors duration-120 hover:text-ink disabled:opacity-50"
-              aria-label="Close"
+              aria-label={t('close')}
             >
               <FontAwesomeIcon icon={faTimes} />
             </button>
@@ -125,10 +129,8 @@ export default function DeclineModal({
           <form onSubmit={handleSubmit}>
             <div className="space-y-4 px-6 py-4">
               <p className="my-0 text-sm text-ink-soft">
-                You are about to decline the request from{' '}
-                <span className="font-semibold text-ink">{menteName}</span>. Please select a
-                reason.
-              </p>
+                {t('youAreAboutToDeclineThe')}{' '}
+                <span className="font-semibold text-ink">{menteName}</span>{t('pleaseSelectAReason')} </p>
 
               {/* Reason select */}
               <div>
@@ -136,7 +138,7 @@ export default function DeclineModal({
                   htmlFor="decline-reason"
                   className="mb-1.5 block text-[13px] font-semibold text-ink"
                 >
-                  Decline reason <span className="text-danger">*</span>
+                  {t('declineReason')} <span className="text-danger">*</span>
                 </label>
                 <select
                   id="decline-reason"
@@ -146,10 +148,10 @@ export default function DeclineModal({
                   disabled={isSubmitting}
                   className="field"
                 >
-                  <option value="">Select a reason</option>
+                  <option value="">{t('selectAReason')}</option>
                   {DECLINE_REASONS.map((r) => (
                     <option key={r.value} value={r.value}>
-                      {r.label}
+                      {t(r.value)}
                     </option>
                   ))}
                 </select>
@@ -161,7 +163,7 @@ export default function DeclineModal({
                   htmlFor="decline-comment"
                   className="mb-1.5 block text-[13px] font-semibold text-ink"
                 >
-                  Comment <span className="font-normal text-ink-soft">(optional)</span>
+                  {t('comment')} <span className="font-normal text-ink-soft">{t('optional')}</span>
                 </label>
                 <textarea
                   id="decline-comment"
@@ -169,7 +171,7 @@ export default function DeclineModal({
                   onChange={(e) => setComment(e.target.value)}
                   disabled={isSubmitting}
                   rows={3}
-                  placeholder="Additional information for the mentee..."
+                  placeholder={t('additionalInformationForTheMentee')}
                   className="field"
                 />
               </div>
@@ -177,7 +179,7 @@ export default function DeclineModal({
               {/* Error message */}
               {error && (
                 <p className="my-0 animate-shake text-sm font-medium text-danger" role="alert">
-                  {error}
+                  {mentorMessage(locale, error)}
                 </p>
               )}
             </div>
@@ -190,7 +192,7 @@ export default function DeclineModal({
                 disabled={isSubmitting}
                 className="button-secondary w-full text-sm sm:w-auto"
               >
-                Cancel
+                {t('cancel')}
               </button>
               <button
                 type="submit"
@@ -200,10 +202,9 @@ export default function DeclineModal({
                 {isSubmitting ? (
                   <>
                     <FontAwesomeIcon icon={faCircleNotch} className="mr-2 animate-spin" />
-                    Declining...
-                  </>
+                    {t('declining')} </>
                 ) : (
-                  'Decline request'
+                  t('declineRequest')
                 )}
               </button>
             </div>

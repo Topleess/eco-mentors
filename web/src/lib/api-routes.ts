@@ -19,6 +19,8 @@
  * one route shape.
  */
 export const API_ROUTE_LABELS = [
+  '/api/admin/analytics/requests',
+  '/api/admin/analytics/traffic',
   '/api/admin/auth/logout',
   '/api/admin/auth/request-login',
   '/api/admin/auth/session',
@@ -36,7 +38,18 @@ export const API_ROUTE_LABELS = [
   '/api/admin/mentors/:id/return',
   '/api/admin/mentors/:id/status',
   '/api/admin/mentors/:id/username',
+  '/api/admin/research',
+  '/api/admin/research/:id',
+  '/api/admin/research/covers',
+  '/api/admin/vacancies',
+  '/api/admin/vacancies/:id',
+  '/api/admin/vacancy-cities',
+  '/api/admin/vacancy-cities/:id',
+  '/api/admin/vacancy-industries',
+  '/api/admin/vacancy-industries/:id',
   '/api/contact-mentor',
+  '/api/demo/login',
+  '/api/dev/login',
   '/api/healthcheck',
   '/api/mentor/auth/logout',
   '/api/mentor/auth/request-login',
@@ -56,10 +69,16 @@ export const API_ROUTE_LABELS = [
   '/api/mentor/username',
   '/api/og/mentor',
   '/api/register-mentor',
+  '/api/research',
+  '/api/research/:id',
+  '/api/research/covers/:id',
   '/api/reviews/check',
   '/api/reviews/submit',
   '/api/schedule-migration',
   '/api/username-availability',
+  '/api/vacancies',
+  '/api/vacancies/:id',
+  '/api/vacancies/dictionaries',
 ] as const
 
 /**

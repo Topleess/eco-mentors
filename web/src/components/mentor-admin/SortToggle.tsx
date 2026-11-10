@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/mentor'
 /**
  * Sort toggle component for request lists (secondary-pill styling).
  */
@@ -12,6 +14,7 @@ interface SortToggleProps {
 }
 
 export default function SortToggle({ value, onChange }: SortToggleProps): JSX.Element {
+  const { t } = useTranslation(messages)
   const toggle = (): void => {
     onChange(value === 'newest' ? 'oldest' : 'newest')
   }
@@ -20,13 +23,13 @@ export default function SortToggle({ value, onChange }: SortToggleProps): JSX.El
     <button
       onClick={toggle}
       className="inline-flex items-center rounded-full border-[1.5px] border-line bg-white px-4 py-2 text-xs font-semibold text-brand-navy transition-colors duration-120 hover:border-brand-cobalt/45"
-      title={value === 'newest' ? 'Newest first' : 'Oldest first'}
+      title={value === 'newest' ? t('newestFirst') : t('oldestFirst')}
     >
       <FontAwesomeIcon
         icon={value === 'newest' ? faArrowDown : faArrowUp}
         className="mr-2 text-ink-soft"
       />
-      {value === 'newest' ? 'Newest first' : 'Oldest first'}
+      {value === 'newest' ? t('newestFirst') : t('oldestFirst')}
     </button>
   )
 }

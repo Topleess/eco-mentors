@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/catalog'
 import classNames from 'classnames'
 import { Menu } from '@headlessui/react'
 import analytics from '@/lib/analytics'
@@ -42,6 +44,7 @@ interface MentorsSortProps {
  * dropdown panel in the shared panel style.
  */
 export default function MentorsSort({ value, onChange }: MentorsSortProps): JSX.Element {
+  const { t } = useTranslation(messages)
   const handleSelect = (option: MentorsSortOption): void => {
     analytics.event(analytics.events.MENTORS_SORT_CHANGED, {
       sort_option: option,
@@ -53,7 +56,7 @@ export default function MentorsSort({ value, onChange }: MentorsSortProps): JSX.
   return (
     <Menu as="div" className="relative shrink-0">
       <Menu.Button className="meta-mono whitespace-nowrap text-ink-mute transition-colors duration-120 hover:text-ink">
-        SORT: {SORT_LABELS[value].toUpperCase()} ▾
+        {t('sort')}: {t(value).toUpperCase()} ▾
       </Menu.Button>
 
       <Menu.Items className="absolute right-0 z-20 mt-2 flex w-44 animate-dropdown-in flex-col gap-0.5 rounded-card border border-line bg-white p-2 shadow-dropdown focus:outline-none">
@@ -70,7 +73,7 @@ export default function MentorsSort({ value, onChange }: MentorsSortProps): JSX.
                 )}
                 onClick={() => handleSelect(option)}
               >
-                {SORT_LABELS[option]}
+                {t(option)}
               </button>
             )}
           </Menu.Item>

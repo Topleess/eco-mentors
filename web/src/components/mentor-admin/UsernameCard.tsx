@@ -1,3 +1,6 @@
+import { mentorMessage } from '@/components/mentor-admin/utils'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/mentor'
 /**
  * "Your profile link" card for the mentor profile edit page.
  *
@@ -27,8 +30,8 @@ interface UsernameCardProps {
 }
 
 /** Format a cooldown date as a friendly "Jul 25, 2026". */
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString(undefined, {
+function formatDate(iso: string, intlLocale: string): string {
+  return new Date(iso).toLocaleDateString(intlLocale, {
     year: 'numeric',
     month: 'short',
     day: 'numeric',
@@ -39,6 +42,7 @@ export default function UsernameCard({
   initialUsername,
   onChanged,
 }: UsernameCardProps): JSX.Element {
+  const { t, intlLocale } = useTranslation(messages)
   const [username, setUsername] = useState(initialUsername)
   const [status, setStatus] = useState<UsernameStatusResponse | null>(null)
   const [modalOpen, setModalOpen] = useState(false)
@@ -80,13 +84,13 @@ export default function UsernameCard({
     <div className="rounded-panel border-[1.5px] border-line bg-white p-5 sm:px-[26px] sm:py-[22px]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
         <div className="min-w-0">
-          <span className="font-name text-base font-bold text-ink">Your profile link</span>
+          <span className="font-name text-base font-bold text-ink">{t('yourProfileLink')}</span>
           <p className="my-0 mt-1 truncate text-[13px] leading-normal text-ink-soft">
             openmentor.io/mentor/<span className="font-mono text-ink">{username}</span>
           </p>
           {!canChange && status?.nextChangeAt && (
             <p className="my-0 mt-1 text-[13px] leading-normal text-ink-soft">
-              You can change it again on {formatDate(status.nextChangeAt)}.
+              {t('youCanChangeItAgainOn')} {formatDate(status.nextChangeAt, intlLocale)}.
             </p>
           )}
         </div>
@@ -97,7 +101,7 @@ export default function UsernameCard({
             onClick={() => setModalOpen(true)}
             className="button-secondary px-4 py-2.5 text-[13px] disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Change link…
+            {t('changeLink')}
           </button>
         </div>
       </div>
@@ -125,6 +129,7 @@ function UsernameChangeModal({
   onClose,
   onChanged,
 }: UsernameChangeModalProps): JSX.Element | null {
+  const { t, locale } = useTranslation(messages)
   const [value, setValue] = useState('')
   const [confirmed, setConfirmed] = useState(false)
   const [submitting, setSubmitting] = useState(false)
@@ -164,13 +169,13 @@ function UsernameChangeModal({
       })
       const data = await res.json().catch(() => ({}))
       if (!res.ok) {
-        setError(data.error || 'Failed to change your profile link')
+        setError(data.error || t('failedToChangeYourProfileLink'))
         return
       }
       analytics.event(analytics.events.MENTOR_USERNAME_CHANGED)
       onChanged(data.username ?? value)
     } catch {
-      setError('Failed to change your profile link')
+      setError(t('failedToChangeYourProfileLink'))
     } finally {
       setSubmitting(false)
     }
@@ -199,13 +204,13 @@ function UsernameChangeModal({
               id="username-modal-title"
               className="font-display text-sm font-extrabold uppercase tracking-[0.03em] text-ink"
             >
-              Change your profile link
+              {t('changeYourProfileLink')}
             </h3>
             <button
               onClick={onClose}
               disabled={submitting}
               className="text-ink-soft transition-colors duration-120 hover:text-ink disabled:opacity-50"
-              aria-label="Close"
+              aria-label={t('close')}
             >
               <FontAwesomeIcon icon={faTimes} />
             </button>
@@ -216,13 +221,9 @@ function UsernameChangeModal({
               {/* Breaking-change warning */}
               <div className="rounded-field border border-danger/40 bg-danger/[0.06] p-3">
                 <p className="my-0 text-[13px] leading-relaxed text-ink">
-                  Changing your link is a big deal. Anywhere you&apos;ve shared{' '}
-                  <span className="font-mono font-semibold">/mentor/{currentUsername}</span> — posts,
-                  your CV, DMs — will redirect for now, but that old link{' '}
-                  <span className="font-semibold">stops working after two more changes</span>. Cards
-                  already posted on social may keep showing the old link from cache. You can only
-                  change your link once every 14 days.
-                </p>
+                  {t('changingYourLinkIsABig')}{' '}
+                  <span className="font-mono font-semibold">/mentor/{currentUsername}</span> {t('postsYourCvDmsWillRedirect')}{' '}
+                  <span className="font-semibold">{t('stopsWorkingAfterTwoMoreChanges')}</span>{t('cardsAlreadyPostedOnSocialMay')} </p>
               </div>
 
               <div>
@@ -230,7 +231,7 @@ function UsernameChangeModal({
                   htmlFor="new-username"
                   className="mb-1.5 block text-[13px] font-semibold text-ink"
                 >
-                  New link
+                  {t('newLink')}
                 </label>
                 <div className="flex items-center overflow-hidden rounded-field border-[1.5px] border-line bg-white focus-within:border-brand-cobalt">
                   <span className="select-none whitespace-nowrap py-2.5 pl-3.5 pr-0 font-mono text-sm text-ink-soft">
@@ -266,19 +267,19 @@ function UsernameChangeModal({
                   {availability.status === 'checking' && (
                     <span className="text-ink-soft">
                       <FontAwesomeIcon icon={faCircleNotch} spin className="mr-1.5" />
-                      Checking availability…
+                      {t('checkingAvailability')}
                     </span>
                   )}
                   {availability.status === 'available' && (
-                    <span className="font-medium text-mint-ink">✓ Available</span>
+                    <span className="font-medium text-mint-ink">{t('available')}</span>
                   )}
                   {availability.status === 'unavailable' && value !== '' && (
                     <span className="font-medium text-danger">
                       {availability.reason === 'taken'
-                        ? 'That link is already taken — try another.'
+                        ? t('thatLinkIsAlreadyTakenTry')
                         : availability.reason === 'reserved'
-                          ? 'That word is reserved — please pick another.'
-                          : 'Use 3–40 letters, numbers and hyphens.'}
+                          ? t('thatWordIsReservedPleasePick')
+                          : t('use340LettersNumbersAnd')}
                     </span>
                   )}
                 </div>
@@ -293,13 +294,13 @@ function UsernameChangeModal({
                   className="mt-0.5 h-4 w-4 flex-none accent-brand-cobalt"
                 />
                 <span>
-                  I understand my old link will eventually stop working, and I want to change it.
+                  {t('iUnderstandMyOldLinkWill')}
                 </span>
               </label>
 
               {error && (
                 <p className="my-0 animate-shake text-sm font-medium text-danger" role="alert">
-                  {error}
+                  {mentorMessage(locale, error)}
                 </p>
               )}
             </div>
@@ -311,7 +312,7 @@ function UsernameChangeModal({
                 disabled={submitting}
                 className="button-secondary w-full text-sm sm:w-auto"
               >
-                Cancel
+                {t('cancel')}
               </button>
               <button
                 type="submit"
@@ -321,10 +322,9 @@ function UsernameChangeModal({
                 {submitting ? (
                   <>
                     <FontAwesomeIcon icon={faCircleNotch} className="mr-2 animate-spin" />
-                    Changing…
-                  </>
+                    {t('changing')} </>
                 ) : (
-                  'Change my link'
+                  t('changeMyLink')
                 )}
               </button>
             </div>

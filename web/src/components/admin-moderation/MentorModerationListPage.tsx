@@ -6,9 +6,13 @@ import { faCircleNotch } from '@fortawesome/free-solid-svg-icons'
 import type { MentorModerationFilter, AdminMentorListItem } from '@/types'
 import { useAdminAuth } from './AdminAuthContext'
 import { AdminLayout } from './AdminLayout'
-import { moderationStatusBadgeClass } from './utils'
+import { moderationStatusBadgeClass, moderationStatusLabel } from './utils'
 import { formatDate } from '@/components/mentor-admin'
 import { getModerationMentors } from '@/lib/admin-moderation-api'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/admin'
+import { adminMessage } from '@/i18n/admin'
+import { translateLabel } from '@/i18n/labels'
 
 const PAGE_SIZE = 50
 
@@ -21,6 +25,7 @@ export function MentorModerationListPage({
   status,
   title,
 }: MentorModerationListPageProps): JSX.Element {
+  const { t, locale } = useTranslation(messages)
   const router = useRouter()
   const { isAuthenticated, isLoading: authLoading, session } = useAdminAuth()
   const [mentors, setMentors] = useState<AdminMentorListItem[]>([])
@@ -117,13 +122,13 @@ export function MentorModerationListPage({
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search by name, email, contact"
+          placeholder={t('search')}
           className="field"
         />
       </div>
 
       <div className="meta-mono mb-4 text-ink-mute">
-        Showing {pageItems.length} of {filteredMentors.length}
+        {t('showing', { shown: pageItems.length, total: filteredMentors.length })}
       </div>
 
       {isLoading && (
@@ -137,13 +142,13 @@ export function MentorModerationListPage({
 
       {error && !isLoading && (
         <div className="rounded-card border border-danger/40 bg-white p-4 text-sm font-medium text-danger">
-          {error}
+          {adminMessage(locale, error)}
         </div>
       )}
 
       {!isLoading && !error && pageItems.length === 0 && (
         <div className="rounded-card border border-line bg-white p-6 text-sm text-ink-soft">
-          {status === 'deleted' ? 'No deleted profiles.' : 'No mentors found.'}
+          {status === 'deleted' ? t('noDeleted') : t('noMentors')}
         </div>
       )}
 
@@ -169,17 +174,17 @@ export function MentorModerationListPage({
                     instead — that is what this row is. */}
                 {mentor.deletedAt ? (
                   <span className="inline-flex items-center rounded-full bg-danger/10 px-3 py-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.05em] text-danger">
-                    deleted {formatDate(mentor.deletedAt)}
+                    {t('deletedOn', { date: formatDate(mentor.deletedAt, locale) })}
                   </span>
                 ) : (
-                  <span className={moderationStatusBadgeClass(mentor.status)}>{mentor.status}</span>
+                  <span className={moderationStatusBadgeClass(mentor.status)}>{moderationStatusLabel(mentor.status, locale)}</span>
                 )}
               </div>
               <div className="mt-3 text-sm text-ink">
                 <p className="my-0">
                   {mentor.job} {mentor.workplace ? `• ${mentor.workplace}` : ''}
                 </p>
-                <p className="meta-mono my-0 mt-1 text-ink-mute">{mentor.price}</p>
+                <p className="meta-mono my-0 mt-1 text-ink-mute">{translateLabel(locale, mentor.price)}</p>
               </div>
             </Link>
           ))}
@@ -194,10 +199,10 @@ export function MentorModerationListPage({
             disabled={currentPage <= 1}
             className="button-secondary disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Previous
+            {t('previous')}
           </button>
           <span className="meta-mono text-ink-mute">
-            Page {currentPage} of {totalPages}
+            {t('page', { current: currentPage, total: totalPages })}
           </span>
           <button
             type="button"
@@ -205,7 +210,7 @@ export function MentorModerationListPage({
             disabled={currentPage >= totalPages}
             className="button-secondary disabled:cursor-not-allowed disabled:opacity-50"
           >
-            Next
+            {t('next')}
           </button>
         </div>
       )}

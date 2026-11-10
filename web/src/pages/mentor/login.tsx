@@ -1,3 +1,6 @@
+import { mentorMessage } from '@/components/mentor-admin/utils'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/mentor'
 /**
  * Mentor Login Page (design 06)
  *
@@ -23,6 +26,7 @@ interface LoginFormData {
 }
 
 function LoginForm(): JSX.Element {
+  const { t, locale } = useTranslation(messages)
   const router = useRouter()
   const { isAuthenticated, isLoading: authLoading, requestLogin } = useMentorAuth()
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -66,14 +70,14 @@ function LoginForm(): JSX.Element {
           outcome: 'success',
         })
       } else {
-        setSubmitError(result.message || 'Something went wrong. Please try again.')
+        setSubmitError(result.message || t('somethingWentWrongPleaseTryAgain'))
         analytics.event(analytics.events.MENTOR_AUTH_LOGIN_REQUESTED, {
           outcome: 'error',
           error_type: 'api_error',
         })
       }
     } catch {
-      setSubmitError('Something went wrong. Please try again.')
+      setSubmitError(t('somethingWentWrongPleaseTryAgain'))
       analytics.event(analytics.events.MENTOR_AUTH_LOGIN_REQUESTED, {
         outcome: 'error',
         error_type: 'network_error',
@@ -85,12 +89,12 @@ function LoginForm(): JSX.Element {
 
   // Show loading while checking auth
   if (authLoading) {
-    return <AuthGateScreen title="Mentor login" />
+    return <AuthGateScreen title={t('mentorLogin')} />
   }
 
   return (
     <div className="relative flex min-h-screen flex-col justify-center overflow-hidden bg-surface px-5 py-12">
-      <NoIndexHead title="Mentor login" />
+      <NoIndexHead title={t('mentorLogin')} />
 
       {/* Backdrop ring echoes */}
       <div
@@ -108,7 +112,7 @@ function LoginForm(): JSX.Element {
           {expired === 'true' && (
             <div className="mb-5 rounded-field border border-line bg-surface p-3.5">
               <p className="my-0 text-sm text-ink">
-                Your session has expired. Please sign in again.
+                {t('yourSessionHasExpiredPleaseSign')}
               </p>
             </div>
           )}
@@ -118,8 +122,8 @@ function LoginForm(): JSX.Element {
             <div className="mb-5 rounded-field border border-danger/40 bg-danger/5 p-3.5">
               <p className="my-0 text-sm text-danger">
                 {callback_error === 'invalid_token'
-                  ? 'The link is invalid or has expired. Please request a new one.'
-                  : 'Something went wrong. Please try again.'}
+                  ? t('theLinkIsInvalidOrHas')
+                  : t('somethingWentWrongPleaseTryAgain')}
               </p>
             </div>
           )}
@@ -144,26 +148,25 @@ function LoginForm(): JSX.Element {
               </div>
 
               <div>
-                <h2 className="text-2xl tracking-[-0.02em] text-ink">Check your inbox</h2>
+                <h2 className="text-2xl tracking-[-0.02em] text-ink">{t('checkYourInbox')}</h2>
                 <p className="my-0 mt-2.5 text-sm leading-relaxed text-ink-soft">
-                  We sent a sign-in link to
+                  {t('weSentASignInLink')} <br />
+                  <b className="text-ink">{sentEmail || t('yourEmail')}</b>
                   <br />
-                  <b className="text-ink">{sentEmail || 'your email'}</b>
-                  <br />
-                  Follow it to open your dashboard.
+                  {t('followItToOpenYourDashboard')}
                 </p>
               </div>
 
               <div className="flex w-full items-center justify-between rounded-field border border-line px-4 py-3">
-                <span className="text-[13px] text-ink-soft">Didn&apos;t arrive?</span>
-                <span className="text-[13px] font-semibold text-ink-soft">Check your spam</span>
+                <span className="text-[13px] text-ink-soft">{t('didnTArrive')}</span>
+                <span className="text-[13px] font-semibold text-ink-soft">{t('checkYourSpam')}</span>
               </div>
 
               <button
                 onClick={() => setSubmitSuccess(false)}
                 className="text-[13px] font-semibold text-brand-cobalt transition-colors duration-120 hover:text-brand-navy"
               >
-                Use a different email
+                {t('useADifferentEmail')}
               </button>
             </div>
           ) : (
@@ -183,16 +186,16 @@ function LoginForm(): JSX.Element {
               </div>
 
               <div>
-                <h1 className="text-[26px] tracking-[-0.02em] text-ink">Mentor login</h1>
+                <h1 className="text-[26px] tracking-[-0.02em] text-ink">{t('mentorLogin')}</h1>
                 <p className="my-0 mt-2 text-sm leading-normal text-ink-soft">
-                  No password. We&apos;ll email you a magic link that signs you in.
+                  {t('noPasswordWeLlEmailYou')}
                 </p>
               </div>
 
               <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5" noValidate>
                 <div className="flex flex-col gap-1.5">
                   <label htmlFor="email" className="text-[13px] font-semibold text-ink">
-                    Email
+                    {t('email')}
                   </label>
                   <input
                     id="email"
@@ -200,10 +203,10 @@ function LoginForm(): JSX.Element {
                     autoComplete="email"
                     placeholder="you@example.com"
                     {...register('email', {
-                      required: 'Enter your email',
+                      required: t('enterYourEmail'),
                       pattern: {
                         value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                        message: 'Enter a valid email',
+                        message: t('enterAValidEmail'),
                       },
                     })}
                     className={classNames('field', errors.email && 'field-error animate-shake')}
@@ -217,7 +220,7 @@ function LoginForm(): JSX.Element {
 
                 {submitError && (
                   <p className="my-0 text-sm font-medium text-danger" role="alert">
-                    {submitError}
+                    {mentorMessage(locale, submitError)}
                   </p>
                 )}
 
@@ -225,18 +228,17 @@ function LoginForm(): JSX.Element {
                   {isSubmitting ? (
                     <>
                       <FontAwesomeIcon icon={faCircleNotch} className="mr-2 animate-spin" />
-                      Sending...
-                    </>
+                      {t('sending')} </>
                   ) : (
-                    'Email me a magic link'
+                    t('emailMeAMagicLink')
                   )}
                 </button>
               </form>
 
               <p className="my-0 text-center text-xs leading-relaxed text-ink-soft">
-                Not a mentor yet?{' '}
+                {t('notAMentorYet')}{' '}
                 <Link href="/bementor" className="font-semibold text-brand-cobalt">
-                  Create a profile
+                  {t('createAProfile')}
                 </Link>
               </p>
             </div>
@@ -245,9 +247,9 @@ function LoginForm(): JSX.Element {
           {/* Help text */}
           <div className="mt-6 border-t border-line pt-5">
             <p className="my-0 text-center text-xs text-ink-soft">
-              Use the email you provided when registering as a mentor. If you run into any issues,{' '}
+              {t('useTheEmailYouProvidedWhen')}{' '}
               <a href="mailto:hello@openmentor.io" className="font-semibold text-brand-cobalt">
-                write to us
+                {t('writeToUs')}
               </a>
               .
             </p>

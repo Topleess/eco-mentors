@@ -1,4 +1,6 @@
 import { forwardRef, type ForwardedRef, type ReactNode } from 'react'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/common'
 
 /**
  * Toast (component sheet §toasts): ink surface, 14px radius, white text,
@@ -16,6 +18,7 @@ function NotificationInner(
   { title, content, variant = 'success', onClose }: NotificationProps,
   ref: ForwardedRef<HTMLDivElement>
 ): JSX.Element {
+  const { t } = useTranslation(messages)
   return (
     <div
       className="pointer-events-auto flex w-full max-w-sm animate-toast-in items-center gap-3 rounded-card bg-ink px-[18px] py-3.5 shadow-dropdown"
@@ -49,7 +52,7 @@ function NotificationInner(
         className="flex-none rounded-md text-white/60 transition-colors duration-120 hover:text-white"
         onClick={() => onClose()}
       >
-        <span className="sr-only">Close</span>
+        <span className="sr-only">{t('close')}</span>
         <svg
           xmlns="http://www.w3.org/2000/svg"
           className="h-4 w-4"

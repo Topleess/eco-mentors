@@ -325,6 +325,17 @@ class GoApiClient {
     }
   }
 
+  async demoLogin(email: string): Promise<{
+    data: { success: boolean; role?: 'admin' | 'mentor'; session?: AdminSession | MentorSession }
+    headers: Headers
+  }> {
+    return this.requestWithCookies<{
+      success: boolean
+      role?: 'admin' | 'mentor'
+      session?: AdminSession | MentorSession
+    }>('POST', '/api/v1/demo/login', { body: { email } })
+  }
+
   /**
    * Request mentor login (send magic link)
    * This is a public endpoint - no auth required

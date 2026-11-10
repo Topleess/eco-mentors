@@ -69,6 +69,10 @@ type AdminAuthServiceInterface interface {
 	GetTokenManager() *jwt.TokenManager
 }
 
+type DemoAuthServiceInterface interface {
+	Login(ctx context.Context, email string) (*DemoLoginResult, error)
+}
+
 // MentorRequestsServiceInterface defines the interface for mentor request management
 type MentorRequestsServiceInterface interface {
 	GetRequests(ctx context.Context, mentorId string, group string) (*models.ClientRequestsResponse, error)
@@ -116,6 +120,7 @@ var _ ProfileServiceInterface = (*ProfileService)(nil)
 var _ RegistrationServiceInterface = (*RegistrationService)(nil)
 var _ MentorAuthServiceInterface = (*MentorAuthService)(nil)
 var _ AdminAuthServiceInterface = (*AdminAuthService)(nil)
+var _ DemoAuthServiceInterface = (*DemoAuthService)(nil)
 var _ MentorRequestsServiceInterface = (*MentorRequestsService)(nil)
 var _ ReviewServiceInterface = (*ReviewService)(nil)
 var _ AdminMentorsServiceInterface = (*AdminMentorsService)(nil)

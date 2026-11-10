@@ -389,6 +389,24 @@ func main() { //nolint:gocyclo
 	registrationService := services.NewRegistrationService(mentorRepo, storageClient, cfg, httpClient, analyticsTracker)
 	mentorAuthService := services.NewMentorAuthService(mentorRepo, cfg, httpClient, analyticsTracker)
 	adminAuthService := services.NewAdminAuthService(moderatorRepo, cfg, httpClient, analyticsTracker)
+	var demoAuthHandler *handlers.DemoAuthHandler
+	if cfg.DemoAuth.Enabled {
+		demoTokenManager := jwt.NewTokenManager(
+			cfg.MentorSession.JWTSecret,
+			cfg.MentorSession.JWTIssuer,
+			cfg.DemoAuth.SessionTTLHours,
+		)
+		demoAuthService := services.NewDemoAuthService(
+			true, mentorRepo, moderatorRepo, demoTokenManager, cfg.DemoAuth.SessionTTLHours,
+		)
+		demoAuthHandler = handlers.NewDemoAuthHandler(
+			demoAuthService,
+			cfg.DemoAuth.SessionTTLHours*int(time.Hour/time.Second),
+			cfg.MentorSession.CookieDomain,
+			cfg.MentorSession.CookieSecure,
+		)
+		logger.Warn("Synthetic demo login is enabled; keep the instance private and test-data-only")
+	}
 	mentorRequestsService := services.NewMentorRequestsService(clientRequestRepo, cfg, httpClient, analyticsTracker)
 	reviewService := services.NewReviewService(reviewRepo, cfg, httpClient, analyticsTracker)
 	adminMentorsService := services.NewAdminMentorsService(mentorRepo, profileService, cfg, httpClient, analyticsTracker)
@@ -504,12 +522,20 @@ func main() { //nolint:gocyclo
 		confirmResendFloodLimiter, uploadAdmission,
 		mentorHandler, contactHandler, logsHandler, registrationHandler, reviewHandler, migrationIntentHandler,
 		mentorConfirmationHandler, usernameHandler)
+	if demoAuthHandler != nil {
+		v1.POST("/demo/login", contactRateLimiter.Middleware(), middleware.BodySizeLimitMiddleware(4*1024), demoAuthHandler.Login)
+	}
 
 	// Mentor admin routes (authentication, request management, and profile)
 	registerMentorAdminRoutes(router, cfg, mentorAuthRateLimiter, profileRateLimiter, uploadAdmission, mentorAuthHandler, mentorRequestsHandler, mentorProfileHandler, usernameHandler, mentorAuthService.GetTokenManager(), mentorRepo)
 
 	// Moderator/Admin web moderation routes
 	registerAdminModerationRoutes(router, cfg, adminAuthRateLimiter, profileRateLimiter, uploadAdmission, adminAuthHandler, adminMentorsHandler, adminMentorRequestsHandler, usernameHandler, adminAuthService.GetTokenManager(), moderatorRepo)
+
+	handlers.RegisterVacancyRoutes(router, pool, adminAuthService.GetTokenManager(), moderatorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure)
+	handlers.RegisterResearchRoutes(router, pool, adminAuthService.GetTokenManager(), moderatorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure)
+	handlers.RegisterRequestAnalyticsRoutes(router, pool, adminAuthService.GetTokenManager(), moderatorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure)
+	handlers.RegisterResearchCoverRoutes(router, adminAuthService.GetTokenManager(), moderatorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure, storageClient, profileRateLimiter.Middleware(), uploadAdmission.Middleware())
 
 	// Create HTTP server
 	// SECURITY: Bind to all interfaces for Docker Compose networking

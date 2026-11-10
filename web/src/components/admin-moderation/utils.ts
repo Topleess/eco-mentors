@@ -3,6 +3,15 @@
  */
 
 import type { MentorModerationStatus } from '@/types'
+import { createTranslator } from '@/i18n/core'
+import type { Locale } from '@/i18n/core'
+import { messages } from '@/i18n/messages/admin'
+
+export function moderationStatusLabel(status: string, locale: Locale = 'en'): string {
+  const keys = { draft: 'statusDraft', pending: 'statusPending', active: 'statusActive', inactive: 'statusInactive', declined: 'statusDeclined' } as const
+  const key = Object.prototype.hasOwnProperty.call(keys, status) ? keys[status as keyof typeof keys] : undefined
+  return key ? createTranslator(locale, messages)(key) : status
+}
 
 /**
  * Mentor lifecycle status pill classes (on-system, per redesign spec):

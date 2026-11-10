@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/mentor'
 /**
  * Meta row item — the label/value pairs under a request's message
  * ("Level", "Email", "Contact", "Received") on the mentor and admin
@@ -26,6 +28,7 @@ interface MetaItemProps {
 }
 
 export default function MetaItem({ label, value, href, copyable }: MetaItemProps): JSX.Element {
+  const { t } = useTranslation(messages)
   const [copied, setCopied] = useState(false)
   const copyResetTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
@@ -40,7 +43,7 @@ export default function MetaItem({ label, value, href, copyable }: MetaItemProps
     } catch {
       // Clipboard unavailable (permissions / insecure context) — fall back
       // to a prompt the reader can copy out of by hand.
-      window.prompt(`Copy ${label.toLowerCase()}:`, value)
+      window.prompt(t('copyPrompt', { label: label.toLowerCase() }), value)
     }
   }
 
@@ -64,8 +67,8 @@ export default function MetaItem({ label, value, href, copyable }: MetaItemProps
           <button
             type="button"
             onClick={handleCopy}
-            title={copied ? 'Copied' : `Copy ${label.toLowerCase()}`}
-            aria-label={copied ? `${label} copied` : `Copy ${label.toLowerCase()}`}
+            title={copied ? t('copied') : t('copyLabel', { label: label.toLowerCase() })}
+            aria-label={copied ? t('copiedLabel', { label }) : t('copyLabel', { label: label.toLowerCase() })}
             className="-mt-0.5 flex-none rounded-field p-1 text-[11px] text-ink-soft transition-colors duration-120 hover:bg-surface hover:text-ink"
           >
             <FontAwesomeIcon icon={copied ? faCheck : faCopy} />
@@ -73,7 +76,7 @@ export default function MetaItem({ label, value, href, copyable }: MetaItemProps
         )}
       </div>
       <span aria-live="polite" className="sr-only">
-        {copied ? `${label} copied to clipboard` : ''}
+        {copied ? t('clipboardLabel', { label }) : ''}
       </span>
     </div>
   )

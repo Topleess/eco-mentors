@@ -1,3 +1,8 @@
+import { translateLabel } from '@/i18n/labels'
+import { mentorMessage } from '@/components/mentor-admin/utils'
+import { statusLabel } from '@/components/mentor-admin/utils'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/mentor'
 /**
  * Request Details Page (design 08)
  *
@@ -14,7 +19,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircleNotch, faStar } from '@fortawesome/free-solid-svg-icons'
 import classNames from 'classnames'
 import type { MentorClientRequest, RequestStatus, DeclineReasonValue } from '@/types'
-import { STATUS_TRANSITIONS, STATUS_LABELS, ACTIVE_STATUSES } from '@/types'
+import { STATUS_TRANSITIONS, ACTIVE_STATUSES } from '@/types'
 import {
   MentorAuthProvider,
   useMentorAuth,
@@ -46,6 +51,7 @@ function canDecline(status: RequestStatus): boolean {
 }
 
 function RequestDetailsContent(): JSX.Element {
+  const { t, locale } = useTranslation(messages)
   const router = useRouter()
   const { id } = router.query
   const { isAuthenticated, isLoading: authLoading } = useMentorAuth()
@@ -73,12 +79,12 @@ function RequestDetailsContent(): JSX.Element {
         setError(null)
         const data = await getRequestById(id as string)
         if (!data) {
-          setError('Request not found')
+          setError(messages.requestNotFound.en)
         } else {
           setRequest(data)
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load the request')
+        setError(err instanceof Error ? err.message : messages.failedToLoadTheRequest.en)
       } finally {
         setIsLoading(false)
       }
@@ -97,7 +103,7 @@ function RequestDetailsContent(): JSX.Element {
       const updated = await updateRequestStatus(request.id, newStatus)
       setRequest(updated)
     } catch (err) {
-      setStatusError(err instanceof Error ? err.message : 'Failed to update the status')
+      setStatusError(err instanceof Error ? err.message : t('failedToUpdateTheStatus'))
     } finally {
       setIsUpdatingStatus(false)
     }
@@ -116,12 +122,12 @@ function RequestDetailsContent(): JSX.Element {
 
   // Show loading while checking auth
   if (authLoading || !isAuthenticated) {
-    return <AuthGateScreen title="Request" />
+    return <AuthGateScreen title={t('request')} />
   }
 
   return (
     <>
-      <NoIndexHead title={request ? `${request.name} — Request` : 'Request'} />
+      <NoIndexHead title={request ? t('requestTitle', { name: request.name }) : t('request')} />
 
       <MentorAdminLayout>
         <div className="max-w-[820px]">
@@ -131,7 +137,7 @@ function RequestDetailsContent(): JSX.Element {
               href={backLink}
               className="text-[13px] font-semibold text-brand-cobalt transition-colors duration-120 hover:text-brand-navy"
             >
-              ← All requests
+              {t('allRequests')}
             </Link>
           </div>
 
@@ -142,16 +148,16 @@ function RequestDetailsContent(): JSX.Element {
                 icon={faCircleNotch}
                 className="mb-3 animate-spin text-2xl text-brand-cobalt"
               />
-              <p className="my-0 text-sm text-ink-soft">Loading request...</p>
+              <p className="my-0 text-sm text-ink-soft">{t('loadingRequest')}</p>
             </div>
           )}
 
           {/* Error state */}
           {error && !isLoading && (
             <div className="rounded-panel border border-danger/40 bg-white p-6 text-center">
-              <p className="my-0 mb-4 text-sm font-medium text-danger">{error}</p>
+              <p className="my-0 mb-4 text-sm font-medium text-danger">{mentorMessage(locale, error)}</p>
               <Link href="/mentor" className="button">
-                Back to requests
+                {t('backToRequests')}
               </Link>
             </div>
           )}
@@ -183,7 +189,7 @@ function RequestDetailsContent(): JSX.Element {
                     >
                       {request.email}
                     </a>{' '}
-                    · requested {formatRelativeTime(request.createdAt)}
+                    {t('requested')} {formatRelativeTime(request.createdAt, locale)}
                   </div>
                 </div>
               </div>
@@ -191,22 +197,22 @@ function RequestDetailsContent(): JSX.Element {
               {/* Message card */}
               <div className="rounded-panel border border-line bg-white p-5 sm:px-7 sm:py-6">
                 <div className="mb-2.5 font-display text-[13px] font-extrabold uppercase tracking-[0.03em] text-ink">
-                  Their message
+                  {t('theirMessage')}
                 </div>
                 <p className="my-0 max-w-[640px] whitespace-pre-wrap text-[14.5px] leading-relaxed text-ink">
                   {request.details}
                 </p>
 
                 <div className="mt-4 grid grid-cols-2 gap-4 border-t border-line pt-4 sm:grid-cols-4 sm:gap-6">
-                  <MetaItem label="Level" value={request.level} />
+                  <MetaItem label={t('level')} value={translateLabel(locale, request.level)} />
                   <MetaItem
-                    label="Email"
+                    label={t('email')}
                     value={request.email}
                     href={`mailto:${request.email}`}
                     copyable
                   />
-                  {request.contact && <MetaItem label="Contact" value={request.contact} copyable />}
-                  <MetaItem label="Received" value={formatDateTime(request.createdAt)} />
+                  {request.contact && <MetaItem label={t('contact')} value={request.contact} copyable />}
+                  <MetaItem label={t('received')} value={formatDateTime(request.createdAt, locale)} />
                 </div>
               </div>
 
@@ -215,7 +221,7 @@ function RequestDetailsContent(): JSX.Element {
                 <div className="rounded-panel border border-line bg-white p-5 sm:px-7 sm:py-6">
                   <div className="mb-2.5 flex items-center gap-2 font-display text-[13px] font-extrabold uppercase tracking-[0.03em] text-ink">
                     <FontAwesomeIcon icon={faStar} className="text-brand-mint" />
-                    Review
+                    {t('review')}
                   </div>
                   <p className="my-0 whitespace-pre-wrap text-[14.5px] leading-relaxed text-ink">
                     {request.review}
@@ -226,16 +232,16 @@ function RequestDetailsContent(): JSX.Element {
               {/* Status timeline card */}
               <div className="rounded-panel border border-line bg-white p-5 sm:px-7 sm:py-6">
                 <div className="mb-2.5 font-display text-[13px] font-extrabold uppercase tracking-[0.03em] text-ink">
-                  Status
+                  {t('status')}
                 </div>
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
-                  <MetaItem label="Current status" value={STATUS_LABELS[request.status]} />
+                  <MetaItem label={t('currentStatus')} value={statusLabel(request.status, locale)} />
                   <MetaItem
-                    label="Status changed"
-                    value={formatDateTime(request.statusChangedAt)}
+                    label={t('statusChanged')}
+                    value={formatDateTime(request.statusChangedAt, locale)}
                   />
                   {request.scheduledAt && (
-                    <MetaItem label="Scheduled" value={formatDateTime(request.scheduledAt)} />
+                    <MetaItem label={t('scheduled')} value={formatDateTime(request.scheduledAt, locale)} />
                   )}
                 </div>
               </div>
@@ -243,13 +249,12 @@ function RequestDetailsContent(): JSX.Element {
               {/* Actions card */}
               <div className="rounded-panel border border-line bg-white p-5 sm:px-7 sm:py-6">
                 <div className="mb-2.5 font-display text-[13px] font-extrabold uppercase tracking-[0.03em] text-ink">
-                  Next steps
+                  {t('nextSteps')}
                 </div>
 
                 {(nextStatus || canDecline(request.status)) && (
                   <p className="my-0 mb-3.5 text-[13px] leading-normal text-ink-soft">
-                    Reply to {request.name.split(' ')[0]} by email from your own inbox — status
-                    updates here keep your dashboard in sync and notify the mentee.
+                    {t('replyTo')} {request.name.split(' ')[0]} {t('byEmailFromYourOwnInbox')}
                   </p>
                 )}
 
@@ -259,7 +264,7 @@ function RequestDetailsContent(): JSX.Element {
                     className="my-0 mb-3 animate-shake text-sm font-medium text-danger"
                     role="alert"
                   >
-                    {statusError}
+                    {mentorMessage(locale, statusError)}
                   </p>
                 )}
 
@@ -274,10 +279,9 @@ function RequestDetailsContent(): JSX.Element {
                       {isUpdatingStatus ? (
                         <>
                           <FontAwesomeIcon icon={faCircleNotch} className="mr-2 animate-spin" />
-                          Updating...
-                        </>
+                          {t('updating')} </>
                       ) : (
-                        `Mark as "${STATUS_LABELS[nextStatus]}"`
+                        t('markStatus', { status: statusLabel(nextStatus, locale) })
                       )}
                     </button>
                   )}
@@ -289,14 +293,14 @@ function RequestDetailsContent(): JSX.Element {
                       disabled={isUpdatingStatus}
                       className="button-destructive disabled:opacity-50"
                     >
-                      Decline…
+                      {t('decline')}
                     </button>
                   )}
 
                   {/* No actions available */}
                   {!nextStatus && !canDecline(request.status) && (
                     <p className="my-0 py-1 text-sm text-ink-soft">
-                      The request is closed — no actions available.
+                      {t('theRequestIsClosedNoActions')}
                     </p>
                   )}
                 </div>

@@ -8,13 +8,18 @@
  * mentee — the backend keeps admin edits silent.
  */
 
+import { useTranslation } from '@/i18n'
+import { translateLabel } from '@/i18n/labels'
+import type { Locale } from '@/i18n/core'
+import { messages } from '@/i18n/messages/admin-requests'
+import { statusLabel } from '@/components/mentor-admin/utils'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircleNotch, faStar } from '@fortawesome/free-solid-svg-icons'
 import type { AdminMentorDetails, MentorClientRequest, RequestStatus } from '@/types'
-import { ALL_REQUEST_STATUSES, STATUS_LABELS } from '@/types'
+import { ALL_REQUEST_STATUSES } from '@/types'
 import { AuthGateScreen, NoIndexHead } from '@/components'
 import { AdminAuthProvider, AdminLayout, useAdminAuth } from '@/components/admin-moderation'
 import {
@@ -32,11 +37,12 @@ import {
 const labelClass = 'mb-1 block text-[13px] font-semibold text-ink'
 
 /** statusChangedAt is NULL on rows that predate status tracking. */
-function formatOptionalDateTime(value: string | null): string {
-  return value ? formatDateTime(value) : '—'
+function formatOptionalDateTime(value: string | null, locale: Locale): string {
+  return value ? formatDateTime(value, locale) : '—'
 }
 
 function AdminRequestDetailsContent(): JSX.Element {
+  const { t, locale } = useTranslation(messages)
   const router = useRouter()
   const { id, requestId } = router.query
   const mentorId = Array.isArray(id) ? id[0] : id
@@ -77,15 +83,15 @@ function AdminRequestDetailsContent(): JSX.Element {
         ])
         if (!mounted) return
         if (!requestData) {
-          setError('Request not found')
+          setError('requestNotFound')
           return
         }
         setMentor(mentorData)
         setRequest(requestData)
         setSelectedStatus(requestData.status)
-      } catch (err) {
+      } catch {
         if (mounted) {
-          setError(err instanceof Error ? err.message : 'Failed to load the request')
+          setError('loadRequestError')
         }
       } finally {
         if (mounted) setIsLoading(false)
@@ -109,22 +115,22 @@ function AdminRequestDetailsContent(): JSX.Element {
       setRequest(updated)
       setSelectedStatus(updated.status)
       setSavedStatus(updated.status)
-    } catch (err) {
-      setStatusError(err instanceof Error ? err.message : 'Failed to update the status')
+    } catch {
+      setStatusError('updateError')
     } finally {
       setIsSaving(false)
     }
   }
 
-  if (authLoading || !isAuthenticated) {
-    return <AuthGateScreen title="Request" />
+  if (authLoading || !isAuthenticated || session?.role !== 'admin') {
+    return <AuthGateScreen title={t('detailTitle')} />
   }
 
   const isDirty = Boolean(request && selectedStatus && selectedStatus !== request.status)
 
   return (
-    <AdminLayout title="Request">
-      <NoIndexHead title={request ? `${request.name} — Request` : 'Request'} />
+    <AdminLayout title={t('detailTitle')}>
+      <NoIndexHead title={request ? t('namedTitle', { name: request.name }) : t('detailTitle')} />
 
       {mentorId && (
         <div className="mb-4 flex flex-wrap items-center gap-4">
@@ -132,19 +138,19 @@ function AdminRequestDetailsContent(): JSX.Element {
             href={`/admin/mentors/${encodeURIComponent(mentorId)}/requests`}
             className="text-sm font-semibold text-brand-cobalt transition-colors duration-120 hover:text-brand-navy"
           >
-            ← All requests
+            {t('allRequests')}
           </Link>
           <Link
             href={`/admin/mentors/${encodeURIComponent(mentorId)}`}
             className="text-sm font-semibold text-brand-cobalt transition-colors duration-120 hover:text-brand-navy"
           >
-            Mentor profile
+            {t('mentorProfile')}
           </Link>
         </div>
       )}
 
       {isLoading && (
-        <div className="flex items-center justify-center py-12">
+        <div role="status" aria-label={t('loading')} className="flex items-center justify-center py-12">
           <FontAwesomeIcon
             icon={faCircleNotch}
             className="animate-spin text-2xl text-brand-cobalt"
@@ -154,7 +160,7 @@ function AdminRequestDetailsContent(): JSX.Element {
 
       {error && !isLoading && (
         <div className="rounded-card border border-danger/40 bg-white p-4 text-sm font-medium text-danger">
-          {error}
+          {t(error as keyof typeof messages)}
         </div>
       )}
 
@@ -175,33 +181,33 @@ function AdminRequestDetailsContent(): JSX.Element {
               >
                 {request.email}
               </a>{' '}
-              · requested {formatRelativeTime(request.createdAt)}
-              {mentor ? ` · for ${mentor.name}` : ''}
+              · {t('requested', { time: formatRelativeTime(request.createdAt, locale) })}
+              {mentor ? t('forMentor', { name: mentor.name }) : ''}
             </div>
           </div>
 
           {/* Message */}
           <div className="rounded-panel border border-line bg-white p-5 sm:px-7 sm:py-6">
             <div className="mb-2.5 font-display text-[13px] font-extrabold uppercase tracking-[0.03em] text-ink">
-              Their message
+              {t('message')}
             </div>
             <p className="my-0 whitespace-pre-wrap text-[14.5px] leading-relaxed text-ink">
               {request.details}
             </p>
             <div className="mt-4 grid grid-cols-2 gap-4 border-t border-line pt-4 sm:grid-cols-4 sm:gap-6">
-              <MetaItem label="Level" value={request.level || '—'} />
+              <MetaItem label={t('level')} value={request.level ? translateLabel(locale, request.level) : '—'} />
               <MetaItem
-                label="Email"
+                label={t('email')}
                 value={request.email}
                 href={`mailto:${request.email}`}
                 copyable
               />
               {request.contact ? (
-                <MetaItem label="Contact" value={request.contact} copyable />
+                <MetaItem label={t('contact')} value={request.contact} copyable />
               ) : (
-                <MetaItem label="Contact" value="—" />
+                <MetaItem label={t('contact')} value="—" />
               )}
-              <MetaItem label="Received" value={formatDateTime(request.createdAt)} />
+              <MetaItem label={t('received')} value={formatDateTime(request.createdAt, locale)} />
             </div>
           </div>
 
@@ -210,7 +216,7 @@ function AdminRequestDetailsContent(): JSX.Element {
             <div className="rounded-panel border border-line bg-white p-5 sm:px-7 sm:py-6">
               <div className="mb-2.5 flex items-center gap-2 font-display text-[13px] font-extrabold uppercase tracking-[0.03em] text-ink">
                 <FontAwesomeIcon icon={faStar} className="text-brand-mint" />
-                Review
+                {t('review')}
               </div>
               <p className="my-0 whitespace-pre-wrap text-[14.5px] leading-relaxed text-ink">
                 {request.review}
@@ -222,10 +228,10 @@ function AdminRequestDetailsContent(): JSX.Element {
           {(request.declineReason || request.declineComment) && (
             <div className="rounded-panel border border-line bg-white p-5 sm:px-7 sm:py-6">
               <div className="mb-2.5 font-display text-[13px] font-extrabold uppercase tracking-[0.03em] text-ink">
-                Decline details
+                {t('declineDetails')}
               </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                <MetaItem label="Reason" value={request.declineReason || '—'} />
+                <MetaItem label={t('reason')} value={request.declineReason || '—'} />
               </div>
               {request.declineComment && (
                 <p className="my-0 mt-3 whitespace-pre-wrap text-[14.5px] leading-relaxed text-ink">
@@ -238,27 +244,26 @@ function AdminRequestDetailsContent(): JSX.Element {
           {/* Status + admin override */}
           <div className="rounded-panel border border-line bg-white p-5 sm:px-7 sm:py-6">
             <div className="mb-2.5 font-display text-[13px] font-extrabold uppercase tracking-[0.03em] text-ink">
-              Status
+              {t('status')}
             </div>
             <div className="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6">
-              <MetaItem label="Current status" value={STATUS_LABELS[request.status]} />
+              <MetaItem label={t('currentStatus')} value={statusLabel(request.status, locale)} />
               <MetaItem
-                label="Status changed"
-                value={formatOptionalDateTime(request.statusChangedAt)}
+                label={t('statusChanged')}
+                value={formatOptionalDateTime(request.statusChangedAt, locale)}
               />
               {request.scheduledAt && (
-                <MetaItem label="Scheduled" value={formatDateTime(request.scheduledAt)} />
+                <MetaItem label={t('scheduled')} value={formatDateTime(request.scheduledAt, locale)} />
               )}
-              <MetaItem label="Last modified" value={formatDateTime(request.modifiedAt)} />
+              <MetaItem label={t('lastModified')} value={formatDateTime(request.modifiedAt, locale)} />
             </div>
 
             <div className="border-t border-line pt-4">
               <label htmlFor="request-status" className={labelClass}>
-                Change status
+                {t('changeStatus')}
               </label>
               <p className="my-0 mb-2 text-[13px] text-ink-soft">
-                Admins can set any status, including moving a closed request back into the
-                mentor&apos;s active list. No email is sent to the mentee.
+                {t('statusHelp')}
               </p>
               <select
                 id="request-status"
@@ -273,14 +278,14 @@ function AdminRequestDetailsContent(): JSX.Element {
               >
                 {ALL_REQUEST_STATUSES.map((status) => (
                   <option key={status} value={status}>
-                    {STATUS_LABELS[status]}
+                    {statusLabel(status, locale)}
                   </option>
                 ))}
               </select>
 
               {statusError && (
                 <p className="my-0 mt-2 text-sm font-medium text-danger" role="alert">
-                  {statusError}
+                  {t(statusError as keyof typeof messages)}
                 </p>
               )}
 
@@ -294,22 +299,22 @@ function AdminRequestDetailsContent(): JSX.Element {
                   {isSaving ? (
                     <>
                       <FontAwesomeIcon icon={faCircleNotch} className="mr-2 animate-spin" />
-                      Updating...
+                      {t('updating')}
                     </>
                   ) : (
-                    'Update status'
+                    t('updateStatus')
                   )}
                 </button>
                 {savedStatus && !isDirty && (
                   <span className="text-sm font-medium text-mint-ink">
-                    Status set to &quot;{STATUS_LABELS[savedStatus]}&quot;.
+                    {t('statusSaved', { status: statusLabel(savedStatus, locale) })}
                   </span>
                 )}
               </div>
             </div>
           </div>
 
-          <div className="meta-mono text-ink-mute">Request ID: {request.id}</div>
+          <div className="meta-mono text-ink-mute">{t('requestId', { id: request.id })}</div>
         </div>
       )}
     </AdminLayout>

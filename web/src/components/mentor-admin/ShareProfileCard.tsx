@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/mentor'
 /**
  * "Share your profile" card for the mentor profile edit page.
  *
@@ -22,6 +24,7 @@ function shareUrl(slug: string): string {
 }
 
 export default function ShareProfileCard({ slug }: ShareProfileCardProps): JSX.Element {
+  const { t } = useTranslation(messages)
   const [copied, setCopied] = useState(false)
   const copyResetTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
@@ -44,7 +47,7 @@ export default function ShareProfileCard({ slug }: ShareProfileCardProps): JSX.E
       copyResetTimer.current = setTimeout(() => setCopied(false), 2000)
     } catch {
       // Clipboard unavailable (permissions/http) — fall back to a prompt.
-      window.prompt('Copy your profile link:', shareUrl(slug))
+      window.prompt(t('copyYourProfileLink'), shareUrl(slug))
     }
   }
 
@@ -52,10 +55,9 @@ export default function ShareProfileCard({ slug }: ShareProfileCardProps): JSX.E
     <div className="rounded-panel border-[1.5px] border-line bg-white p-5 sm:px-[26px] sm:py-[22px]">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-5">
         <div className="min-w-0">
-          <span className="font-name text-base font-bold text-ink">Share your profile</span>
+          <span className="font-name text-base font-bold text-ink">{t('shareYourProfile')}</span>
           <p className="my-0 mt-1 text-[13px] leading-normal text-ink-soft">
-            Your link unfurls into a card with your photo and price — a personal &ldquo;I mentor
-            here&rdquo; post reaches people the catalog never will.
+            {t('yourLinkUnfurlsIntoACard')}
           </p>
         </div>
         <div className="flex flex-none gap-2.5">
@@ -64,7 +66,7 @@ export default function ShareProfileCard({ slug }: ShareProfileCardProps): JSX.E
             onClick={handleLinkedInShare}
             className="button px-4 py-2.5 text-[13px]"
           >
-            Share on LinkedIn
+            {t('shareOnLinkedin')}
           </button>
           <button
             type="button"
@@ -72,7 +74,7 @@ export default function ShareProfileCard({ slug }: ShareProfileCardProps): JSX.E
             className="button-secondary px-4 py-2.5 text-[13px]"
             aria-live="polite"
           >
-            {copied ? 'Copied ✓' : 'Copy link'}
+            {copied ? t('copied2') : t('copyLink')}
           </button>
         </div>
       </div>

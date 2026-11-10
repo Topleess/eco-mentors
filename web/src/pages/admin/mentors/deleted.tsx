@@ -1,4 +1,6 @@
 import { NoIndexHead } from '@/components'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/admin'
 import { AdminAuthProvider, MentorModerationListPage } from '@/components/admin-moderation'
 
 /**
@@ -8,10 +10,11 @@ import { AdminAuthProvider, MentorModerationListPage } from '@/components/admin-
  * and the purge job erases it for good.
  */
 export default function DeletedMentorsPage(): JSX.Element {
+  const { t } = useTranslation(messages)
   return (
     <AdminAuthProvider>
-      <NoIndexHead title="Deleted mentors — moderation" />
-      <MentorModerationListPage status="deleted" title="Deleted Mentors" />
+      <NoIndexHead title={t('deletedHead')} />
+      <MentorModerationListPage status="deleted" title={t('deletedTitle')} />
     </AdminAuthProvider>
   )
 }

@@ -1,0 +1,1 @@
+{"name":"openmentor-local-object-storage","version":"1.0.0","private":true,"description":"Development-only S3-compatible file storage; not for production","dependencies":{"s3rver":"3.7.1"}}

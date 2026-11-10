@@ -1,3 +1,5 @@
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/public-pages'
 import Head from 'next/head'
 import Link from 'next/link'
 import { useEffect } from 'react'
@@ -6,7 +8,8 @@ import analytics from '@/lib/analytics'
 import { pageTitle } from '@/config/seo'
 
 export default function NotFound(): JSX.Element {
-  const title = pageTitle('404 – Page not found')
+  const { t } = useTranslation(messages)
+  const title = pageTitle(t('404PageNotFound'))
 
   useEffect(() => {
     analytics.event(analytics.events.NOT_FOUND_VIEWED, {
@@ -20,7 +23,7 @@ export default function NotFound(): JSX.Element {
         <title>{title}</title>
       </Head>
 
-      <MetaHeader customTitle="404 – Page not found" noIndex />
+      <MetaHeader customTitle={t('404PageNotFound')} noIndex />
 
       <NavHeader />
 
@@ -32,17 +35,15 @@ export default function NotFound(): JSX.Element {
           <div className="absolute right-0.5 top-0.5 h-4 w-4 rounded-full bg-brand-mint" />
         </div>
 
-        <p className="meta-mono mb-0 mt-6 text-ink-mute">Error 404</p>
+        <p className="meta-mono mb-0 mt-6 text-ink-mute">{t('error404')}</p>
 
-        <h1 className="mt-2 text-3xl sm:text-[40px]">Page not found</h1>
+        <h1 className="mt-2 text-3xl sm:text-[40px]">{t('pageNotFound')}</h1>
 
         <p className="mb-0 mt-3 max-w-[420px] text-[15px] leading-[1.6] text-ink-soft">
-          Looks like this page doesn&apos;t exist. It may have been moved or deleted.
-        </p>
+          {t('looksLikeThisPageDoesnTExist')}</p>
 
         <Link href="/" className="button-secondary mt-8">
-          ← Back to all mentors
-        </Link>
+          {t('backToAllMentors')}</Link>
       </main>
 
       <Footer />

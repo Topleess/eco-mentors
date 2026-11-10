@@ -1,3 +1,6 @@
+import LanguageSwitcher from '@/components/layout/LanguageSwitcher'
+import { useTranslation } from '@/i18n'
+import { messages } from '@/i18n/messages/mentor'
 /**
  * Layout component for Mentor Admin pages
  *
@@ -49,6 +52,7 @@ export default function MentorAdminLayout({
   title,
   actions,
 }: MentorAdminLayoutProps): JSX.Element {
+  const { t } = useTranslation(messages)
   const router = useRouter()
   const { session, logout } = useMentorAuth()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
@@ -72,9 +76,9 @@ export default function MentorAdminLayout({
   }
 
   const navItems = [
-    { href: '/mentor', label: 'Requests' },
-    { href: '/mentor/past', label: 'Archive' },
-    { href: '/mentor/profile/edit', label: 'My profile' },
+    { href: '/mentor', label: t('requests') },
+    { href: '/mentor/past', label: t('archive') },
+    { href: '/mentor/profile/edit', label: t('myProfile') },
   ]
 
   const logoutButton = (
@@ -83,7 +87,7 @@ export default function MentorAdminLayout({
       disabled={isLoggingOut}
       className="text-left text-[11px] text-ink-soft transition-colors duration-120 hover:text-ink disabled:opacity-50"
     >
-      {isLoggingOut ? 'Signing out...' : 'Log out'}
+      {isLoggingOut ? t('signingOut') : t('logOut')}
     </button>
   )
 
@@ -104,7 +108,7 @@ export default function MentorAdminLayout({
           </span>
         </Link>
 
-        <nav className="flex flex-col gap-0.5" aria-label="Dashboard">
+        <nav className="flex flex-col gap-0.5" aria-label={t('dashboard')}>
           {navItems.map((item) => (
             <NavItem
               key={item.href}
@@ -114,6 +118,8 @@ export default function MentorAdminLayout({
             />
           ))}
         </nav>
+
+        <div className="px-2.5 pt-4"><LanguageSwitcher /></div>
 
         <div className="flex-1" />
 
@@ -143,7 +149,7 @@ export default function MentorAdminLayout({
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
             className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-navy font-name text-xs font-bold text-white"
-            aria-label="Menu"
+            aria-label={t('menu')}
             aria-expanded={mobileMenuOpen}
           >
             {session ? nameInitials(session.name) : '☰'}
@@ -153,7 +159,7 @@ export default function MentorAdminLayout({
         {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="animate-dropdown-in border-b border-line bg-white px-5 py-3 md:hidden">
-            <nav className="flex flex-col gap-0.5" aria-label="Dashboard">
+            <nav className="flex flex-col gap-0.5" aria-label={t('dashboard')}>
               {navItems.map((item) => (
                 <NavItem
                   key={item.href}
@@ -164,6 +170,7 @@ export default function MentorAdminLayout({
                 />
               ))}
             </nav>
+            <div className="px-3.5 py-2"><LanguageSwitcher /></div>
             <div className="mt-2 border-t border-line px-3.5 pt-3">{logoutButton}</div>
           </div>
         )}
