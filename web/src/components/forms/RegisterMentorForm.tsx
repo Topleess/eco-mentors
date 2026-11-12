@@ -14,7 +14,6 @@ import { MAX_IMAGE_FILE_BYTES, MAX_IMAGE_FILE_LABEL } from '@/config/uploads'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircleNotch, faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
 import { Tooltip } from 'react-tooltip'
-import Link from 'next/link'
 import { useState, useRef, useEffect, type ChangeEvent, type DragEvent } from 'react'
 import type { RegisterMentorRequest, ProfilePictureData } from '@/types/api'
 import {
@@ -64,23 +63,23 @@ const selectStyles: StylesConfig<TagOption, true> = {
     ...base,
     padding: '5px 6px',
     borderWidth: '1.5px',
-    borderColor: state.isFocused ? '#2F5EFF' : '#DEDBD1', // cobalt / --om-line
+    borderColor: state.isFocused ? 'var(--om-bar)' : 'var(--om-line)', // cobalt / --om-line
     borderRadius: '12px',
-    boxShadow: state.isFocused ? '0 0 0 3px rgb(47 94 255 / 0.13)' : 'none',
+    boxShadow: state.isFocused ? '0 0 0 3px rgb(36 107 32 / 0.13)' : 'none',
     transition: 'border-color 120ms ease-out, box-shadow 120ms ease-out',
     '&:hover': {
-      borderColor: state.isFocused ? '#2F5EFF' : '#DEDBD1',
+      borderColor: state.isFocused ? 'var(--om-bar)' : 'var(--om-line)',
     },
   }),
   multiValue: (base) => ({
     ...base,
     borderRadius: '999px',
-    backgroundColor: '#132A52', // brand navy
+    backgroundColor: 'var(--ec-light-green)', // brand navy
     transition: 'background-color 120ms ease-in-out',
   }),
   multiValueLabel: (base) => ({
     ...base,
-    color: 'white',
+    color: 'var(--om-ink)',
     fontSize: '0.8125rem',
     fontWeight: 600,
     lineHeight: '1.25rem',
@@ -88,12 +87,12 @@ const selectStyles: StylesConfig<TagOption, true> = {
   }),
   multiValueRemove: (base) => ({
     ...base,
-    color: 'white',
+    color: 'var(--om-ink)',
     borderRadius: '0 999px 999px 0',
     paddingRight: '0.5rem',
     '&:hover': {
-      backgroundColor: '#0E2140', // navy, one step darker
-      color: 'white',
+      backgroundColor: 'var(--ec-green)', // navy, one step darker
+      color: 'var(--om-ink)',
     },
   }),
   option: (base, state) => ({
@@ -101,18 +100,18 @@ const selectStyles: StylesConfig<TagOption, true> = {
     fontSize: '0.875rem',
     lineHeight: '1.25rem',
     padding: '0.5rem 0.75rem',
-    color: state.isSelected ? 'white' : '#161A20', // ink
-    backgroundColor: state.isSelected ? '#2F5EFF' : state.isFocused ? '#F7F6F2' : 'white',
+    color: 'var(--om-ink)', // ink
+    backgroundColor: state.isSelected ? 'var(--ec-light-green)' : state.isFocused ? 'var(--om-paper-dim)' : 'white',
     '&:active': {
-      backgroundColor: '#EDEBE4', // surface-deep
+      backgroundColor: 'var(--ec-light-green)', // surface-deep
     },
   }),
   menu: (base) => ({
     ...base,
-    border: '1px solid #DEDBD1', // --om-line
+    border: '1px solid var(--om-line)', // --om-line
     borderRadius: '12px',
     overflow: 'hidden',
-    boxShadow: '0 16px 36px -12px rgb(19 42 82 / 0.25)', // shadow-dropdown
+    boxShadow: '0 16px 36px -12px rgb(0 0 0 / 0.25)', // shadow-dropdown
   }),
   input: (base) => ({
     ...base,
@@ -122,7 +121,7 @@ const selectStyles: StylesConfig<TagOption, true> = {
   placeholder: (base) => ({
     ...base,
     fontSize: '0.875rem',
-    color: '#5B6270', // ink-soft
+    color: 'var(--om-ink-soft)', // ink-soft
   }),
 }
 
@@ -482,7 +481,7 @@ export default function RegisterMentorForm({
                 )}
               >
                 <span className="select-none whitespace-nowrap py-2.5 pl-3.5 pr-0 font-mono text-sm text-ink-soft">
-                  openmentor.io/mentor/
+                  /mentor/
                 </span>
                 <input
                   type="text"
@@ -634,7 +633,7 @@ export default function RegisterMentorForm({
                   <input
                     type="text"
                     {...register('job', { required: true, maxLength: 200 })}
-                    id="job"
+                    id="job" placeholder={t('jobPlaceholder')}
                     autoComplete="organization-title"
                     className={classNames('field', errors.job && 'field-error')}
                   />
@@ -655,7 +654,7 @@ export default function RegisterMentorForm({
                   <input
                     type="text"
                     {...register('workplace', { required: true, maxLength: 200 })}
-                    id="workplace"
+                    id="workplace" placeholder={t('companyPlaceholder')}
                     autoComplete="organization"
                     className={classNames('field', errors.workplace && 'field-error')}
                   />
@@ -841,7 +840,7 @@ export default function RegisterMentorForm({
               <input
                 type="text"
                 {...register('competencies', { required: true, maxLength: 5000 })}
-                id="competencies"
+                id="competencies" placeholder="ОВОС, QGIS"
                 className={classNames('field', errors.competencies && 'field-error')}
               />
 
@@ -853,18 +852,7 @@ export default function RegisterMentorForm({
             <h2 className={sectionHeadingClass}>{' '}{t('schedulingSection')}{' '}</h2>
 
             <div>
-              <label htmlFor="calendarUrl" className={labelClass}>{' '}{t('calendarLabelPrefix')}{' '}<Link
-                  href="https://koalendar.com"
-                  target="_blank"
-                  className="link"
-                  rel="noreferrer"
-                >
-                  Koalendar
-                </Link>
-                ,{' '}
-                <Link href="https://calendly.com" target="_blank" className="link" rel="noreferrer">
-                  Calendly
-                </Link>{' '}{' '}{t('calendarLabelSuffix')}{' '}{' '}
+              <label htmlFor="calendarUrl" className={labelClass}>{' '}{t('calendarLabel')}{' '}{' '}
                 <a data-tooltip-id="calendar-tip">
                   <FontAwesomeIcon icon={faQuestionCircle} className="text-ink-soft" />
                 </a>

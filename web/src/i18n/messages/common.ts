@@ -22,7 +22,7 @@ export const messages = {
   research: { en: 'Research', ru: 'Исследования' },
   about: { en: 'About', ru: 'О проекте' },
   support: { en: 'Support us', ru: 'Поддержать проект' },
-  login: { en: 'Log in', ru: 'Войти' },
+  login: { en: 'Log in', ru: 'Войти в кабинет' },
   becomeMentor: { en: 'Become a mentor', ru: 'Стать ментором' },
   openMenu: { en: 'Open menu', ru: 'Открыть меню' },
   closeMenu: { en: 'Close menu', ru: 'Закрыть меню' },
@@ -37,8 +37,8 @@ export const messages = {
   madeWith: { en: 'Made with ♥ for the community', ru: 'Сделано с ♥ для сообщества' },
   cookieTitle: { en: 'Cookie consent', ru: 'Настройки cookie' },
   cookieCopy: {
-    en: 'We use analytics cookies to improve OpenMentor. Essential cookies are always on.',
-    ru: 'Мы используем аналитические cookie, чтобы улучшать OpenMentor. Необходимые cookie работают всегда.',
+    en: 'We use analytics cookies to improve EcoCareer Mentors. Essential cookies are always on.',
+    ru: 'Мы используем аналитические cookie, чтобы улучшать сервис «Менторы ЭкоКарьеры». Необходимые cookie работают всегда.',
   },
   learnMore: { en: 'Learn more', ru: 'Подробнее' },
   accept: { en: 'Accept', ru: 'Принять' },
@@ -51,11 +51,11 @@ export const messages = {
     ru: 'Не удалось сменить язык. Попробуйте ещё раз.',
   },
   seoTitle: {
-    en: 'OpenMentor.io — an open community of tech mentors',
-    ru: 'OpenMentor.io — открытое сообщество IT-менторов',
+    en: 'EcoCareer Mentors — an open community of environmental mentors',
+    ru: 'Наставники ЭкоКарьеры — карьера в сфере экологии',
   },
   seoDescription: {
-    en: 'OpenMentor is an open community of tech mentors sharing their experience in one-on-one conversations. Free to browse, zero commission — many mentors are free.',
-    ru: 'OpenMentor — открытое сообщество IT-менторов, которые делятся опытом на личных встречах. Свободный доступ к каталогу, без комиссии. Многие менторы помогают бесплатно.',
+    en: 'An open community of mentors for sharing experience, developing skills and professional growth.',
+    ru: 'Открытое сообщество менторов для передачи опыта, развития навыков и профессионального роста.',
   },
 } satisfies Messages

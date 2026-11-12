@@ -100,12 +100,6 @@ export default function ConfirmMentorEmail(): JSX.Element {
     }
   }
 
-  const supportLink = (
-    <a className="link" href="mailto:hello@openmentor.io">
-      hello@openmentor.io
-    </a>
-  )
-
   return (
     <>
       <Head>
@@ -146,7 +140,6 @@ export default function ConfirmMentorEmail(): JSX.Element {
           {state === 'invalid' && (
             <div className="mt-8 rounded-2xl bg-surface p-6 sm:p-8">
               <p className="mt-0 text-lg font-medium text-ink">{' '}{t('confirmInvalid')}{' '}</p>
-              <p>{' '}{t('confirmInvalidPrefix')}{' '}{supportLink}{' '}{t('supportSuffix')}{' '}</p>
             </div>
           )}
 
@@ -168,15 +161,12 @@ export default function ConfirmMentorEmail(): JSX.Element {
           {state === 'resent' && (
             <div className="mt-8 rounded-2xl bg-surface p-6 sm:p-8">
               <p className="mt-0 text-lg font-medium text-ink">{' '}{t('confirmResent')}{' '}</p>
-              <p>{' '}{t('confirmResentPrefix')}{' '}{supportLink}.
-              </p>
             </div>
           )}
 
           {state === 'error' && (
             <div className="mt-8 rounded-2xl bg-surface p-6 sm:p-8">
               <p className="mt-0 text-lg font-medium text-ink">{' '}{t('genericError')}{' '}</p>
-              <p>{' '}{t('confirmErrorPrefix')}{' '}{supportLink}{' '}{t('supportSuffix')}{' '}</p>
             </div>
           )}
         </div>

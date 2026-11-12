@@ -6,8 +6,8 @@ import { legalMessages } from '@/i18n/messages/legal'
 import { pageTitle } from '@/config/seo'
 
 export default function Terms(): JSX.Element {
-  const { t, locale } = useTranslation(legalMessages)
-  const title = pageTitle('Terms of Service')
+  const { t } = useTranslation(legalMessages)
+  const title = pageTitle(t('termsTermsOfService'))
 
   return (
     <>
@@ -15,7 +15,7 @@ export default function Terms(): JSX.Element {
         <title>{title}</title>
       </Head>
 
-      <MetaHeader customTitle="Terms of Service" />
+      <MetaHeader customTitle={t('termsTermsOfService')} />
 
       <NavHeader />
 
@@ -32,12 +32,6 @@ export default function Terms(): JSX.Element {
       <main>
         <Section className="bg-white py-12">
           <div className="prose mx-auto max-w-[720px] px-4 prose-headings:font-display prose-headings:font-extrabold prose-headings:uppercase prose-h2:text-xl prose-h2:tracking-[-0.01em] prose-h3:text-base prose-hr:border-line">
-            {locale === 'ru' && (
-              <p className="text-sm text-ink-soft">
-                {t('translationNotice')}{' '}
-                <Link href="/terms" locale="en">{t('originalEnglish')}</Link>
-              </p>
-            )}
             <p>
               <strong>{t('termsLastUpdated')}</strong>{t('terms9July2026')}</p>
 
@@ -113,15 +107,8 @@ export default function Terms(): JSX.Element {
             <p>{t('termsWeMayModifyOrDiscontinuePartsOf')}{' '}
               <Link href="/terms">{t('termsOpenmentorIoTerms')}</Link>{t('termsTogetherWithItsLastUpdatedDateFor')}</p>
 
-            <h2>{t('terms11GoverningLawAndJurisdiction')}</h2>
 
-            <p>{t('termsTheseTermsAreGovernedByTheLaws')}</p>
 
-            <h2>{t('terms12Contact')}</h2>
-
-            <p>{t('termsQuestionsAboutTheseTerms')}{' '}
-              <a href="mailto:hello@openmentor.io">{t('termsHelloOpenmentorIo')}</a>{t('termsPrivacyMatters')}{' '}
-              <a href="mailto:privacy@openmentor.io">{t('termsPrivacyOpenmentorIo')}</a>{t('terms')}</p>
           </div>
         </Section>
       </main>

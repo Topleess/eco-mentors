@@ -11,6 +11,7 @@ package email
 import (
 	"context"
 	"fmt"
+	"net/mail"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -25,10 +26,9 @@ import (
 )
 
 const (
-	// senderEmail / senderName mirror PostboxEmailSender.SENDER_EMAIL and
-	// SENDER_NAME in openmentor-func/lib/postbox/PostboxEmailSender.ts.
+	// Keep the existing verified mailbox until the client supplies its sender identity.
 	senderEmail = "hello@openmentor.io"
-	senderName  = "The OpenMentor Team"
+	senderName  = "Менторы ЭкоКарьеры"
 
 	// DefaultModeratorsEmail is the fallback moderators mailbox used when
 	// MODERATORS_EMAIL is not configured (mirrors the func app's default).
@@ -109,7 +109,7 @@ func (s *Sender) BuildSendEmailInput(msg Message) (*sesv2.SendEmailInput, error)
 	recipient := ResolveRecipient(msg.Recipient, s.devEmailOverride, s.appEnv)
 
 	return &sesv2.SendEmailInput{
-		FromEmailAddress: aws.String(fmt.Sprintf("%s <%s>", senderName, senderEmail)),
+		FromEmailAddress: aws.String((&mail.Address{Name: senderName, Address: senderEmail}).String()),
 		Destination: &sesv2types.Destination{
 			ToAddresses: []string{recipient},
 		},

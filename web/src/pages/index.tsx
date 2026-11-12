@@ -191,14 +191,7 @@ const homeJsonLd: Record<string, unknown> = {
         {/* ── Hero ─────────────────────────────────────────────────────── */}
         <section data-section="header" className="px-5 pt-7 sm:px-8 sm:pt-12 lg:px-16 lg:pt-16">
           <h1 className="text-[38px] leading-none sm:text-5xl md:text-6xl lg:text-7xl lg:leading-[0.98]">
-            {t('yourMentorship')}<br className="hidden md:block" /> {t('journey')}{' '}
-            <span className="text-brand-cobalt">{t('starts')}</span>{' '}
-            <span className="relative z-0">
-              {t('here')}<span
-                aria-hidden="true"
-                className="absolute inset-x-0 bottom-0.5 -z-10 h-2 bg-brand-mint opacity-[0.55] lg:bottom-1 lg:h-3"
-              />
-            </span>
+            {t('heroHeadline')}
           </h1>
 
           <p className="my-0 mt-3 max-w-[520px] text-sm leading-[1.5] text-ink-soft sm:mt-5 sm:text-[17px] sm:leading-[1.55]">
@@ -223,8 +216,6 @@ const homeJsonLd: Record<string, unknown> = {
             <span>{t('0Commission')}</span>
             <span aria-hidden="true">·</span>
             <span>{t('manyMentorsFree')}</span>
-            <span aria-hidden="true">·</span>
-            <span>{t('donationFunded')}</span>
           </p>
         </section>
 
@@ -320,44 +311,6 @@ const homeJsonLd: Record<string, unknown> = {
           </div>
         </section>
 
-        {/* ── Support us ───────────────────────────────────────────────── */}
-        <section
-          data-section="support"
-          className="border-t border-line bg-white px-5 py-6 sm:px-8 sm:py-14 lg:px-16"
-        >
-          <div className="relative mx-auto flex max-w-[1100px] flex-col items-center gap-3 overflow-hidden rounded-panel bg-pastel-sky-grad px-5 py-6 text-center lg:flex-row lg:items-center lg:gap-11 lg:rounded-[20px] lg:px-[52px] lg:py-11 lg:text-left">
-            {/* decorative oversized ring, overflowing top-right */}
-            <div
-              aria-hidden="true"
-              className="absolute -right-[70px] -top-[70px] hidden h-[260px] w-[260px] rounded-full border-[34px] border-brand-navy/[0.08] lg:block"
-            />
-
-            {/* CSS logomark composition (ring + bar + dot) */}
-            <div aria-hidden="true" className="relative h-14 w-14 flex-none lg:h-24 lg:w-24">
-              <div className="m-1.5 h-11 w-11 rounded-full border-[6px] border-brand-navy lg:m-[9px] lg:h-[78px] lg:w-[78px] lg:border-[10px]" />
-              <div className="absolute bottom-3.5 hidden h-2.5 w-11 -rotate-[35deg] rounded-full bg-brand-cobalt lg:-left-4 lg:block" />
-              <div className="absolute right-0 top-0.5 h-[13px] w-[13px] rounded-full bg-brand-mint lg:right-1 lg:top-1 lg:h-5 lg:w-5" />
-            </div>
-
-            <div className="relative flex-1">
-              <h2 className="my-0 text-xl leading-[1.05] sm:text-[26px] lg:text-[32px] lg:leading-[1.02]">
-                {t('freeBecause')}{' '}<span className="text-brand-cobalt">{t('you')}</span> {t('keepItFree')}</h2>
-              <p className="mx-auto my-0 mt-2 max-w-[520px] text-[13px] leading-[1.5] text-ink-mute lg:mx-0 lg:mt-2.5 lg:hidden">
-                {t('donationsAreOurOnlyIncomeNoAds')}</p>
-              <p className="my-0 mt-2.5 hidden max-w-[520px] text-[15px] leading-[1.55] text-ink-mute lg:block">
-                {t('donationsAreOurOnlyIncomeNoAds2')}</p>
-            </div>
-
-            <div className="relative flex w-full flex-none flex-col items-center gap-2.5 lg:w-auto">
-              <Link
-                href="/donate"
-                className="button w-full px-[30px] py-[15px] text-[15px] lg:w-auto lg:py-4"
-              >
-                {t('supportUs')}</Link>
-              <span className="meta-mono hidden text-ink-mute lg:block">{t('viaKoFiAnyAmount')}</span>
-            </div>
-          </div>
-        </section>
       </main>
 
       <Footer />

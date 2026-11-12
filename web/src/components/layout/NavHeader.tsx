@@ -5,27 +5,12 @@ import { messages } from '@/i18n/messages/common'
 import LanguageSwitcher from './LanguageSwitcher'
 import classNames from 'classnames'
 import Link from 'next/link'
-import Image from 'next/image'
+import BrandLogo from '@/components/brand/BrandLogo'
 import GitHubIcon from '../ui/GitHubIcon'
 
-/**
- * Redesign header (design 01–09): logomark + Archivo wordmark on the left,
- * contextual links + primary CTA on the right, hairline bottom border.
- * Search lives in the homepage hero now, not in the header.
- */
-
-/** Wordmark: "openmentor" navy + ".io" cobalt, Archivo 800 CAPS. */
+/** Two-line identity; font is inherited from the shared Inter stack. */
 export function Wordmark({ compact = false }: { compact?: boolean }): JSX.Element {
-  return (
-    <span
-      className={classNames(
-        'font-display font-extrabold uppercase tracking-[-0.02em] text-brand-navy',
-        compact ? 'text-[15px]' : 'text-[15px] sm:text-xl',
-      )}
-    >
-      openmentor<span className="text-brand-cobalt">.io</span>
-    </span>
-  )
+  return <span className={classNames('font-sans font-normal leading-[1.18] tracking-[-0.025em]', compact ? 'text-[15px]' : 'text-[18px]')}><span className="block">Лаборатория</span><span className="block">ЭкоКарьеры</span></span>
 }
 
 interface NavHeaderProps {
@@ -43,21 +28,13 @@ export default function NavHeader({ className, backLink }: NavHeaderProps): JSX.
 
   return (
     <header className={classNames('border-b border-line bg-white', className)}>
-      <div className="flex items-center justify-between px-5 py-4 sm:px-8 sm:py-5 lg:px-16">
-        <Link href="/" className="flex shrink-0 items-center gap-2 sm:gap-3">
-          <Image
-            src="/brand/logo/svg/logomark.svg"
-            width={40}
-            height={40}
-            alt=""
-            unoptimized
-            className="h-8 w-8 sm:h-10 sm:w-10"
-          />
-          <Wordmark />
+      <div className="flex items-center justify-between gap-3 px-5 py-4 sm:px-8 sm:py-5 lg:px-16">
+        <Link href="/" aria-label="Лаборатория ЭкоКарьеры" className="mr-auto shrink-0">
+          <BrandLogo />
         </Link>
 
         {/* desktop nav */}
-        <nav className="hidden items-center gap-6 md:flex">
+        <nav className="hidden items-center gap-5 xl:flex">
           {backLink ? (
             <Link href={backLink.href} className="text-sm font-semibold text-brand-cobalt">
               ← {backLink.label}
@@ -92,12 +69,6 @@ export default function NavHeader({ className, backLink }: NavHeaderProps): JSX.
                 {t('about')}
               </Link>
               <Link
-                href="/donate"
-                className="text-sm font-semibold text-ink hover:text-brand-cobalt"
-              >
-                {t('support')}
-              </Link>
-              <Link
                 href="/mentor/login"
                 className="text-sm font-semibold text-ink hover:text-brand-cobalt"
               >
@@ -107,7 +78,7 @@ export default function NavHeader({ className, backLink }: NavHeaderProps): JSX.
           )}
           <Link
             href="/bementor"
-            className="rounded-btn bg-brand-navy px-5 py-3 text-sm font-bold !text-white transition-colors hover:bg-[#1B3A6E]"
+            className="button whitespace-nowrap"
           >
             {t('becomeMentor')}
           </Link>
@@ -120,8 +91,9 @@ export default function NavHeader({ className, backLink }: NavHeaderProps): JSX.
           type="button"
           aria-label={open ? t('closeMenu') : t('openMenu')}
           aria-expanded={open}
+          aria-controls="site-mobile-navigation"
           onClick={() => setOpen(!open)}
-          className="flex h-11 w-11 flex-col items-center justify-center gap-[5px] md:hidden"
+          className="flex h-11 w-11 flex-col items-center justify-center gap-[5px] xl:hidden"
         >
           <span
             className={classNames(
@@ -146,7 +118,7 @@ export default function NavHeader({ className, backLink }: NavHeaderProps): JSX.
 
       {/* mobile menu */}
       {open && (
-        <nav className="flex animate-dropdown-in flex-col gap-1 border-t border-line px-5 py-4 md:hidden">
+        <nav id="site-mobile-navigation" className="flex animate-dropdown-in flex-col gap-1 border-t border-line px-5 py-4 xl:hidden">
           {backLink && (
             <Link
               href={backLink.href}
@@ -188,13 +160,6 @@ export default function NavHeader({ className, backLink }: NavHeaderProps): JSX.
             {t('about')}
           </Link>
           <Link
-            href="/donate"
-            className="rounded-field px-3 py-3 text-sm font-semibold text-ink hover:bg-surface"
-            onClick={() => setOpen(false)}
-          >
-            {t('support')}
-          </Link>
-          <Link
             href="/mentor/login"
             className="rounded-field px-3 py-3 text-sm font-semibold text-ink hover:bg-surface"
             onClick={() => setOpen(false)}
@@ -203,7 +168,7 @@ export default function NavHeader({ className, backLink }: NavHeaderProps): JSX.
           </Link>
           <Link
             href="/bementor"
-            className="mt-2 rounded-btn bg-brand-navy px-5 py-3.5 text-center text-sm font-bold !text-white"
+            className="button mt-2"
             onClick={() => setOpen(false)}
           >
             {t('becomeMentor')}

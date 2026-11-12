@@ -2,16 +2,16 @@ import type { Messages } from '@/i18n/core'
 
 export const legalMessages = {
   "privacyOpenMentorIoLegal": {
-    "en": "OpenMentor.io · Legal",
-    "ru": "OpenMentor.io · Правовые документы"
+    "en": "EcoCareer Mentors · Legal",
+    "ru": "Менторы ЭкоКарьеры · Правовые документы"
   },
   "privacyPrivacyPolicy": {
     "en": "Privacy Policy",
     "ru": "Политика конфиденциальности"
   },
   "privacyForTheOpenMentorIoService": {
-    "en": "for the OpenMentor.io service",
-    "ru": "для сервиса OpenMentor.io"
+    "en": "for the EcoCareer Mentors service",
+    "ru": "для сервиса Менторы ЭкоКарьеры"
   },
   "privacyLastUpdated": {
     "en": "Last updated:",
@@ -34,8 +34,8 @@ export const legalMessages = {
     "ru": "Сайт:"
   },
   "privacyHttpsOpenmentorIo": {
-    "en": "https://openmentor.io",
-    "ru": "https://openmentor.io"
+    "en": "/",
+    "ru": "/"
   },
   "privacyPrivacyContact": {
     "en": "Privacy contact:",
@@ -54,16 +54,16 @@ export const legalMessages = {
     "ru": "hello@openmentor.io"
   },
   "privacyThisPolicyExplainsWhatPersonalDataOpenMentor": {
-    "en": "This Policy explains what personal data OpenMentor.io (“OpenMentor”, “we”, “us”) collects, why we collect it, who we share it with, and what rights you have. We process personal data in accordance with the EU General Data Protection Regulation (GDPR).",
-    "ru": "Эта Политика объясняет, какие персональные данные собирает OpenMentor.io («OpenMentor», «мы», «нас»), зачем мы их собираем, кому передаём и какие права у вас есть. Мы обрабатываем персональные данные в соответствии с EU General Data Protection Regulation (GDPR)."
+    "en": "This Policy explains what personal data EcoCareer Mentors (“EcoCareer Mentors”, “we”, “us”) collects, why we collect it, who we share it with, and what rights you have. We process personal data in accordance with the EU General Data Protection Regulation (GDPR).",
+    "ru": "Эта Политика объясняет, какие персональные данные собирает Менторы ЭкоКарьеры («Менторы ЭкоКарьеры», «мы», «нас»), зачем мы их собираем, кому передаём и какие права у вас есть. Мы обрабатываем персональные данные в соответствии с EU General Data Protection Regulation (GDPR)."
   },
   "privacy1WhatOpenMentorDoes": {
-    "en": "1. What OpenMentor does",
-    "ru": "1. Чем занимается OpenMentor"
+    "en": "1. What EcoCareer Mentors does",
+    "ru": "1. Чем занимается Менторы ЭкоКарьеры"
   },
   "privacyOpenMentorIsAnOnlinePlatformThatConnects": {
-    "en": "OpenMentor is an online platform that connects mentors with people looking for mentorship (mentees). Mentors publish a public profile; mentees send contact requests to a mentor of their choice. We act as a technical intermediary — sessions, payments, and any further communication happen directly between the mentor and the mentee.",
-    "ru": "OpenMentor — онлайн-платформа, которая связывает менторов с людьми, ищущими наставничество (менти). Менторы публикуют общедоступные профили; менти отправляют запросы на связь выбранному ментору. Мы выступаем техническим посредником — сессии, платежи и любое дальнейшее общение происходят напрямую между ментором и менти."
+    "en": "EcoCareer Mentors is an online platform that connects mentors with people looking for mentorship (mentees). Mentors publish a public profile; mentees send contact requests to a mentor of their choice. We act as a technical intermediary — sessions, payments, and any further communication happen directly between the mentor and the mentee.",
+    "ru": "Менторы ЭкоКарьеры — онлайн-платформа, которая связывает менторов с людьми, ищущими наставничество (менти). Менторы публикуют общедоступные профили; менти отправляют запросы на связь выбранному ментору. Мы выступаем техническим посредником — сессии, платежи и любое дальнейшее общение происходят напрямую между ментором и менти."
   },
   "privacy2WhatDataWeCollect": {
     "en": "2. What data we collect",
@@ -526,24 +526,24 @@ export const legalMessages = {
     "ru": "Мы можем время от времени обновлять эту Политику. Текущая версия всегда доступна по адресу"
   },
   "privacyOpenmentorIoPrivacy": {
-    "en": "openmentor.io/privacy",
-    "ru": "openmentor.io/privacy"
+    "en": "/privacy",
+    "ru": "/privacy"
   },
   "privacyForSignificantChangesWeWillProvideNotice": {
     "en": ". For significant changes we will provide notice on the site.",
     "ru": ". О существенных изменениях мы сообщим на сайте."
   },
   "termsOpenMentorIoLegal": {
-    "en": "OpenMentor.io · Legal",
-    "ru": "OpenMentor.io · Правовые документы"
+    "en": "EcoCareer Mentors · Legal",
+    "ru": "Менторы ЭкоКарьеры · Правовые документы"
   },
   "termsTermsOfService": {
     "en": "Terms of Service",
     "ru": "Условия использования"
   },
   "termsForTheOpenMentorIoService": {
-    "en": "for the OpenMentor.io service",
-    "ru": "для сервиса OpenMentor.io"
+    "en": "for the EcoCareer Mentors service",
+    "ru": "для сервиса Менторы ЭкоКарьеры"
   },
   "termsLastUpdated": {
     "en": "Last updated:",
@@ -554,20 +554,20 @@ export const legalMessages = {
     "ru": " 9 July 2026"
   },
   "termsTheseTermsOfServiceTermsGovernYour": {
-    "en": "These Terms of Service (“Terms”) govern your use of the OpenMentor.io website and service (“OpenMentor”, the “Service”, “we”, “us”). The Service is operated by Georgiy Mogelashvili, an individual based in the Netherlands. By using the Service, you agree to these Terms. If you do not agree, please do not use the Service.",
-    "ru": "Эти Условия использования («Условия») регулируют использование вами сайта и сервиса OpenMentor.io («OpenMentor», «Сервис», «мы», «нас»). Оператор Сервиса — Georgiy Mogelashvili, физическое лицо, находящееся в Netherlands. Используя Сервис, вы соглашаетесь с этими Условиями. Если вы не согласны, пожалуйста, не используйте Сервис."
+    "en": "These Terms of Service (“Terms”) govern your use of EcoCareer Mentors (the “Service”, “we”, “us”). By using the Service, you agree to these Terms. If you do not agree, please do not use the Service.",
+    "ru": "Эти Условия использования («Условия») регулируют использование сайта и сервиса «Менторы ЭкоКарьеры» («Сервис», «мы»). Используя Сервис, вы соглашаетесь с этими Условиями. Если вы не согласны, пожалуйста, не используйте Сервис."
   },
   "terms1WhatTheServiceIs": {
     "en": "1. What the Service is",
     "ru": "1. Что представляет собой Сервис"
   },
   "termsOpenMentorIsAnOnlinePlatformThatProvides": {
-    "en": "OpenMentor is an online platform that provides the technical means for establishing contact between experts (“mentors”) and people seeking mentorship or advice (“mentees”). Mentors publish public profiles; mentees browse the catalog and send contact requests to a mentor of their choice.",
-    "ru": "OpenMentor — онлайн-платформа, предоставляющая технические средства для установления контакта между экспертами («менторами») и людьми, ищущими наставничество или совет («менти»). Менторы публикуют общедоступные профили; менти просматривают каталог и отправляют запросы на связь выбранному ментору."
+    "en": "EcoCareer Mentors is an online platform that provides the technical means for establishing contact between experts (“mentors”) and people seeking mentorship or advice (“mentees”). Mentors publish public profiles; mentees browse the catalog and send contact requests to a mentor of their choice.",
+    "ru": "Менторы ЭкоКарьеры — онлайн-платформа, предоставляющая технические средства для установления контакта между экспертами («менторами») и людьми, ищущими наставничество или совет («менти»). Менторы публикуют общедоступные профили; менти просматривают каталог и отправляют запросы на связь выбранному ментору."
   },
   "termsOpenMentorIsA": {
-    "en": "OpenMentor is a ",
-    "ru": "OpenMentor — "
+    "en": "EcoCareer Mentors is a ",
+    "ru": "Менторы ЭкоКарьеры — "
   },
   "termsTechnicalIntermediaryOnly": {
     "en": "technical intermediary only",
@@ -582,8 +582,8 @@ export const legalMessages = {
     "ru": "2. Отсутствие обработки платежей"
   },
   "termsOpenMentorDoesNotProcessPaymentsAndDoes": {
-    "en": "OpenMentor does not process payments and does not take a commission. Any prices shown in mentor profiles are set by the mentors themselves. Payment for sessions, if any, is agreed and settled ",
-    "ru": "OpenMentor не обрабатывает платежи и не взимает комиссию. Любые цены в профилях устанавливаются самими менторами. Оплата сессий, если она предусмотрена, согласовывается и производится "
+    "en": "EcoCareer Mentors does not process payments and does not take a commission. Any prices shown in mentor profiles are set by the mentors themselves. Payment for sessions, if any, is agreed and settled ",
+    "ru": "Менторы ЭкоКарьеры не обрабатывает платежи и не взимает комиссию. Любые цены в профилях устанавливаются самими менторами. Оплата сессий, если она предусмотрена, согласовывается и производится "
   },
   "termsDirectlyBetweenTheMentorAndTheMentee": {
     "en": "directly between the mentor and the mentee",
@@ -730,8 +730,8 @@ export const legalMessages = {
     "ru": "8. Ограничение ответственности"
   },
   "termsToTheMaximumExtentPermittedByApplicable": {
-    "en": "To the maximum extent permitted by applicable law, OpenMentor and its operator shall not be liable for any indirect, incidental, consequential, special, or punitive damages, or for any loss of profits, revenue, data, or reputation, arising out of or in connection with the use of the Service, including any consequences of actions or omissions of mentors or mentees during or following their interaction. Nothing in these Terms excludes or limits any liability that cannot be excluded or limited under applicable law, including liability for damage caused by intent or gross negligence, and nothing in these Terms affects statutory rights you hold as a consumer.",
-    "ru": "В максимальной степени, допускаемой применимым правом, OpenMentor и его оператор не несут ответственности за любые косвенные, случайные, последующие, особые или штрафные убытки, а также за потерю прибыли, выручки, данных или репутации, возникающие вследствие или в связи с использованием Сервиса, включая любые последствия действий или бездействия менторов или менти во время или после их взаимодействия. Ничто в этих Условиях не исключает и не ограничивает ответственность, которую нельзя исключить или ограничить по применимому праву, включая ответственность за ущерб, причинённый умышленно или вследствие грубой неосторожности, и ничто в этих Условиях не затрагивает ваши установленные законом права как потребителя."
+    "en": "To the maximum extent permitted by applicable law, EcoCareer Mentors and its operator shall not be liable for any indirect, incidental, consequential, special, or punitive damages, or for any loss of profits, revenue, data, or reputation, arising out of or in connection with the use of the Service, including any consequences of actions or omissions of mentors or mentees during or following their interaction. Nothing in these Terms excludes or limits any liability that cannot be excluded or limited under applicable law, including liability for damage caused by intent or gross negligence, and nothing in these Terms affects statutory rights you hold as a consumer.",
+    "ru": "В максимальной степени, допускаемой применимым правом, Менторы ЭкоКарьеры и его оператор не несут ответственности за любые косвенные, случайные, последующие, особые или штрафные убытки, а также за потерю прибыли, выручки, данных или репутации, возникающие вследствие или в связи с использованием Сервиса, включая любые последствия действий или бездействия менторов или менти во время или после их взаимодействия. Ничто в этих Условиях не исключает и не ограничивает ответственность, которую нельзя исключить или ограничить по применимому праву, включая ответственность за ущерб, причинённый умышленно или вследствие грубой неосторожности, и ничто в этих Условиях не затрагивает ваши установленные законом права как потребителя."
   },
   "terms9Privacy": {
     "en": "9. Privacy",
@@ -750,8 +750,8 @@ export const legalMessages = {
     "ru": "Мы можем изменять или прекращать работу отдельных частей Сервиса, а также время от времени обновлять эти Условия. Текущая версия всегда доступна по адресу"
   },
   "termsOpenmentorIoTerms": {
-    "en": "openmentor.io/terms",
-    "ru": "openmentor.io/terms"
+    "en": "/terms",
+    "ru": "/terms"
   },
   "termsTogetherWithItsLastUpdatedDateFor": {
     "en": ", together with its “last updated” date. For material changes we will provide reasonable notice on the site. Continued use of the Service after changes take effect constitutes acceptance of the updated Terms; if you do not agree with a change, stop using the Service.",

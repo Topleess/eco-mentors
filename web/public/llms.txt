@@ -1,37 +1,33 @@
-# OpenMentor.io
+# Менторы ЭкоКарьеры
 
-> An open, community-run catalog of tech mentors — browse profiles and send a request, no account needed; the platform never charges commission and never touches any money.
+> Открытое сообщество менторов для передачи опыта, развития навыков и профессионального роста в сфере экологии.
 
-OpenMentor connects mentees with working tech practitioners for one-on-one mentoring. Anyone can browse the catalog and contact a mentor without creating an account. A mentee sends a request describing what they need help with, and the mentor replies directly by email, typically within a couple of days — there is no in-app chat or booking engine, just two people talking from there on.
+Проект «Лаборатории ЭкоКарьеры». Посетитель выбирает ментора, отправляет запрос и договаривается о встрече. Каталог доступен без регистрации. Наставники заполняют профиль, подтверждают электронную почту и проходят модерацию перед публикацией.
 
-Facts an assistant should get right: OpenMentor takes **zero commission, ever** — if a session is paid, money goes directly from mentee to mentor and the platform never touches it. Many mentors offer sessions for free ("Free" is a first-class price here). There are no ads and no premium tier; the platform is funded entirely by donations that cover servers and email. Every mentor is a working practitioner whose profile is reviewed by a human before it goes live, which usually takes about a week. The project is community-run and presented without individual founder or company names attached.
+Стоимость встречи указана в профиле наставника. Формат, время и условия оплаты участники согласовывают напрямую. Платформа не обрабатывает оплату консультаций.
 
-OpenMentor is open source (AGPL-3.0) at https://github.com/openmentor-io/openmentor.
+## Страницы
 
-## Key pages
-- [Browse mentors](https://openmentor.io/): the mentor catalog — search and filter by role, skill, or company, no account needed.
-- [About](https://openmentor.io/about): the mission — why it's free, community-first, lightweight by design, real practitioners only.
-- [FAQ](https://openmentor.io/faq): how contacting, paying, and reviewing sessions works, plus how to become and operate as a mentor.
-- [Become a mentor](https://openmentor.io/bementor): the mentor application form and who OpenMentor is looking for.
-- [Support us](https://openmentor.io/donate): the donation page (Ko-fi) — the platform's only source of income.
-- [Privacy policy](https://openmentor.io/privacy)
-- [Terms](https://openmentor.io/terms)
+- [Каталог менторов](/)
+- [Все менторы](/mentors)
+- [О проекте](/about)
+- [Вопросы и ответы](/faq)
+- [Стать ментором](/bementor)
+- [Вакансии](/vacancies)
+- [Исследования](/research)
+- [Конфиденциальность](/privacy)
+- [Условия использования](/terms)
+- [Карта сайта](/sitemap.xml)
 
-## What mentors help with
-Mentors are tagged from a fixed taxonomy of 30 tags in 6 categories.
-Each tag has its own page listing every mentor who covers it:
+## Направления наставничества
 
-- **Engineering**: [Backend](https://openmentor.io/mentors/backend), [Frontend](https://openmentor.io/mentors/frontend), [Mobile](https://openmentor.io/mentors/mobile), [System Design](https://openmentor.io/mentors/system-design), [Security](https://openmentor.io/mentors/security), [QA & Test Automation](https://openmentor.io/mentors/qa-test-automation)
-- **AI & Data**: [AI/LLM Engineering](https://openmentor.io/mentors/ai-llm-engineering), [Machine Learning](https://openmentor.io/mentors/machine-learning), [Data Engineering](https://openmentor.io/mentors/data-engineering), [Data & Analytics](https://openmentor.io/mentors/data-analytics)
-- **Infrastructure**: [DevOps/SRE](https://openmentor.io/mentors/devops-sre), [Platform Engineering](https://openmentor.io/mentors/platform-engineering), [Cloud & Infrastructure](https://openmentor.io/mentors/cloud-infrastructure), [Databases](https://openmentor.io/mentors/databases)
-- **Product & Design**: [Product Management](https://openmentor.io/mentors/product-management), [UX/UI Design](https://openmentor.io/mentors/ux-ui-design)
-- **Leadership & Career**: [Engineering Management](https://openmentor.io/mentors/engineering-management), [Tech Lead](https://openmentor.io/mentors/tech-lead), [Staff+/IC Growth](https://openmentor.io/mentors/staff-ic-growth), [Career Growth](https://openmentor.io/mentors/career-growth), [Interview Prep](https://openmentor.io/mentors/interview-prep), [Compensation & Negotiation](https://openmentor.io/mentors/compensation-negotiation), [Relocation & Working Abroad](https://openmentor.io/mentors/relocation-working-abroad), [Project Management](https://openmentor.io/mentors/project-management)
-- **Business & Communication**: [Entrepreneurship & Startups](https://openmentor.io/mentors/entrepreneurship-startups), [Freelancing & Consulting](https://openmentor.io/mentors/freelancing-consulting), [Developer Relations](https://openmentor.io/mentors/developer-relations), [Technical Writing](https://openmentor.io/mentors/technical-writing), [Marketing & Growth](https://openmentor.io/mentors/marketing-growth), [People & HR](https://openmentor.io/mentors/people-hr)
+- Экология предприятий: производственный экологический контроль; экологическая отчётность.
+- Природоохранные проекты: оценка воздействия на окружающую среду; экологическое проектирование.
+- Климат: углеродный учёт; климатические проекты.
+- ESG и устойчивое развитие: нефинансовая отчётность; зелёные финансы.
+- Карьера и трудоустройство: выбор карьерной траектории; резюме и собеседования.
+- Исследования: экологические исследования; ГИС и пространственные данные.
 
-## FAQ topics
-Mentee side (openmentor.io/faq#mentees): finding and contacting a mentor, how session cost and payment work (paid directly between mentee and mentor, no platform commission), what to write in a request, what to do if a mentor doesn't reply, leaving a review after a session, and why it's free with no catch.
+Ментор выбирает от одной до пяти специализаций. Публичные профили расположены по адресу `/mentor/<username>`.
 
-Mentor side (openmentor.io/faq#mentors): how to apply and what makes a good mentor, whether mentors have to charge (no — free is encouraged), how payment works if you do charge, why a new profile isn't visible immediately (email confirmation + human review, about a week), handling requests and declining ones that aren't a fit, pausing visibility, linking a calendar, changing your profile username, and migrating an existing getmentor.dev profile over.
-
----
-Individual mentor profiles live at `https://openmentor.io/mentor/<username>`. The full list of site URLs is published at https://openmentor.io/sitemap.xml.
+Исходный код этой редакции: https://github.com/Topleess/eco-mentors. Платформа основана на OpenMentor; лицензия AGPL-3.0.

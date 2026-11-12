@@ -1,50 +1,51 @@
 import { fixedAmount, isFree, parsePrice } from '@/lib/price'
 import type { FiltersConfig, MentorTag } from '@/types'
 
-// Tag groups, shared between the flat `tags` list (form options) and the
-// catalog topic tabs (`categories`) below. Every tag belongs to exactly one
-// group, so there is no "Others" catch-all. Keep these in sync with
-// api/migrations/000009_modernise_tags.up.sql — a tag offered here but absent
-// from the DB is silently dropped on save (that is what broke "Security").
-const engineeringTags: MentorTag[] = [
-  'Backend',
-  'Frontend',
-  'Mobile',
-  'System Design',
-  'Security',
-  'QA & Test Automation',
-]
-const aiDataTags: MentorTag[] = [
-  'AI/LLM Engineering',
-  'Machine Learning',
-  'Data Engineering',
-  'Data & Analytics',
-]
-const infrastructureTags: MentorTag[] = [
-  'DevOps/SRE',
-  'Platform Engineering',
-  'Cloud & Infrastructure',
-  'Databases',
-]
-const productDesignTags: MentorTag[] = ['Product Management', 'UX/UI Design']
-const leadershipTags: MentorTag[] = [
-  'Engineering Management',
-  'Tech Lead',
-  'Staff+/IC Growth',
-  'Career Growth',
-  'Interview Prep',
-  'Compensation & Negotiation',
-  'Relocation & Working Abroad',
-  'Project Management',
-]
-const businessTags: MentorTag[] = [
-  'Entrepreneurship & Startups',
-  'Freelancing & Consulting',
-  'Developer Relations',
-  'Technical Writing',
-  'Marketing & Growth',
-  'People & HR',
-]
+// Canonical names match migration 000019; legacy IT associations are not reassigned.
+const ecologicalCategories = [
+  {
+    "label": "Экология предприятий",
+    "tags": [
+      "Производственный экологический контроль",
+      "Экологическая отчётность"
+    ]
+  },
+  {
+    "label": "Природоохранные проекты",
+    "tags": [
+      "Оценка воздействия на окружающую среду",
+      "Экологическое проектирование"
+    ]
+  },
+  {
+    "label": "Климат",
+    "tags": [
+      "Углеродный учёт",
+      "Климатические проекты"
+    ]
+  },
+  {
+    "label": "ESG и устойчивое развитие",
+    "tags": [
+      "Нефинансовая отчётность",
+      "Зелёные финансы"
+    ]
+  },
+  {
+    "label": "Карьера и трудоустройство",
+    "tags": [
+      "Выбор карьерной траектории",
+      "Резюме и собеседования"
+    ]
+  },
+  {
+    "label": "Исследования",
+    "tags": [
+      "Экологические исследования",
+      "ГИС и пространственные данные"
+    ]
+  }
+] satisfies { label: string; tags: MentorTag[] }[]
 
 /**
  * The bucket label a stored price falls into — the SAME six strings byPrice
@@ -64,24 +65,8 @@ export function priceTierLabel(price: string): string {
 }
 
 const filters: FiltersConfig = {
-  tags: [
-    ...engineeringTags,
-    ...aiDataTags,
-    ...infrastructureTags,
-    ...productDesignTags,
-    ...leadershipTags,
-    ...businessTags,
-  ],
-  // Topic tabs for the catalog tab bar (redesign Phase A). A mentor matches a
-  // category when they have at least one of its tags.
-  categories: [
-    { label: 'Engineering', tags: engineeringTags },
-    { label: 'AI & Data', tags: aiDataTags },
-    { label: 'Infrastructure', tags: infrastructureTags },
-    { label: 'Product & Design', tags: productDesignTags },
-    { label: 'Leadership & Career', tags: leadershipTags },
-    { label: 'Business & Communication', tags: businessTags },
-  ],
+  tags: ecologicalCategories.flatMap(category => category.tags),
+  categories: ecologicalCategories,
   experience: {
     '2-5 years': '2-5',
     '5-10 years': '5-10',

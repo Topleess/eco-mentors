@@ -61,8 +61,8 @@ export default function DemoLoginPage(): JSX.Element {
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-surface px-5 py-12">
-      <NoIndexHead title="Тестовый вход — OpenMentor" />
-      <section className="w-full max-w-[460px] rounded-[20px] border border-line bg-white p-7 shadow-[0_20px_50px_-24px_rgba(19,42,82,0.22)] sm:p-10">
+      <NoIndexHead title="Тестовый вход — Менторы ЭкоКарьеры" />
+      <section className="w-full max-w-[460px] rounded-panel border border-line bg-white p-7 shadow-card-hover sm:p-10">
         <h1 className="text-[26px] tracking-[-0.02em] text-ink">Тестовый вход</h1>
         <p className="mb-6 mt-2 text-sm leading-relaxed text-ink-soft">
           Это публичное демо: любой посетитель может войти по тестовым адресам ниже. Здесь только

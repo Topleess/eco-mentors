@@ -83,6 +83,7 @@ func TestTemplatePlaceholders(t *testing.T) {
 			continue
 		}
 
+		wantPlaceholders = append(append([]string{}, wantPlaceholders...), "base_url")
 		found := Placeholders(tpl)
 		for _, placeholder := range wantPlaceholders {
 			if !contains(found, placeholder) {

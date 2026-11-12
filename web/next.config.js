@@ -4,6 +4,10 @@ const nextConfig = {
   // Enable standalone output for Docker deployments
   output: 'standalone',
 
+  env: {
+    DOMAIN: process.env.DOMAIN || '',
+  },
+
   i18n: {
     locales: ['ru', 'en'],
     defaultLocale: 'ru',
@@ -31,6 +35,7 @@ const nextConfig = {
   outputFileTracingIncludes: {
     '/api/og/mentor': [
       './src/assets/og-fonts/*.ttf',
+      './public/brand/logo/svg/logomark.svg',
       './node_modules/next/dist/compiled/@vercel/og/**/*',
     ],
   },

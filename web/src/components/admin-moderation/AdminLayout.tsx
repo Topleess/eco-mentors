@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import BrandLogo from '@/components/brand/BrandLogo'
 import { useRouter } from 'next/router'
 import classNames from 'classnames'
 import { useAdminAuth } from './AdminAuthContext'
@@ -47,13 +47,7 @@ export function AdminLayout({ title, children }: AdminLayoutProps): JSX.Element 
       <header className="border-b border-line bg-white">
         <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4">
           <div className="flex items-center gap-3">
-            <Image
-              src="/brand/logo/svg/logomark.svg"
-              width={28}
-              height={28}
-              alt="openmentor.io"
-              unoptimized
-            />
+            <Link href="/" aria-label="Лаборатория ЭкоКарьеры" className="shrink-0"><BrandLogo /></Link>
             <div>
               <p className="meta-mono my-0 text-ink-mute">{t('adminBrand')}</p>
               <h1 className="text-lg tracking-[-0.02em] text-ink">{title}</h1>

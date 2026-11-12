@@ -91,22 +91,22 @@ describe('RegisterMentorForm', () => {
   it('renders all required form fields', () => {
     render(<RegisterMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />)
 
-    expect(screen.getByLabelText(/Your full name/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/Your email/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/How can we reach you/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/First and last name/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Email address/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Additional contact/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/Job title/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/Company/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Organization/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/Experience/i)).toBeInTheDocument()
     // A fieldset legend, not a <label for> — the price control is a radio
     // group, so it is found by its group name rather than by label text.
     expect(screen.getByRole('group', { name: /Price per one-hour session/i })).toBeInTheDocument()
     // Tags field uses Controller-wrapped Select, so check for label text instead
-    expect(screen.getByText(/Specialization/i)).toBeInTheDocument()
+    expect(screen.getByText(/Mentoring topics/i)).toBeInTheDocument()
     // Wysiwyg fields also use Controller, check for label text
-    expect(screen.getByText(/About you/i)).toBeInTheDocument()
-    expect(screen.getByText(/How can you help/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/Skills and technologies/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/Profile photo/i)).toBeInTheDocument()
+    expect(screen.getByText(/About me/i)).toBeInTheDocument()
+    expect(screen.getByText(/How I can help/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Competencies and tools/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Mentor photo/i)).toBeInTheDocument()
   })
 
   it('renders the section progress rail with the magic-link helper text', () => {
@@ -124,7 +124,7 @@ describe('RegisterMentorForm', () => {
   it('renders optional calendar URL field', () => {
     render(<RegisterMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />)
 
-    expect(screen.getByLabelText(/Booking link to your calendar/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Meeting booking link/i)).toBeInTheDocument()
   })
 
   // The API binds calendarUrl with its https_url tag, so anything it would
@@ -143,7 +143,7 @@ describe('RegisterMentorForm', () => {
     render(<RegisterMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />)
 
     await act(async () => {
-      fireEvent.change(screen.getByLabelText(/Booking link to your calendar/i), {
+      fireEvent.change(screen.getByLabelText(/Meeting booking link/i), {
         target: { value },
       })
       fireEvent.click(screen.getByTestId('turnstile'))
@@ -217,11 +217,11 @@ describe('RegisterMentorForm', () => {
     render(<RegisterMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />)
 
     // Fill all fields except profile picture
-    await user.type(screen.getByLabelText(/Your full name/i), 'John Doe')
-    await user.type(screen.getByLabelText(/Your email/i), 'john@example.com')
-    await user.type(screen.getByLabelText(/How can we reach you/i), 'johndoe')
+    await user.type(screen.getByLabelText(/First and last name/i), 'John Doe')
+    await user.type(screen.getByLabelText(/Email address/i), 'john@example.com')
+    await user.type(screen.getByLabelText(/Additional contact/i), 'johndoe')
     await user.type(screen.getByLabelText(/Job title/i), 'Engineer')
-    await user.type(screen.getByLabelText(/Company/i), 'Tech Company')
+    await user.type(screen.getByLabelText(/Organization/i), 'Tech Company')
     await user.selectOptions(screen.getByLabelText(/Experience/i), '10+')
     await user.click(screen.getByRole('radio', { name: /^Negotiable$/i }))
 
@@ -290,7 +290,7 @@ describe('RegisterMentorForm', () => {
     render(<RegisterMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />)
 
     const file = new File(['fake-image'], 'profile.jpg', { type: 'image/jpeg' })
-    const fileInput = screen.getByLabelText(/Profile photo/i) as HTMLInputElement
+    const fileInput = screen.getByLabelText(/Mentor photo/i) as HTMLInputElement
 
     // Mock FileReader
     const mockFileReader = {
@@ -325,7 +325,7 @@ describe('RegisterMentorForm', () => {
     const user = userEvent.setup()
     render(<RegisterMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />)
 
-    await user.type(screen.getByLabelText(/Your email/i), 'invalid-email')
+    await user.type(screen.getByLabelText(/Email address/i), 'invalid-email')
 
     await act(async () => {
       fireEvent.click(screen.getByTestId('turnstile'))
@@ -346,7 +346,7 @@ describe('RegisterMentorForm', () => {
     render(<RegisterMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />)
 
     const file = new File(['fake-image'], 'profile.jpg', { type: 'image/jpeg' })
-    const fileInput = screen.getByLabelText(/Profile photo/i) as HTMLInputElement
+    const fileInput = screen.getByLabelText(/Mentor photo/i) as HTMLInputElement
 
     const mockFileReader = {
       readAsDataURL: jest.fn(),

@@ -96,14 +96,6 @@ const menteeFaqs: FaqEntry[] = [
         {t('yesWhenYourMentorMarksTheSession')}</p>
     ),
   },
-  {
-    id: 'really-free',
-    q: t('isThisReallyFreeWhatSThe'),
-    a: (
-      <p className="my-0">
-        {t('thereIsnTOneOpenmentorIsA')}{' '}<Link href="/donate">{t('donations')}</Link> {t('thatCoverServersAndEmailThatS')}</p>
-    ),
-  },
 ]
 
 const mentorFaqs: FaqEntry[] = [
@@ -226,38 +218,19 @@ const mentorFaqs: FaqEntry[] = [
   {
     id: 'profile-link',
     q: t('canIChangeMyProfileLink'),
-    a: (
-      <p className="my-0">
-        {t('yesYouPickYourLinkWhenYou')}<span className="font-mono text-[0.95em]">openmentor.io/mentor/your-name</span>{t('andCanChangeItLaterFromYour')}</p>
+    a: (<p className="my-0">{t('profileLinkAnswer')}</p>
     ),
   },
   {
     id: 'account',
     q: t('howDoIChangeMyEmailOr'),
-    a: (
-      <p className="my-0">
-        {t('writeTo')}{' '}<a href="mailto:hello@openmentor.io">hello@openmentor.io</a> {t('andWeLlSortItOutFor')}{' '}
-        <Link href="/privacy">{t('privacyPolicy')}</Link> {t('orEmail')}{' '}
-        <a href="mailto:privacy@openmentor.io">privacy@openmentor.io</a> {t('profilesAndDataAreRemovedOnRequest')}</p>
-    ),
-  },
-  {
-    id: 'getmentor',
-    q: t('iHadAProfileOnGetmentorDev'),
-    a: (
-      <p className="my-0">
-        {t('noYouCanMoveYourExistingProfile')}{' '}
-        <Link href="/migrate">openmentor.io/migrate</Link> {t('withYourGetmentorSlugAndScheduleThe')}{' '}
-        <Link href="/bementor">{t('registerAnew')}</Link>.
-      </p>
+    a: (<p className="my-0">{t('accountAnswer')}</p>
     ),
   },
   {
     id: 'commission',
     q: t('doesOpenmentorTakeACut'),
-    a: (
-      <p className="my-0">
-        {t('noNotFromMentorsNotFromMentees')}{' '}<Link href="/donate">{t('donations')}</Link> {t('alone')}</p>
+    a: (<p className="my-0">{t('commissionAnswer')}</p>
     ),
   },
 ]
@@ -326,18 +299,6 @@ const faqJsonLd: Record<string, unknown> = {
           </QA>
         ))}
 
-        {/* ── Outro ────────────────────────────────────────────────────── */}
-        <div className="mt-10 rounded-panel border border-line bg-surface px-5 py-5 text-center sm:px-8 sm:py-6">
-          <p className="my-0 text-[15px] leading-[1.6] text-ink-soft">
-            {t('somethingWeDidnTCoverWriteTo')}{' '}
-            <a
-              href="mailto:hello@openmentor.io"
-              className="font-medium text-brand-cobalt underline decoration-brand-cobalt/30 underline-offset-2 hover:decoration-brand-cobalt"
-            >
-              hello@openmentor.io
-            </a>{' '}
-            {' '}{t('aHumanReadsEveryEmail')}</p>
-        </div>
       </main>
 
       <Footer />

@@ -80,7 +80,7 @@ function amountBox(): HTMLInputElement {
 /** Edit an unrelated field and save — the path that used to destroy the price. */
 async function editNameAndSave(): Promise<void> {
   const user = userEvent.setup()
-  const name = screen.getByLabelText(/Your full name/i)
+  const name = screen.getByLabelText(/First and last name/i)
   await user.clear(name)
   await user.type(name, 'Jane R. Doe')
   await user.click(screen.getByRole('button', { name: /Save/i }))
@@ -305,7 +305,7 @@ describe('ProfileForm calendar URL', () => {
     ['https://calendly.com/jane', true],
   ])('submits %s: %s', async (value, accepted) => {
     renderCalendarForm('')
-    fireEvent.change(screen.getByLabelText(/Booking link to your calendar/i), {
+    fireEvent.change(screen.getByLabelText(/Meeting booking link/i), {
       target: { value },
     })
     await save()
@@ -322,7 +322,7 @@ describe('ProfileForm calendar URL', () => {
 
   it('trims a pasted booking link instead of failing the save', async () => {
     renderCalendarForm('')
-    fireEvent.change(screen.getByLabelText(/Booking link to your calendar/i), {
+    fireEvent.change(screen.getByLabelText(/Meeting booking link/i), {
       target: { value: '  https://calendly.com/jane  ' },
     })
     await save()

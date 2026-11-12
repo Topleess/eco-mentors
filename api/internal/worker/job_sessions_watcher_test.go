@@ -51,7 +51,7 @@ func TestSessionsWatcherSendsOneEmailPerMentor(t *testing.T) {
 	}
 
 	text, _ := first.Props["requests_list_text"].(string)
-	wantText := "- Mentee One — waiting for 3 days\n  Help with Go & <testing>\n- Mentee Two — waiting for 1 day"
+	wantText := "- Mentee One — ожидает ответа 3 дня\n  Help with Go & <testing>\n- Mentee Two — ожидает ответа 1 день"
 	if text != wantText {
 		t.Errorf("requests_list_text = %q, want %q", text, wantText)
 	}
@@ -60,14 +60,14 @@ func TestSessionsWatcherSendsOneEmailPerMentor(t *testing.T) {
 	if !strings.HasPrefix(htmlList, `<ul style="padding-left: 20px; margin: 0;">`) {
 		t.Errorf("requests_list missing <ul> wrapper: %q", htmlList)
 	}
-	if !strings.Contains(htmlList, "<strong>Mentee One — waiting for 3 days</strong>") {
+	if !strings.Contains(htmlList, "<strong>Mentee One — ожидает ответа 3 дня</strong>") {
 		t.Errorf("requests_list missing first title: %q", htmlList)
 	}
 	if !strings.Contains(htmlList, "Help with Go &amp; &lt;testing&gt;") {
 		t.Errorf("requests_list HTML not escaped: %q", htmlList)
 	}
 	// Empty description -> no <em> preview line for that item.
-	if strings.Contains(htmlList, "<strong>Mentee Two — waiting for 1 day</strong><br>") {
+	if strings.Contains(htmlList, "<strong>Mentee Two — ожидает ответа 1 день</strong><br>") {
 		t.Errorf("empty preview should not add a <br><em> line: %q", htmlList)
 	}
 

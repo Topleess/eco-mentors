@@ -50,7 +50,8 @@ const _getServerSideProps: GetServerSideProps = async ({ res }) => {
     { page: 'about' },
     { page: 'faq' },
     { page: 'bementor' },
-    { page: 'donate' },
+    { page: 'vacancies' },
+    { page: 'research' },
     { page: 'privacy' },
     { page: 'terms' },
   ]

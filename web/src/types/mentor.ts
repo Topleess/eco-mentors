@@ -18,54 +18,20 @@ export type ExperienceLevel = '2-5' | '5-10' | '10+'
  */
 export type Price = string
 
-/**
- * The mentor tag taxonomy (DECISIONS D30).
- *
- * This union is the canonical list. `src/config/filters.ts` types its group
- * constants as `MentorTag[]`, so adding a tag there without adding it here
- * (or vice versa) fails the type check — that drift is what left `Security`
- * and `Other` offered in the UI but absent from the database.
- *
- * Must also match api/migrations/000009_modernise_tags.up.sql, which the DB
- * unique constraint on tags.name enforces at runtime.
- */
+/** Canonical ecological names, shared with migration 000019. */
 export type MentorTag =
-  // Engineering
-  | 'Backend'
-  | 'Frontend'
-  | 'Mobile'
-  | 'System Design'
-  | 'Security'
-  | 'QA & Test Automation'
-  // AI & Data
-  | 'AI/LLM Engineering'
-  | 'Machine Learning'
-  | 'Data Engineering'
-  | 'Data & Analytics'
-  // Infrastructure
-  | 'DevOps/SRE'
-  | 'Platform Engineering'
-  | 'Cloud & Infrastructure'
-  | 'Databases'
-  // Product & Design
-  | 'Product Management'
-  | 'UX/UI Design'
-  // Leadership & Career
-  | 'Engineering Management'
-  | 'Tech Lead'
-  | 'Staff+/IC Growth'
-  | 'Career Growth'
-  | 'Interview Prep'
-  | 'Compensation & Negotiation'
-  | 'Relocation & Working Abroad'
-  | 'Project Management'
-  // Business & Communication
-  | 'Entrepreneurship & Startups'
-  | 'Freelancing & Consulting'
-  | 'Developer Relations'
-  | 'Technical Writing'
-  | 'Marketing & Growth'
-  | 'People & HR'
+  | 'Производственный экологический контроль'
+  | 'Экологическая отчётность'
+  | 'Оценка воздействия на окружающую среду'
+  | 'Экологическое проектирование'
+  | 'Углеродный учёт'
+  | 'Климатические проекты'
+  | 'Нефинансовая отчётность'
+  | 'Зелёные финансы'
+  | 'Выбор карьерной траектории'
+  | 'Резюме и собеседования'
+  | 'Экологические исследования'
+  | 'ГИС и пространственные данные'
 
 /**
  * Combined tag type

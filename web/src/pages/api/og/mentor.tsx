@@ -47,23 +47,19 @@ const HEIGHT = 630
 
 // Brand palette (source of truth: web/src/styles/brand-tokens.css +
 // tailwind.config.js) — hex-inlined because Tailwind can't style satori.
-const INK = '#161A20'
-const INK_MUTE = '#4A5160'
-const NAVY = '#132A52'
-const MINT_INK = '#0E7A70'
+const INK = '#000000'
+const INK_MUTE = '#465044'
+const NAVY = '#000000'
+const MINT_INK = '#246B1A'
 
 const FONT_DIR = path.join(process.cwd(), 'src', 'assets', 'og-fonts')
 
 /** Font buffers, loaded once per process and reused across requests. */
-let fontsPromise: Promise<{ schibsted: Buffer; archivo: Buffer; inter: Buffer }> | null = null
+let fontsPromise: Promise<{ inter: Buffer }> | null = null
 
 function loadFonts(): NonNullable<typeof fontsPromise> {
   if (!fontsPromise) {
-    fontsPromise = Promise.all([
-      fs.readFile(path.join(FONT_DIR, 'schibsted-grotesk-700.ttf')),
-      fs.readFile(path.join(FONT_DIR, 'archivo-800.ttf')),
-      fs.readFile(path.join(FONT_DIR, 'inter-500.ttf')),
-    ]).then(([schibsted, archivo, inter]) => ({ schibsted, archivo, inter }))
+    fontsPromise = fs.readFile(path.join(FONT_DIR, 'inter-500.ttf')).then((inter) => ({ inter }))
   }
   return fontsPromise
 }
@@ -119,13 +115,13 @@ async function fetchPhoto(mentorId: string, updatedAt?: string): Promise<ArrayBu
 
 /** "2-5" -> "2–5Y EXP", "10+" -> "10+Y EXP" (mirrors the catalog meta row). */
 function experienceLabel(experience: string): string {
-  return `${experience.replace('-', '–')}Y EXP`
+  return `${experience.replace('-', '–')} лет опыта`
 }
 
 /** "FREE" / "$150" / "NEGOTIABLE" chip text + color (mirrors PriceBadge). */
 function priceChip(price: string): { label: string; color: string } {
   if (isFree(price)) {
-    return { label: 'FREE', color: MINT_INK }
+    return { label: 'Бесплатно', color: MINT_INK }
   }
   const amount = fixedAmount(price)
   if (amount !== null) {
@@ -139,7 +135,7 @@ function priceChip(price: string): { label: string; color: string } {
   // cached, so an odd legacy string would be baked into the share card with
   // no quick fix, and mentors_price_chk makes the case unreachable for stored
   // data anyway.
-  return { label: 'NEGOTIABLE', color: INK_MUTE }
+  return { label: 'По договорённости', color: INK_MUTE }
 }
 
 /** First letters of the first two name words (same rule as MentorPortrait). */
@@ -293,10 +289,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
       return
     }
 
-    const [photo, fonts] = await Promise.all([
+    const [photo, fonts, logo] = await Promise.all([
       fetchPhoto(mentor.mentorId, mentor.updatedAt),
       loadFonts(),
+      fs.readFile(path.join(process.cwd(), 'public/brand/logo/svg/logomark.svg')),
     ])
+    const logoData = `data:image/svg+xml;base64,${logo.toString('base64')}`
     const [base, deep] = MENTOR_PASTEL_GRAD_HEX[mentorPastelIndex(mentor.slug)]
     const initialsFill = MENTOR_INITIALS_HEX[mentorInitialsIndex(mentor.slug)]
     const price = priceChip(mentor.price)
@@ -311,7 +309,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
           backgroundColor: 'rgba(255,255,255,0.9)',
           borderRadius: 12,
           padding: '10px 18px',
-          fontFamily: 'Archivo',
+          fontFamily: 'Inter',
           fontSize: 22,
           letterSpacing: 1,
           color,
@@ -333,43 +331,15 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
             backgroundImage: `linear-gradient(160deg, ${base} 0%, ${deep} 100%)`,
           }}
         >
-          {/* Wordmark row (CSS logomark echo: ring + mint node) */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-            <div style={{ display: 'flex', position: 'relative', width: 44, height: 44 }}>
-              <div
-                style={{
-                  width: 40,
-                  height: 40,
-                  margin: 2,
-                  borderRadius: 999,
-                  border: `8px solid ${NAVY}`,
-                }}
-              />
-              <div
-                style={{
-                  position: 'absolute',
-                  right: 0,
-                  top: 0,
-                  width: 12,
-                  height: 12,
-                  borderRadius: 999,
-                  backgroundColor: '#17C3B2',
-                }}
-              />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- satori requires plain image elements */}
+            <img src={logoData} width={52} height={66} alt="" />
+            <div style={{ display: 'flex', flexDirection: 'column', fontFamily: 'Inter', fontSize: 26, color: INK, lineHeight: 1.2 }}>
+              <span>Лаборатория</span>
+              <span>ЭкоКарьеры</span>
             </div>
-            <div style={{ fontFamily: 'Archivo', fontSize: 28, color: NAVY, letterSpacing: -0.5 }}>
-              OPENMENTOR.IO
-            </div>
-            <div
-              style={{
-                fontFamily: 'Archivo',
-                fontSize: 20,
-                color: INK_MUTE,
-                letterSpacing: 1,
-                marginLeft: 'auto',
-              }}
-            >
-              1:1 MENTORSHIP · 0% COMMISSION
+            <div style={{ display: 'flex', fontFamily: 'Inter', fontSize: 22, color: INK_MUTE, marginLeft: 'auto' }}>
+              Менторы ЭкоКарьеры
             </div>
           </div>
 
@@ -393,7 +363,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
             >
               <div
                 style={{
-                  fontFamily: 'Schibsted',
+                  fontFamily: 'Inter',
                   fontSize: nameSize,
                   lineHeight: 1.05,
                   color: INK,
@@ -458,7 +428,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
                   borderRadius: 999,
                   backgroundColor: initialsFill,
                   color: '#FFFFFF',
-                  fontFamily: 'Schibsted',
+                  fontFamily: 'Inter',
                   fontSize: 96,
                 }}
               >
@@ -472,8 +442,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
         width: WIDTH,
         height: HEIGHT,
         fonts: [
-          { name: 'Schibsted', data: fonts.schibsted, weight: 700, style: 'normal' },
-          { name: 'Archivo', data: fonts.archivo, weight: 800, style: 'normal' },
           { name: 'Inter', data: fonts.inter, weight: 500, style: 'normal' },
         ],
       }

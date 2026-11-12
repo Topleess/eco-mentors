@@ -2,7 +2,6 @@ import type { ReactNode } from 'react'
 import { render, screen } from '@testing-library/react'
 import { I18nProvider } from '@/i18n'
 import About from '@/pages/about'
-import Donate from '@/pages/donate'
 import Faq from '@/pages/faq'
 import NotFound from '@/pages/404'
 import Directory from '@/pages/mentors'
@@ -21,11 +20,10 @@ jest.mock('@/lib/analytics', () => ({ __esModule: true, default: { event: jest.f
 
 it.each([
   [<About key="about" />, 'Люди помогают людям расти'],
-  [<Donate key="donate" />, 'Сохраним менторство бесплатным для всех'],
   [<Faq key="faq" />, 'Часто задаваемые вопросы'],
   [<NotFound key="404" />, 'Страница не найдена'],
   [<Directory key="directory" mentors={[]} />, 'Все менторы'],
-  [<TagPage key="tag" tag="Backend" mentors={[]} />, 'Менторы: Бэкенд'],
+  [<TagPage key="tag" tag="Экологическая отчётность" mentors={[]} />, 'Менторы: Экологическая отчётность'],
 ])('localizes public page headings with the Russian provider', (page, heading) => {
   render(<I18nProvider locale="ru">{page}</I18nProvider>)
   expect(screen.getByRole('heading', { level: 1, name: heading })).toBeInTheDocument()

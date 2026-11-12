@@ -134,7 +134,7 @@ func TestCronTriggersRequireWorkerToken(t *testing.T) {
 // TestFragmentBytesArePinned pins the exact markup of the two server-built
 // props against an input carrying every character class that escaping treats
 // differently. The pre-change code concatenated html.EscapeString output; the
-// bytes below are that output except for the two characters where
+// bytes below are that output except — the two characters where
 // html/template's HTML-text escaper is wider — '+' (&#43;) and a NUL byte
 // (U+FFFD, unreachable from Postgres text). Mail clients render both back, so
 // nothing is user-visible; the point is that the delta is exactly this, and
@@ -145,7 +145,7 @@ func TestFragmentBytesArePinned(t *testing.T) {
 	t.Run("decline_info", func(t *testing.T) {
 		got := string(buildDeclineInfoHTML("", input))
 		want := `<br><br>` +
-			`<div style="font-family: inherit; text-align: inherit"><strong>Comment:</strong> ` +
+			`<div style="font-family: inherit; text-align: inherit"><strong>Комментарий:</strong> ` +
 			`C&#43;&#43; &amp; &#34;Tom&#39;s&#34; &lt;b&gt;plan&lt;/b&gt; 5 &lt; 10</div>`
 		if got != want {
 			t.Errorf("decline_info fragment\n got: %s\nwant: %s", got, want)

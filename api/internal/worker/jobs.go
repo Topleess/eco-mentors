@@ -183,6 +183,13 @@ func (s *Server) RegisterJobRoutes(h *Handlers) {
 
 // sendEmail sends one message, recording metrics and logging failures.
 func (h *Handlers) sendEmail(ctx context.Context, job string, msg email.Message) error {
+	// Shared brand and navigation URLs must use this deployment, not upstream.
+	props := make(map[string]interface{}, len(msg.Props)+1)
+	for key, value := range msg.Props {
+		props[key] = value
+	}
+	props["base_url"] = h.baseURL
+	msg.Props = props
 	if _, err := h.email.Send(ctx, msg); err != nil {
 		metrics.WorkerEmailSendsTotal.WithLabelValues(msg.TemplateName, "error").Inc()
 		logger.Error("Job email send failed",

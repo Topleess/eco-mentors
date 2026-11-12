@@ -8,7 +8,7 @@ import { messages } from '@/i18n/messages/mentor'
  */
 
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
+import BrandLogo from '@/components/brand/BrandLogo'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -97,17 +97,11 @@ function CallbackHandler(): JSX.Element {
       <NoIndexHead title={t('signIn')} />
 
       <div className="mx-auto w-full max-w-md">
-        <Link href="/" className="mb-8 flex justify-center">
-          <Image
-            src="/brand/logo/svg/logo-horizontal.svg"
-            width={165}
-            height={45}
-            alt="openmentor.io"
-            unoptimized
-          />
+        <Link href="/" className="mb-8 flex items-center justify-center gap-2.5">
+          <BrandLogo />
         </Link>
 
-        <div className="rounded-[20px] border border-line bg-white px-6 py-8 shadow-[0_20px_50px_-24px_rgba(19,42,82,0.22)] sm:px-10">
+        <div className="rounded-panel border border-line bg-white px-6 py-8 shadow-card-hover sm:px-10">
           <div className="text-center">
             {state === 'verifying' && (
               <>

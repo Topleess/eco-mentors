@@ -25,7 +25,8 @@ import { messages, translateFormError } from '@/i18n/messages/forms'
 
 import { useState, useEffect, useRef } from 'react'
 import Head from 'next/head'
-import Image from 'next/image'
+import BrandLogo from '@/components/brand/BrandLogo'
+import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useForm } from 'react-hook-form'
 import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
@@ -227,81 +228,75 @@ export default function NewReviewPage(): JSX.Element {
         <meta name="robots" content="noindex,nofollow" />
       </Head>
 
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-12">
+      <div className="min-h-screen bg-surface flex items-center justify-center px-4 py-12">
         <div className="max-w-2xl w-full">
           {/* Logo */}
           <div className="text-center mb-8">
-            <a href="https://openmentor.io" className="inline-block">
-              <Image
-                src="/brand/logo/svg/logo-horizontal.svg"
-                width={165}
-                height={45}
-                alt="openmentor.io"
-                unoptimized
-              />
-            </a>
+            <Link href="/" className="inline-flex items-center gap-2.5">
+              <BrandLogo />
+            </Link>
           </div>
 
           {/* Loading State */}
           {isChecking && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+            <div className="bg-white rounded-lg shadow-sm border border-line p-8 text-center">
               <FontAwesomeIcon
                 icon={faCircleNotch}
-                className="animate-spin text-gray-400 text-3xl mb-4"
+                className="animate-spin text-ink-mute text-3xl mb-4"
               />
-              <p className="text-gray-600">{' '}{t('loading')}{' '}</p>
+              <p className="text-ink-soft">{' '}{t('loading')}{' '}</p>
             </div>
           )}
 
           {/* Error State */}
           {!isChecking && checkError && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+            <div className="bg-white rounded-lg shadow-sm border border-line p-8 text-center">
               <div className="mb-4">
                 <FontAwesomeIcon
                   icon={faExclamationTriangle}
                   className="text-yellow-500 text-5xl"
                 />
               </div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-3">{' '}{t('reviewOpenError')}{' '}</h2>
-              <p className="text-gray-600 mb-6">{translateFormError(locale, checkError)}</p>
-              <a
-                href="https://openmentor.io"
+              <h2 className="text-2xl font-semibold text-ink mb-3">{' '}{t('reviewOpenError')}{' '}</h2>
+              <p className="text-ink-soft mb-6">{translateFormError(locale, checkError)}</p>
+              <Link
+                href="/"
                 className="inline-block px-6 py-3 bg-brand-navy text-white font-medium rounded-md hover:bg-brand-navy/90 transition-colors"
-              >{' '}{t('backHome')}{' '}</a>
+              >{' '}{t('backHome')}{' '}</Link>
             </div>
           )}
 
           {/* Success State */}
           {!isChecking && !checkError && isSuccess && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8 text-center">
+            <div className="bg-white rounded-lg shadow-sm border border-line p-8 text-center">
               <div className="mb-4">
                 <FontAwesomeIcon icon={faCheckCircle} className="text-brand-mint text-5xl" />
               </div>
-              <h2 className="text-2xl font-semibold text-gray-900 mb-3">{' '}{t('reviewThanks')}{' '}</h2>
-              <p className="text-gray-600 mb-6">{' '}{t('reviewThanksText')}{' '}</p>
-              <a
-                href="https://openmentor.io"
+              <h2 className="text-2xl font-semibold text-ink mb-3">{' '}{t('reviewThanks')}{' '}</h2>
+              <p className="text-ink-soft mb-6">{' '}{t('reviewThanksText')}{' '}</p>
+              <Link
+                href="/"
                 className="inline-block px-6 py-3 bg-brand-navy text-white font-medium rounded-md hover:bg-brand-navy/90 transition-colors"
-              >{' '}{t('backHome')}{' '}</a>
+              >{' '}{t('backHome')}{' '}</Link>
             </div>
           )}
 
           {/* Form State */}
           {!isChecking && !checkError && !isSuccess && (
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+            <div className="bg-white rounded-lg shadow-sm border border-line p-8">
+              <h2 className="text-2xl font-semibold text-ink mb-2">
                 {mentorName
                   ? t('reviewWithMentor', { name: mentorName })
                   : t('reviewHeading')}
               </h2>
-              <p className="text-gray-600 mb-6">{' '}{t('reviewIntro')}{' '}</p>
+              <p className="text-ink-soft mb-6">{' '}{t('reviewIntro')}{' '}</p>
 
               <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
                 {/* Mentor Review (required) */}
                 <div>
                   <label
                     htmlFor="mentorReview"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-medium text-ink-soft mb-2"
                   >{' '}{t('mentorReview')}{' '}<span className="text-red-500">*</span>
                   </label>
 
@@ -324,7 +319,7 @@ export default function NewReviewPage(): JSX.Element {
                     id="mentorReview"
                     rows={6}
                     placeholder={t('mentorReviewPlaceholder')}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-cobalt focus:border-brand-cobalt resize-vertical"
+                    className="w-full px-4 py-3 border border-line rounded-md focus:ring-2 focus:ring-brand-cobalt focus:border-brand-cobalt resize-vertical"
                     disabled={isLoading}
                   />
                 </div>
@@ -333,7 +328,7 @@ export default function NewReviewPage(): JSX.Element {
                 <div>
                   <label
                     htmlFor="platformReview"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-medium text-ink-soft mb-2"
                   >{' '}{t('platformReview')}{' '}</label>
 
                   {errors.platformReview?.type === 'maxLength' && (
@@ -345,7 +340,7 @@ export default function NewReviewPage(): JSX.Element {
                     id="platformReview"
                     rows={3}
                     placeholder={t('platformReviewPlaceholder')}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-cobalt focus:border-brand-cobalt resize-vertical"
+                    className="w-full px-4 py-3 border border-line rounded-md focus:ring-2 focus:ring-brand-cobalt focus:border-brand-cobalt resize-vertical"
                     disabled={isLoading}
                   />
                 </div>
@@ -354,7 +349,7 @@ export default function NewReviewPage(): JSX.Element {
                 <div>
                   <label
                     htmlFor="improvements"
-                    className="block text-sm font-medium text-gray-700 mb-2"
+                    className="block text-sm font-medium text-ink-soft mb-2"
                   >{' '}{t('improvements')}{' '}</label>
 
                   {errors.improvements?.type === 'maxLength' && (
@@ -366,7 +361,7 @@ export default function NewReviewPage(): JSX.Element {
                     id="improvements"
                     rows={3}
                     placeholder={t('improvementsPlaceholder')}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-brand-cobalt focus:border-brand-cobalt resize-vertical"
+                    className="w-full px-4 py-3 border border-line rounded-md focus:ring-2 focus:ring-brand-cobalt focus:border-brand-cobalt resize-vertical"
                     disabled={isLoading}
                   />
                 </div>
@@ -407,16 +402,7 @@ export default function NewReviewPage(): JSX.Element {
                 </button>
               </form>
 
-              <div className="mt-6 pt-6 border-t border-gray-200">
-                <p className="text-sm text-gray-500 text-center">{' '}{t('supportPrefix')}{' '}{' '}
-                  <a
-                    href="mailto:hello@openmentor.io"
-                    className="text-brand-cobalt hover:text-brand-cobalt/80"
-                  >
-                    hello@openmentor.io
-                  </a>
-                </p>
-              </div>
+
             </div>
           )}
         </div>

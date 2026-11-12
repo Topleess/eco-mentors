@@ -12,7 +12,7 @@ import { messages } from '@/i18n/messages/mentor'
 import { useState } from 'react'
 import type { ReactNode } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import BrandLogo from '@/components/brand/BrandLogo'
 import { useRouter } from 'next/router'
 import classNames from 'classnames'
 import { useMentorAuth } from './MentorAuthContext'
@@ -95,17 +95,8 @@ export default function MentorAdminLayout({
     <div className="flex min-h-screen bg-surface">
       {/* Desktop sidebar */}
       <aside className="hidden w-60 flex-none flex-col gap-0.5 border-r border-line bg-white px-4 py-6 md:flex">
-        <Link href="/" className="flex items-center gap-2.5 px-2.5 pb-6">
-          <Image
-            src="/brand/logo/svg/logomark.svg"
-            width={34}
-            height={34}
-            alt=""
-            unoptimized
-          />
-          <span className="font-display text-[15px] font-extrabold uppercase tracking-[-0.02em] text-brand-navy">
-            openmentor
-          </span>
+        <Link href="/" aria-label="Лаборатория ЭкоКарьеры" className="flex items-center gap-2.5 px-2.5 pb-6">
+          <BrandLogo />
         </Link>
 
         <nav className="flex flex-col gap-0.5" aria-label={t('dashboard')}>
@@ -140,8 +131,8 @@ export default function MentorAdminLayout({
       <div className="flex min-w-0 flex-1 flex-col">
         {/* Mobile top bar */}
         <header className="flex items-center justify-between border-b border-line bg-white px-5 py-3.5 md:hidden">
-          <Link href="/">
-            <Image src="/brand/logo/svg/logomark.svg" width={30} height={30} alt="openmentor.io" unoptimized />
+          <Link href="/" aria-label="Лаборатория ЭкоКарьеры">
+            <BrandLogo />
           </Link>
           {title && (
             <span className="font-display text-sm font-extrabold uppercase text-ink">{title}</span>

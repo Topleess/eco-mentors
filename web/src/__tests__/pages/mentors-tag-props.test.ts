@@ -21,7 +21,7 @@ function legacyMentor(): MentorListItem {
     competencies: 'Go, PostgreSQL',
     experience: '10+',
     price: 'Free',
-    tags: ['Backend'],
+    tags: ['Экологическая отчётность'],
     menteeCount: 3,
     photo_url: null,
     sortOrder: 1,
@@ -45,7 +45,7 @@ describe('/mentors/[tag] props', () => {
   it('omits optional card fields the API did not send, rather than setting undefined', async () => {
     mockedGetAllMentors.mockResolvedValue([legacyMentor()])
 
-    const result = await getServerSideProps(ctx('backend'))
+    const result = await getServerSideProps(ctx('environmental-reporting'))
     const mentor = (result as { props: { mentors: Record<string, unknown>[] } }).props.mentors[0]
 
     // getServerSideProps rejects `undefined` anywhere in props — `next dev`
@@ -63,7 +63,7 @@ describe('/mentors/[tag] props', () => {
       { ...legacyMentor(), sessionsCount: 12, photoStyle: 'hero', updatedAt: '2026-07-08T00:00:00Z' },
     ])
 
-    const result = await getServerSideProps(ctx('backend'))
+    const result = await getServerSideProps(ctx('environmental-reporting'))
     const mentor = (result as { props: { mentors: Record<string, unknown>[] } }).props.mentors[0]
 
     expect(mentor).toMatchObject({
@@ -76,7 +76,7 @@ describe('/mentors/[tag] props', () => {
   it('ships only the fields a card renders', async () => {
     mockedGetAllMentors.mockResolvedValue([legacyMentor()])
 
-    const result = await getServerSideProps(ctx('backend'))
+    const result = await getServerSideProps(ctx('environmental-reporting'))
     const mentor = (result as { props: { mentors: Record<string, unknown>[] } }).props.mentors[0]
 
     // competencies alone accepts up to 5,000 chars and no card reads it.
@@ -89,7 +89,7 @@ describe('/mentors/[tag] props', () => {
     mockedGetAllMentors.mockResolvedValue([legacyMentor()])
 
     // A tag page is identical for every visitor, same as `/` and `/mentors`.
-    const known = ctx('backend')
+    const known = ctx('environmental-reporting')
     await getServerSideProps(known)
     expect(known.res.setHeader).toHaveBeenCalledWith(
       'Cache-Control',

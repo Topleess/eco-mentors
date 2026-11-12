@@ -85,10 +85,10 @@ jest.mock('@/components/forms/Wysiwyg', () => ({
 it('Russian registration exposes translated sections and validation', async () => {
   render(<I18nProvider locale="ru"><RegisterMentorForm isLoading={false} isError={false} onSubmit={jest.fn()} /></I18nProvider>)
   expect(screen.getByRole('navigation', { name: 'Разделы формы' })).toHaveTextContent('Контактные данные')
-  fireEvent.change(screen.getByLabelText(/Ссылка на ваш профиль/), { target: { value: 'a' } })
+  fireEvent.change(screen.getByLabelText(/Ссылка на профиль/), { target: { value: 'a' } })
   fireEvent.click(screen.getByTestId('turnstile'))
   fireEvent.click(screen.getByRole('button', { name: 'Создать профиль' }))
   expect((await screen.findAllByText('Это поле обязательно.')).length).toBeGreaterThan(0)
   expect(screen.getByText('Используйте 3–40 латинских букв, цифр и дефисов (например, anna-smith).')).toBeInTheDocument()
-  expect(screen.getByRole('button', { name: 'Бэкенд' })).toHaveAttribute('data-value', 'Backend')
+  expect(screen.getByRole('button', { name: 'Производственный экологический контроль' })).toHaveAttribute('data-value', 'Производственный экологический контроль')
 })

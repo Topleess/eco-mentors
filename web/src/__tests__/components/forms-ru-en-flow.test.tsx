@@ -7,7 +7,7 @@ jest.mock('@marsidev/react-turnstile', () => ({ Turnstile: () => null }))
 
 it('renders Russian contact labels and validation while keeping experience values canonical', async () => {
   render(<I18nProvider locale="ru"><ContactMentorForm isLoading={false} isError={false} onSubmit={jest.fn()} /></I18nProvider>)
-  expect(screen.getByLabelText(/Ваше полное имя/)).toBeInTheDocument()
+  expect(screen.getByLabelText(/Имя и фамилия/)).toBeInTheDocument()
   expect(screen.getByRole('option', { name: 'Руководитель руководителей' })).toHaveValue('Manager of managers')
   fireEvent.click(screen.getByRole('button', { name: 'Отправить запрос' }))
   expect((await screen.findAllByText('Это поле обязательно.')).length).toBeGreaterThan(0)

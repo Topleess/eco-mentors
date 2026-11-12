@@ -23,167 +23,55 @@ export interface TagPage {
  * the database and was silently dropped.
  */
 export const TAG_PAGES: Record<MentorTag, TagPage> = {
-  // Engineering
-  Backend: {
-    slug: 'backend',
-    blurb:
-      'Server-side systems, APIs and the services behind them — architecture, data modelling, reliability and the trade-offs that show up at scale.',
+  'Производственный экологический контроль': {
+    slug: 'environmental-monitoring',
+    blurb: 'Plan and carry out environmental monitoring at industrial facilities.',
   },
-  Frontend: {
-    slug: 'frontend',
-    blurb:
-      'Browser-side craft — component architecture, state, performance, accessibility, and shipping interfaces people can actually use.',
+  'Экологическая отчётность': {
+    slug: 'environmental-reporting',
+    blurb: 'Prepare environmental reports and organise the data they require.',
   },
-  Mobile: {
-    slug: 'mobile',
-    blurb:
-      'iOS and Android work — platform conventions, release cycles, offline behaviour and the constraints native apps live under.',
+  'Оценка воздействия на окружающую среду': {
+    slug: 'impact-assessment',
+    blurb: 'Assess how planned activities may affect the environment.',
   },
-  'System Design': {
-    slug: 'system-design',
-    blurb:
-      'Designing systems that hold up — decomposition, data flow, failure modes, and the interview format that tests all three.',
+  'Экологическое проектирование': {
+    slug: 'environmental-design',
+    blurb: 'Develop environmental project documentation and protection measures.',
   },
-  Security: {
-    slug: 'security',
-    blurb:
-      'Application and infrastructure security — threat modelling, secure defaults, reviews, and building it in rather than bolting it on.',
+  'Углеродный учёт': {
+    slug: 'carbon-accounting',
+    blurb: 'Measure greenhouse gas emissions and prepare carbon accounts.',
   },
-  'QA & Test Automation': {
-    slug: 'qa-test-automation',
-    blurb:
-      'Testing strategy and automation — what to test, at which level, and how to keep a suite fast enough that people still trust it.',
+  'Климатические проекты': {
+    slug: 'climate-projects',
+    blurb: 'Develop and assess projects that reduce emissions or support climate adaptation.',
   },
-
-  // AI & Data
-  'AI/LLM Engineering': {
-    slug: 'ai-llm-engineering',
-    blurb:
-      'Building with large language models — prompting, retrieval, evaluation, cost and latency, and knowing when not to use one at all.',
+  'Нефинансовая отчётность': {
+    slug: 'non-financial-reporting',
+    blurb: 'Prepare non-financial reports on environmental and social performance.',
   },
-  'Machine Learning': {
-    slug: 'machine-learning',
-    blurb:
-      'Models end to end — framing the problem, features, training, evaluation, and what changes once the thing is in production.',
+  'Зелёные финансы': {
+    slug: 'green-finance',
+    blurb: 'Understand financing for environmental and sustainable development projects.',
   },
-  'Data Engineering': {
-    slug: 'data-engineering',
-    blurb:
-      'Pipelines and platforms — ingestion, transformation, orchestration, quality, and data other teams can actually rely on.',
+  'Выбор карьерной траектории': {
+    slug: 'career-path',
+    blurb: 'Explore environmental careers and choose your next professional step.',
   },
-  'Data & Analytics': {
-    slug: 'data-analytics',
-    blurb:
-      'Turning data into decisions — metrics that mean something, analysis, experimentation, and communicating the result.',
+  'Резюме и собеседования': {
+    slug: 'cv-interviews',
+    blurb: 'Prepare a CV and practise interviews for environmental roles.',
+  },
+  'Экологические исследования': {
+    slug: 'environmental-research',
+    blurb: 'Design environmental studies, collect evidence and interpret results.',
+  },
+  'ГИС и пространственные данные': {
+    slug: 'gis',
+    blurb: 'Work with geographic information systems and analyse spatial environmental data.',
   },
 
-  // Infrastructure
-  'DevOps/SRE': {
-    slug: 'devops-sre',
-    blurb:
-      'Running things in production — CI/CD, observability, incidents, on-call, and the reliability practices that hold it together.',
-  },
-  'Platform Engineering': {
-    slug: 'platform-engineering',
-    blurb:
-      'Building the internal platform other engineers ship on — paved paths, developer experience, and where to draw the abstraction.',
-  },
-  'Cloud & Infrastructure': {
-    slug: 'cloud-infrastructure',
-    blurb:
-      'Cloud architecture and the bill that comes with it — networking, compute, infrastructure as code, migrations and cost.',
-  },
-  Databases: {
-    slug: 'databases',
-    blurb:
-      'Choosing, modelling and operating databases — schema design, indexing, query performance, migrations and scaling.',
-  },
-
-  // Product & Design
-  'Product Management': {
-    slug: 'product-management',
-    blurb:
-      'Product craft — discovery, prioritisation, working with engineering, and telling the difference between output and outcome.',
-  },
-  'UX/UI Design': {
-    slug: 'ux-ui-design',
-    blurb:
-      'Interface and experience design — research, flows, design systems, and defending the decisions in a review.',
-  },
-
-  // Leadership & Career
-  'Engineering Management': {
-    slug: 'engineering-management',
-    blurb:
-      'Leading engineers — one-on-ones, performance, hiring, team health, and the shift from writing the code to enabling it.',
-  },
-  'Tech Lead': {
-    slug: 'tech-lead',
-    blurb:
-      'Technical leadership without the title change — direction, decisions, review culture, and keeping a team unblocked.',
-  },
-  'Staff+/IC Growth': {
-    slug: 'staff-ic-growth',
-    blurb:
-      'The senior-to-staff transition — scope, influence without authority, technical strategy, and what promotion committees look for.',
-  },
-  'Career Growth': {
-    slug: 'career-growth',
-    blurb:
-      'Where to go next — levelling up, switching tracks, finding the right role, and building a case for the step you want.',
-  },
-  'Interview Prep': {
-    slug: 'interview-prep',
-    blurb:
-      'Preparing for real loops — coding, system design and behavioural rounds, practised under something close to real conditions.',
-  },
-  'Compensation & Negotiation': {
-    slug: 'compensation-negotiation',
-    blurb:
-      'Offers and what they are actually worth — levelling, equity, benchmarking, and negotiating without burning the relationship.',
-  },
-  'Relocation & Working Abroad': {
-    slug: 'relocation-working-abroad',
-    blurb:
-      'Moving countries for work — visas, job hunting from abroad, remote versus relocation, and settling into a new market.',
-  },
-  'Project Management': {
-    slug: 'project-management',
-    blurb:
-      'Delivery — planning, scope, dependencies, risk, and keeping stakeholders honest about all four.',
-  },
-
-  // Business & Communication
-  'Entrepreneurship & Startups': {
-    slug: 'entrepreneurship-startups',
-    blurb:
-      'Starting and building — validation, early product, fundraising, and the parts of company-building nobody warns you about.',
-  },
-  'Freelancing & Consulting': {
-    slug: 'freelancing-consulting',
-    blurb:
-      'Working for yourself — finding clients, pricing, contracts, positioning, and making the income less lumpy.',
-  },
-  'Developer Relations': {
-    slug: 'developer-relations',
-    blurb:
-      'Advocacy and community — content, talks, developer experience, and measuring impact that resists easy measurement.',
-  },
-  'Technical Writing': {
-    slug: 'technical-writing',
-    blurb:
-      'Documentation and technical communication — structure, audience, tone, and writing that people actually finish.',
-  },
-  'Marketing & Growth': {
-    slug: 'marketing-growth',
-    blurb:
-      'Reaching the people who need the product — positioning, channels, content, funnels and honest measurement.',
-  },
-  'People & HR': {
-    slug: 'people-hr',
-    blurb:
-      'The people side — hiring processes, onboarding, culture, feedback, and the operational work of growing a team.',
-  },
 }
 
 /** Every tag, in taxonomy order. */

@@ -8,26 +8,23 @@
      with the self-hosted families. */
   :root {
     --font-inter: 'Inter', system-ui, sans-serif;
-    --font-archivo: 'Archivo', system-ui, sans-serif;
-    --font-schibsted: 'Schibsted Grotesk', system-ui, sans-serif;
-    --font-plex-mono: 'IBM Plex Mono', ui-monospace, monospace;
+    --font-archivo: var(--font-inter);
+    --font-schibsted: var(--font-inter);
+    --font-plex-mono: var(--font-inter);
   }
 
   html {
-    @apply text-ink antialiased;
+    @apply font-sans text-ink antialiased;
   }
 
-  /* Display headings: Archivo 800, CAPS, tight tracking (type system —
-     display-xl 72/0.98 -3%, display-l 34/1.05 -2%). Pages size h1
-     responsively; these set family/weight/case so headings are on-system
-     by default. */
+  /* Inter is shared by headings, names, body and metadata. */
   h1 {
-    @apply font-display font-extrabold uppercase leading-none;
+    @apply font-display font-bold leading-none;
     letter-spacing: -0.03em;
   }
 
   h2 {
-    @apply font-display font-extrabold uppercase;
+    @apply font-display font-bold;
     letter-spacing: -0.02em;
     line-height: 1.05;
   }
@@ -38,29 +35,27 @@
 
   .link,
   .prose a {
-    color: var(--om-bar); /* brand cobalt */
+    color: var(--om-bar);
     font-weight: 600;
     text-decoration: none !important;
   }
   .link:hover,
   .prose a:hover {
-    color: var(--om-ring); /* brand navy */
+    color: var(--om-ring);
   }
 
-  /* Focus: double ring (white gap + cobalt), never outline:none. */
   :focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px #fff, 0 0 0 5.5px var(--om-bar);
+    outline: 2px solid var(--om-bar);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 3px #fff;
     border-radius: var(--om-radius-btn);
   }
 }
 
 @layer components {
-  /* ── One button system everywhere (component sheet §buttons). ─────────
-     Primary: navy fill + 2px cobalt offset shadow; hover shifts −1,−1 and
-     the shadow grows to 4px (push feel); press returns to 0. */
+  /* Shared EcoCareer button system. */
   .button {
-    @apply inline-block cursor-pointer border-0 bg-brand-navy text-center font-sans text-sm font-bold text-white;
+    @apply inline-block cursor-pointer border-0 bg-brand-green text-center font-sans text-sm font-bold text-black;
     padding: 14px 24px;
     border-radius: var(--om-radius-btn);
     box-shadow: var(--om-shadow-btn);
@@ -70,8 +65,13 @@
       background-color 150ms ease-in-out;
   }
   .button:not([disabled]):hover {
+    background-color: var(--ec-light-green);
     transform: translate(-1px, -1px);
     box-shadow: var(--om-shadow-btn-hover);
+  }
+  .button:focus-visible {
+    outline: 2px solid var(--om-bar);
+    outline-offset: 3px;
   }
   .button:not([disabled]):active {
     transform: translate(0, 0);
@@ -84,16 +84,16 @@
   }
 
   .button-secondary {
-    @apply inline-block cursor-pointer bg-white text-center font-sans text-sm font-bold text-brand-navy;
+    @apply inline-block cursor-pointer bg-white text-center font-sans text-sm font-bold text-brand-dark-green;
     padding: 12.5px 22px;
-    border: 1.5px solid rgb(47 94 255 / 0.45);
+    border: 1.5px solid rgb(36 107 32 / 0.45);
     border-radius: var(--om-radius-btn);
     text-decoration: none;
     box-sizing: border-box;
     transition: background-color 150ms ease-in-out;
   }
   .button-secondary:not([disabled]):hover {
-    background: rgb(47 94 255 / 0.06);
+    background: rgb(36 107 32 / 0.06);
   }
   .button-secondary[disabled] {
     @apply cursor-not-allowed border-line text-ink-faint;
@@ -114,17 +114,15 @@
   .button-destructive {
     @apply inline-block cursor-pointer bg-white text-center font-sans text-sm font-bold text-danger;
     padding: 12.5px 22px;
-    border: 1.5px solid rgb(229 72 77 / 0.4);
+    border: 1.5px solid rgb(180 35 24 / 0.4);
     border-radius: var(--om-radius-btn);
     text-decoration: none;
     transition: background-color 150ms ease-in-out;
   }
   .button-destructive:hover {
-    background: rgb(229 72 77 / 0.05);
+    background: rgb(180 35 24 / 0.05);
   }
 
-  /* ── Form fields (component sheet §fields): 1.5px line border, 12px
-     radius, cobalt border + soft ring on focus, danger variants. ──────── */
   .field {
     @apply block w-full bg-white font-sans text-sm text-ink placeholder:text-ink-soft;
     border: 1.5px solid var(--om-line);
@@ -143,7 +141,7 @@
   }
   .field-error {
     border-color: var(--om-danger);
-    box-shadow: 0 0 0 3px rgb(229 72 77 / 0.12);
+    box-shadow: 0 0 0 3px rgb(180 35 24 / 0.12);
   }
 
   .multiSelectContainer .searchWrapper {
@@ -168,14 +166,13 @@
 }
 
 @layer utilities {
-  /* Legacy "primary" utilities, remapped from the getmentor orange/cream
-     onto the Fresh Signal tokens (src/styles/brand-tokens.css). */
+
   .text-primary {
-    color: var(--om-bar); /* brand cobalt */
+    color: var(--om-bar);
   }
 
   .bg-primary-900 {
-    background-color: var(--om-ring); /* brand navy */
+    background-color: var(--om-ring);
   }
   .bg-primary-100 {
     background-color: var(--om-paper-dim);
@@ -217,7 +214,6 @@
     border-radius: 999px;
   }
 
-  /* Metadata rows: Plex Mono 500, CAPS, +4% tracking ("8Y EXP · $50"). */
   .meta-mono {
     @apply font-mono text-[11px] font-medium uppercase;
     letter-spacing: 0.04em;

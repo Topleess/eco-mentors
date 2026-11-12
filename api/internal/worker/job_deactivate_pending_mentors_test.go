@@ -41,8 +41,8 @@ func TestDeactivatePendingMentorsDeactivatesAndNotifies(t *testing.T) {
 	if got := msg.Props["mentor_name"]; got != "Alice Mentor" {
 		t.Errorf("mentor_name = %v, want Alice Mentor", got)
 	}
-	if len(msg.Props) != 1 {
-		t.Errorf("props = %v, want only mentor_name", msg.Props)
+	if len(msg.Props) != 2 {
+		t.Errorf("props = %v, want mentor_name and base_url", msg.Props)
 	}
 
 	// The func tracked no analytics for this job.

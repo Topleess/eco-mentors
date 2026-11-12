@@ -111,18 +111,11 @@ export default function Bementor(): JSX.Element {
               {t('thankYouForYourApplication')}</h2>
 
             <p className="mt-4 leading-[1.6] text-ink-soft">
-              {t('thanksWeVeReceivedYourApplicationA')}{' '}
-              <a className="link" href="mailto:hello@openmentor.io">
-                hello@openmentor.io
-              </a>
-              .
+              {t('thanksWeVeReceivedYourApplicationA')}
             </p>
 
             <p className="rounded-field border border-brand-mint/60 bg-brand-mint/10 px-4 py-3 leading-[1.6] text-ink">
-              {t('importantCheckYourInboxAndClickThe')}{' '}
-              <a className="link" href="mailto:hello@openmentor.io">
-                {t('dropUsALine')}</a>{' '}
-              {' '}{t('andWeLlSortItOut')}</p>
+              {t('importantCheckYourInboxAndClickThe')}</p>
 
             <p className="mb-0 font-semibold text-ink">{t('goodLuck')}</p>
           </div>

@@ -71,13 +71,13 @@ func TestRequestProcessFinishedDeclinedWithReason(t *testing.T) {
 	msg := env.sender.attempts[0]
 
 	declineInfo := htmlProp(t, msg.Props, "decline_info")
-	assert.Contains(t, declineInfo, "<strong>Reason:</strong> No time at the moment")
-	assert.Contains(t, declineInfo, "<strong>Comment:</strong> Try again &lt;soon&gt;", "comment must be HTML-escaped")
+	assert.Contains(t, declineInfo, "<strong>Причина:</strong> Сейчас нет времени")
+	assert.Contains(t, declineInfo, "<strong>Комментарий:</strong> Try again &lt;soon&gt;", "comment must be HTML-escaped")
 
 	declineText, ok := msg.Props["decline_info_text"].(string)
 	require.True(t, ok)
-	assert.Contains(t, declineText, "Reason: No time at the moment")
-	assert.Contains(t, declineText, "Comment: Try again <soon>")
+	assert.Contains(t, declineText, "Причина: Сейчас нет времени")
+	assert.Contains(t, declineText, "Комментарий: Try again <soon>")
 }
 
 func TestRequestProcessFinishedDeclinedWithoutReason(t *testing.T) {

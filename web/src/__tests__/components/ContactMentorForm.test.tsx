@@ -47,8 +47,8 @@ describe('ContactMentorForm', () => {
   it('renders all required form fields', () => {
     render(<ContactMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />)
 
-    expect(screen.getByLabelText(/Your email/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/Your full name/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/Email address/i)).toBeInTheDocument()
+    expect(screen.getByLabelText(/First and last name/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/What would you like to talk about/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/How can your mentor reach you/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/How would you rate your level/i)).toBeInTheDocument()
@@ -154,8 +154,8 @@ describe('ContactMentorForm', () => {
     render(<ContactMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />)
 
     // Fill all required fields
-    await user.type(screen.getByLabelText(/Your email/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/Your full name/i), 'John Doe')
+    await user.type(screen.getByLabelText(/Email address/i), 'test@example.com')
+    await user.type(screen.getByLabelText(/First and last name/i), 'John Doe')
     await user.type(
       screen.getByLabelText(/What would you like to talk about/i),
       'I need help with my career development in tech industry.'
@@ -195,8 +195,8 @@ describe('ContactMentorForm', () => {
     render(<ContactMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />)
 
     // Fill all required fields, leave the contact field empty
-    await user.type(screen.getByLabelText(/Your email/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/Your full name/i), 'John Doe')
+    await user.type(screen.getByLabelText(/Email address/i), 'test@example.com')
+    await user.type(screen.getByLabelText(/First and last name/i), 'John Doe')
     await user.type(
       screen.getByLabelText(/What would you like to talk about/i),
       'I need help with my career development in tech industry.'
@@ -231,7 +231,7 @@ describe('ContactMentorForm', () => {
     const user = userEvent.setup()
     render(<ContactMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />)
 
-    await user.type(screen.getByLabelText(/Your email/i), 'not-an-email')
+    await user.type(screen.getByLabelText(/Email address/i), 'not-an-email')
 
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: /Send request/i }))
@@ -252,9 +252,9 @@ describe('ContactMentorForm', () => {
     })
 
     await waitFor(() => {
-      expect(screen.getByLabelText(/Your email/i)).toHaveClass('field-error')
+      expect(screen.getByLabelText(/Email address/i)).toHaveClass('field-error')
     })
-    expect(screen.getByLabelText(/Your full name/i)).toHaveClass('field-error')
+    expect(screen.getByLabelText(/First and last name/i)).toHaveClass('field-error')
     expect(screen.getByLabelText(/What would you like to talk about/i)).toHaveClass('field-error')
     // Valid (optional) field keeps the default style
     expect(screen.getByLabelText(/How can your mentor reach you/i)).not.toHaveClass('field-error')
@@ -295,8 +295,8 @@ describe('ContactMentorForm', () => {
     render(<ContactMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />)
 
     // Fill all required fields except the captcha
-    await user.type(screen.getByLabelText(/Your email/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/Your full name/i), 'John Doe')
+    await user.type(screen.getByLabelText(/Email address/i), 'test@example.com')
+    await user.type(screen.getByLabelText(/First and last name/i), 'John Doe')
     await user.type(
       screen.getByLabelText(/What would you like to talk about/i),
       'I need help with my career development in tech industry.'
@@ -326,8 +326,8 @@ describe('ContactMentorForm', () => {
       <ContactMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />
     )
 
-    await user.type(screen.getByLabelText(/Your email/i), 'test@example.com')
-    await user.type(screen.getByLabelText(/Your full name/i), 'John Doe')
+    await user.type(screen.getByLabelText(/Email address/i), 'test@example.com')
+    await user.type(screen.getByLabelText(/First and last name/i), 'John Doe')
     await user.type(
       screen.getByLabelText(/What would you like to talk about/i),
       'I need help with my career development in tech industry.'

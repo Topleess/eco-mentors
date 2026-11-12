@@ -31,7 +31,7 @@ func TestEveryTemplateCompiles(t *testing.T) {
 func TestEveryTemplateRendersAgainstFixture(t *testing.T) {
 	for _, name := range Names() {
 		t.Run(name, func(t *testing.T) {
-			props := make(map[string]interface{}, len(expectedTemplates[name]))
+			props := map[string]interface{}{"base_url": "https://client.example"}
 			for _, placeholder := range expectedTemplates[name] {
 				props[placeholder] = "fixture-" + placeholder
 			}
@@ -66,7 +66,7 @@ func TestRenderUnknownTemplate(t *testing.T) {
 
 func TestRenderRejectsMissingPlaceholder(t *testing.T) {
 	// mentor-login needs mentor_name and login_url.
-	_, err := Render("mentor-login", map[string]interface{}{"mentor_name": "Jane"})
+	_, err := Render("mentor-login", map[string]interface{}{"base_url": "https://client.example", "mentor_name": "Jane"})
 	if err == nil {
 		t.Fatal("Render should fail when a placeholder has no prop")
 	}

@@ -24,7 +24,7 @@ describe('NoIndexHead', () => {
     render(<NoIndexHead title="Requests" />)
 
     expect(robots()).toBe('noindex,follow')
-    expect(title()).toBe('Requests | OpenMentor.io')
+    expect(title()).toBe('Requests | Менторы ЭкоКарьеры')
   })
 })
 
@@ -36,6 +36,6 @@ describe('AuthGateScreen', () => {
     render(<AuthGateScreen title="Requests" />)
 
     expect(robots()).toBe('noindex,follow')
-    expect(title()).toBe('Requests | OpenMentor.io')
+    expect(title()).toBe('Requests | Менторы ЭкоКарьеры')
   })
 })

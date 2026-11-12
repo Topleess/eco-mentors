@@ -16,9 +16,7 @@ import path from 'path'
 const STATIC_PAGES = [
   'about',
   'bementor',
-  'donate',
   'faq',
-  'migrate',
   'privacy',
   'terms',
 ] as const
@@ -29,6 +27,8 @@ const STATIC_PAGES = [
  * the next — has to be a deliberate edit to this file.
  */
 const SSR_PAGES: Record<string, string> = {
+  'donate.tsx': 'redirects the retired donation page to about',
+  'migrate.tsx': 'redirects the retired upstream import page to registration',
   'index.tsx': 'fetches the mentor catalog',
   'mentors/index.tsx': 'fetches the mentor catalog',
   'mentors/[tag].tsx': 'fetches the catalog and 404s an unknown tag',

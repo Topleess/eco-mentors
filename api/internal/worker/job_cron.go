@@ -106,11 +106,16 @@ func renderFragment(tpl *template.Template, data any) template.HTML {
 	return template.HTML(b.String())
 }
 
-// daysWording mirrors the func's staleness wording:
-// days === 1 ? '1 day' : `${days} days`.
+// daysWording formats elapsed days in Russian.
 func daysWording(days int) string {
-	if days == 1 {
-		return "1 day"
+	suffix := "дней"
+	if days%100 < 11 || days%100 > 14 {
+		switch days % 10 {
+		case 1:
+			suffix = "день"
+		case 2, 3, 4:
+			suffix = "дня"
+		}
 	}
-	return fmt.Sprintf("%d days", days)
+	return fmt.Sprintf("%d %s", days, suffix)
 }

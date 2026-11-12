@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react'
 import MentorsFilters from '@/components/mentors/MentorsFilters'
 import allFilters from '@/config/filters'
+import { translateLabel } from '@/i18n/labels'
 import type { AppliedFilters, MentorListItem } from '@/types'
 
 function makeAppliedFilters(overrides: Partial<AppliedFilters> = {}): AppliedFilters {
@@ -27,7 +28,7 @@ function makeMentor(overrides: Partial<MentorListItem>): MentorListItem {
     competencies: 'Things',
     experience: '2-5',
     price: '$50',
-    tags: ['Frontend'],
+    tags: ['Производственный экологический контроль'],
     menteeCount: 0,
     photo_url: null,
     sortOrder: 1,
@@ -39,9 +40,9 @@ function makeMentor(overrides: Partial<MentorListItem>): MentorListItem {
 }
 
 const mentors: MentorListItem[] = [
-  makeMentor({ id: 1, slug: 'a', tags: ['Frontend'], experience: '2-5', price: '$50' }),
-  makeMentor({ id: 2, slug: 'b', tags: ['Frontend', 'Backend'], experience: '10+', price: 'Free' }),
-  makeMentor({ id: 3, slug: 'c', tags: ['UX/UI Design'], experience: '10+', price: 'Negotiable' }),
+  makeMentor({ id: 1, slug: 'a', tags: ['Производственный экологический контроль'], experience: '2-5', price: '$50' }),
+  makeMentor({ id: 2, slug: 'b', tags: ['Производственный экологический контроль', 'Экологическая отчётность'], experience: '10+', price: 'Free' }),
+  makeMentor({ id: 3, slug: 'c', tags: ['Экологическое проектирование'], experience: '10+', price: 'Negotiable' }),
 ]
 
 describe('MentorsFilters', () => {
@@ -50,7 +51,7 @@ describe('MentorsFilters', () => {
 
     expect(screen.getByRole('button', { name: /All mentors/i })).toBeInTheDocument()
     for (const category of allFilters.categories) {
-      expect(screen.getByRole('button', { name: category.label })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: translateLabel('en', category.label) })).toBeInTheDocument()
     }
     expect(screen.getByRole('button', { name: 'Experience' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Price' })).toBeInTheDocument()
@@ -68,7 +69,7 @@ describe('MentorsFilters', () => {
     rerender(
       <MentorsFilters
         appliedFilters={makeAppliedFilters({
-          category: { values: 'Engineering', set: jest.fn(), reset: jest.fn() },
+          category: { values: 'Экология предприятий', set: jest.fn(), reset: jest.fn() },
         })}
         mentors={mentors}
       />
@@ -83,60 +84,68 @@ describe('MentorsFilters', () => {
     const appliedFilters = makeAppliedFilters()
     render(<MentorsFilters appliedFilters={appliedFilters} mentors={mentors} />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Engineering' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Enterprise ecology' }))
 
-    expect(appliedFilters.category.set).toHaveBeenCalledWith('Engineering')
+    expect(appliedFilters.category.set).toHaveBeenCalledWith('Экология предприятий')
     expect(appliedFilters.tags.set).toHaveBeenCalledWith([])
 
     // Dropdown lists the category's tags with counts from the loaded mentors
-    const frontendItem = screen.getByRole('button', { name: /Frontend/ })
-    expect(frontendItem).toHaveTextContent('2')
-    expect(screen.getByRole('button', { name: /Backend/ })).toHaveTextContent('1')
-    expect(screen.getByRole('button', { name: /Mobile/ })).toHaveTextContent('0')
+    const monitoringItem = screen.getByRole('button', { name: /Industrial environmental monitoring/ })
+    expect(monitoringItem).toHaveTextContent('2')
+    expect(screen.getByRole('button', { name: /Environmental reporting/ })).toHaveTextContent('1')
+  })
+
+  it('shows zero counts for category tags when no mentors are loaded', () => {
+    render(<MentorsFilters appliedFilters={makeAppliedFilters()} mentors={[]} />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Enterprise ecology' }))
+
+    expect(screen.getByRole('button', { name: /Industrial environmental monitoring/ })).toHaveTextContent('0')
+    expect(screen.getByRole('button', { name: /Environmental reporting/ })).toHaveTextContent('0')
   })
 
   it('narrows to a single tag from the category dropdown and closes the panel', () => {
     const appliedFilters = makeAppliedFilters({
-      category: { values: 'Engineering', set: jest.fn(), reset: jest.fn() },
+      category: { values: 'Экология предприятий', set: jest.fn(), reset: jest.fn() },
     })
     render(<MentorsFilters appliedFilters={appliedFilters} mentors={mentors} />)
 
     // Active category click opens the dropdown
-    fireEvent.click(screen.getByRole('button', { name: 'Engineering' }))
-    fireEvent.click(screen.getByRole('button', { name: /Backend/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Enterprise ecology' }))
+    fireEvent.click(screen.getByRole('button', { name: /Environmental reporting/ }))
 
-    expect(appliedFilters.tags.set).toHaveBeenCalledWith(['Backend'])
-    expect(screen.queryByRole('button', { name: /Mobile/ })).not.toBeInTheDocument()
+    expect(appliedFilters.tags.set).toHaveBeenCalledWith(['Экологическая отчётность'])
+    expect(screen.queryByRole('button', { name: /Industrial environmental monitoring/ })).not.toBeInTheDocument()
   })
 
   it('re-picking the selected tag widens back to the whole category', () => {
     const appliedFilters = makeAppliedFilters({
-      category: { values: 'Engineering', set: jest.fn(), reset: jest.fn() },
-      tags: { values: ['Backend'], set: jest.fn(), reset: jest.fn() },
+      category: { values: 'Экология предприятий', set: jest.fn(), reset: jest.fn() },
+      tags: { values: ['Экологическая отчётность'], set: jest.fn(), reset: jest.fn() },
     })
     render(<MentorsFilters appliedFilters={appliedFilters} mentors={mentors} />)
 
     // Pill shows the narrowed tag as its label
-    fireEvent.click(screen.getByRole('button', { name: 'Backend' }))
-    fireEvent.click(screen.getAllByRole('button', { name: /Backend/ })[1])
+    fireEvent.click(screen.getByRole('button', { name: 'Environmental reporting' }))
+    fireEvent.click(screen.getAllByRole('button', { name: /Environmental reporting/ })[1])
 
     expect(appliedFilters.tags.set).toHaveBeenCalledWith([])
   })
 
   it('toggles the dropdown when the active category is clicked again', () => {
     const appliedFilters = makeAppliedFilters({
-      category: { values: 'Engineering', set: jest.fn(), reset: jest.fn() },
+      category: { values: 'Экология предприятий', set: jest.fn(), reset: jest.fn() },
     })
     render(<MentorsFilters appliedFilters={appliedFilters} mentors={mentors} />)
 
-    const pill = screen.getByRole('button', { name: 'Engineering' })
+    const pill = screen.getByRole('button', { name: 'Enterprise ecology' })
 
     fireEvent.click(pill)
-    expect(screen.getByRole('button', { name: /Backend/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Environmental reporting/ })).toBeInTheDocument()
     expect(pill).toHaveAttribute('aria-expanded', 'true')
 
     fireEvent.click(pill)
-    expect(screen.queryByRole('button', { name: /Backend/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Environmental reporting/ })).not.toBeInTheDocument()
     expect(pill).toHaveAttribute('aria-expanded', 'false')
   })
 
@@ -148,8 +157,8 @@ describe('MentorsFilters', () => {
 
   it('resets category and tags when "All mentors" is clicked', () => {
     const appliedFilters = makeAppliedFilters({
-      category: { values: 'Engineering', set: jest.fn(), reset: jest.fn() },
-      tags: { values: ['Backend'], set: jest.fn(), reset: jest.fn() },
+      category: { values: 'Экология предприятий', set: jest.fn(), reset: jest.fn() },
+      tags: { values: ['Экологическая отчётность'], set: jest.fn(), reset: jest.fn() },
     })
     render(<MentorsFilters appliedFilters={appliedFilters} mentors={mentors} />)
 
@@ -219,11 +228,11 @@ describe('MentorsFilters', () => {
 
   it('initializes tags from the #tags: URL hash on mount', () => {
     const appliedFilters = makeAppliedFilters()
-    window.location.hash = '#tags:Frontend|NotATag'
+    window.location.hash = '#tags:Производственный экологический контроль|NotATag'
 
     render(<MentorsFilters appliedFilters={appliedFilters} mentors={mentors} />)
 
-    expect(appliedFilters.tags.set).toHaveBeenCalledWith(['Frontend'])
+    expect(appliedFilters.tags.set).toHaveBeenCalledWith(['Производственный экологический контроль'])
     window.location.hash = ''
   })
 })

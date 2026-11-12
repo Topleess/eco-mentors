@@ -1,10 +1,23 @@
 import {
   MENTOR_INITIALS_CLASSES,
+  MENTOR_INITIALS_HEX,
+  MENTOR_PASTEL_GRAD_HEX,
   MENTOR_PASTEL_GRAD_CLASSES,
   MENTOR_PASTEL_NEUTRAL_GRAD_CLASS,
   mentorInitialsClass,
   mentorPastelGradClass,
 } from '@/lib/mentor-pastel'
+
+describe('mentor palette parity', () => {
+  it('keeps social-card colors identical to the frontend tokens', () => {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { colors } = require('../../../tailwind.config.js').theme.extend
+    expect(MENTOR_INITIALS_HEX).toEqual([colors.brand.navy, colors.brand.cobalt])
+    expect(MENTOR_PASTEL_GRAD_HEX).toEqual(
+      ['sky', 'sand', 'sage', 'lavender', 'rose'].map((name) => [colors.pastel[name].DEFAULT, colors.pastel[name].deep]),
+    )
+  })
+})
 
 describe('mentorPastelGradClass', () => {
   it('is deterministic — same key always gets the same gradient', () => {
