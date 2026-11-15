@@ -64,6 +64,8 @@ func workerConfig(appEnv string) *config.Config {
 			ServiceName: "openmentor-worker",
 		},
 		Email: config.EmailConfig{
+			SESFromEmail:       "hello@eco.example",
+			SESFromName:        "Eco Mentors",
 			SESRegion:          "eu-central-1",
 			SESAccessKeyID:     "ses-key-id",
 			SESSecretAccessKey: "ses-secret",

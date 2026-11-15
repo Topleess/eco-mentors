@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"net/mail"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -94,6 +95,7 @@ type PostHogConfig struct {
 // harvested from a different form — being replayed here. Empty means "accept
 // whatever Cloudflare reports", which is the pre-existing behavior.
 type TurnstileConfig struct {
+	Provider         string
 	SecretKey        string
 	ExpectedHostname string
 	ExpectedAction   string
@@ -248,6 +250,8 @@ type EmailConfig struct {
 	SESAccessKeyID     string
 	SESSecretAccessKey string
 	SESEndpoint        string // optional: SESv2-compatible endpoint override
+	SESFromEmail       string
+	SESFromName        string
 	DevEmailOverride   string // non-production: reroute ALL recipients here
 	ModeratorsEmail    string // moderators mailbox for notification emails
 	DiscordInviteLink  string // invite URL for the private mentors' Discord
@@ -436,6 +440,7 @@ func load() *Config {
 			DisableGeoIP:    v.GetBool("POSTHOG_DISABLE_GEOIP"),
 		},
 		Turnstile: TurnstileConfig{
+			Provider:         v.GetString("CAPTCHA_PROVIDER"),
 			SecretKey:        v.GetString("TURNSTILE_SECRET_KEY"),
 			ExpectedHostname: strings.TrimSpace(v.GetString("TURNSTILE_EXPECTED_HOSTNAME")),
 			ExpectedAction:   strings.TrimSpace(v.GetString("TURNSTILE_EXPECTED_ACTION")),
@@ -500,12 +505,19 @@ func load() *Config {
 			SESAccessKeyID:     v.GetString("SES_ACCESS_KEY_ID"),
 			SESSecretAccessKey: v.GetString("SES_SECRET_ACCESS_KEY"),
 			SESEndpoint:        v.GetString("SES_ENDPOINT"),
+			SESFromEmail:       v.GetString("SES_FROM_EMAIL"),
+			SESFromName:        v.GetString("SES_FROM_NAME"),
 			DevEmailOverride:   v.GetString("DEV_EMAIL_OVERRIDE"),
 			ModeratorsEmail:    v.GetString("MODERATORS_EMAIL"),
 			DiscordInviteLink:  v.GetString("DISCORD_MENTORS_PRIVATE_INVITE_LINK"),
 		},
 	}
 
+	if cfg.Turnstile.Provider == "smartcaptcha" {
+		cfg.Turnstile.SecretKey = v.GetString("SMARTCAPTCHA_SERVER_KEY")
+		cfg.Turnstile.ExpectedHostname = strings.TrimSpace(v.GetString("SMARTCAPTCHA_EXPECTED_HOSTNAME"))
+		cfg.Turnstile.ExpectedAction = ""
+	}
 	return cfg
 }
 
@@ -704,8 +716,13 @@ func (c *Config) validateEmailConfig() error {
 			strings.Join(missing, ", "))
 	}
 
-	if strings.TrimSpace(c.Email.ModeratorsEmail) == "" {
-		return fmt.Errorf("MODERATORS_EMAIL is required (moderation notifications have no other recipient)")
+	strictIdentity := c.IsProduction() || strings.TrimSpace(c.Email.SESEndpoint) != ""
+	if err := c.validateSenderIdentity(strictIdentity); err != nil {
+		return err
+	}
+
+	if err := c.validateModeratorsIdentity(strictIdentity); err != nil {
+		return err
 	}
 	if c.IsProduction() && strings.TrimSpace(c.Email.DevEmailOverride) != "" {
 		return fmt.Errorf("DEV_EMAIL_OVERRIDE must be empty in production: it reroutes every recipient")
@@ -713,6 +730,48 @@ func (c *Config) validateEmailConfig() error {
 	if link := strings.TrimSpace(c.Email.DiscordInviteLink); link != "" && !safeurl.IsHTTPS(link) {
 		return fmt.Errorf("DISCORD_MENTORS_PRIVATE_INVITE_LINK must be an absolute https URL with a host")
 	}
+	return nil
+}
+
+func (c *Config) validateModeratorsIdentity(strictIdentity bool) error {
+	if strings.TrimSpace(c.Email.ModeratorsEmail) == "" {
+		return fmt.Errorf("MODERATORS_EMAIL is required (moderation notifications have no other recipient)")
+	}
+	if strictIdentity {
+		address, err := mail.ParseAddress(c.Email.ModeratorsEmail)
+		if err != nil || address.Address != c.Email.ModeratorsEmail || address.Name != "" {
+			return fmt.Errorf("MODERATORS_EMAIL must be a bare email address")
+		}
+		if strings.HasSuffix(strings.ToLower(address.Address), "@openmentor.io") {
+			return fmt.Errorf("MODERATORS_EMAIL must be explicitly configured outside upstream openmentor.io")
+		}
+	}
+	return nil
+}
+
+func (c *Config) validateSenderIdentity(strictIdentity bool) error {
+	from, name := c.Email.SESFromEmail, c.Email.SESFromName
+	if (strings.TrimSpace(from) == "") != (strings.TrimSpace(name) == "") {
+		return fmt.Errorf("SES_FROM_EMAIL and SES_FROM_NAME must be configured together")
+	}
+	if from != "" {
+		address, err := mail.ParseAddress(from)
+		if err != nil || address.Address != from || address.Name != "" {
+			return fmt.Errorf("SES_FROM_EMAIL must be a bare email address")
+		}
+		if strings.ContainsAny(name, "\r\n") {
+			return fmt.Errorf("SES_FROM_NAME must not contain header line breaks")
+		}
+		if strictIdentity && strings.HasSuffix(strings.ToLower(address.Address), "@openmentor.io") {
+			return fmt.Errorf("SES_FROM_EMAIL must not use the upstream openmentor.io identity")
+		}
+	}
+	if strictIdentity {
+		if strings.TrimSpace(c.Email.SESFromEmail) == "" || strings.TrimSpace(c.Email.SESFromName) == "" {
+			return fmt.Errorf("SES_FROM_EMAIL and SES_FROM_NAME must be explicitly set in production or with SES_ENDPOINT")
+		}
+	}
+
 	return nil
 }
 
@@ -857,6 +916,15 @@ func (c *Config) validateAnalyticsConfig() error {
 }
 
 func (c *Config) validateTurnstileConfig() error {
+	if c.Turnstile.Provider == "smartcaptcha" {
+		if c.Turnstile.SecretKey == "" || c.Turnstile.ExpectedHostname == "" || strings.ContainsAny(c.Turnstile.ExpectedHostname, ":/ ") {
+			return fmt.Errorf("SmartCaptcha requires a server key and bare expected hostname")
+		}
+		return nil
+	}
+	if c.Turnstile.Provider != "" && c.Turnstile.Provider != "turnstile" {
+		return fmt.Errorf("unsupported CAPTCHA_PROVIDER")
+	}
 	if c.Turnstile.SecretKey == "" {
 		return fmt.Errorf("TURNSTILE_SECRET_KEY is required")
 	}

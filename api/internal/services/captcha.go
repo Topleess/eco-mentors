@@ -12,6 +12,7 @@ import (
 // them would leave the fourth form as the one an attacker farms tokens against.
 func newCaptchaVerifier(cfg *config.Config, httpClient httpclient.Client) *turnstile.Verifier {
 	return turnstile.NewVerifier(turnstile.Options{
+		Provider:         cfg.Turnstile.Provider,
 		SecretKey:        cfg.Turnstile.SecretKey,
 		ExpectedHostname: cfg.Turnstile.ExpectedHostname,
 		ExpectedAction:   cfg.Turnstile.ExpectedAction,

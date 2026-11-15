@@ -29,7 +29,7 @@ import BrandLogo from '@/components/brand/BrandLogo'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import { useForm } from 'react-hook-form'
-import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
+import Turnstile, { type CaptchaInstance as TurnstileInstance } from '@/components/forms/Captcha'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import {
   faCircleNotch,

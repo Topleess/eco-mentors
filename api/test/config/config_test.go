@@ -654,14 +654,16 @@ func TestLoadFor_WorkerNeedsNoS3Credentials(t *testing.T) {
 		os.Setenv("SES_REGION", "eu-central-1")
 		os.Setenv("SES_ACCESS_KEY_ID", "ses-key-id")
 		os.Setenv("SES_SECRET_ACCESS_KEY", "ses-secret")
+		os.Setenv("SES_FROM_EMAIL", "hello@eco.example")
+		os.Setenv("SES_FROM_NAME", "Eco Mentors")
+		os.Setenv("MODERATORS_EMAIL", "mods@eco.example")
 
 		cfg, err := config.LoadFor(config.BinaryWorker)
 		require.NoError(t, err)
 		assert.Empty(t, cfg.S3Storage.SecretAccessKey)
-		// BASE_URL and MODERATORS_EMAIL come from the defaults in Load, which is
-		// why the worker service passes neither.
+		// BASE_URL retains its legacy default; production mail identity is explicit.
 		assert.Equal(t, "https://openmentor.io", cfg.Server.BaseURL)
-		assert.Equal(t, "moderators@openmentor.io", cfg.Email.ModeratorsEmail)
+		assert.Equal(t, "mods@eco.example", cfg.Email.ModeratorsEmail)
 	})
 }
 

@@ -157,13 +157,13 @@ const nextConfig = {
               // SECURITY (M8): no 'unsafe-eval' — GTM/PostHog/Faro don't need it
               // and Next's production runtime doesn't either. 'unsafe-inline'
               // remains until inline scripts move to nonces/strict-dynamic.
-              "script-src 'self' 'unsafe-inline' https://openmentor.io https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com https://a.openmentor.io https://us.i.posthog.com https://eu.i.posthog.com https://us-assets.i.posthog.com https://eu-assets.i.posthog.com https://faro-collector-prod-eu-west-3.grafana.net" + umamiOrigin + "; " +
+              "script-src 'self' 'unsafe-inline' https://openmentor.io https://challenges.cloudflare.com https://smartcaptcha.cloud.yandex.ru https://www.googletagmanager.com https://www.google-analytics.com https://a.openmentor.io https://us.i.posthog.com https://eu.i.posthog.com https://us-assets.i.posthog.com https://eu-assets.i.posthog.com https://faro-collector-prod-eu-west-3.grafana.net" + umamiOrigin + "; " +
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
               "img-src 'self' https: data:; " +
               "font-src 'self' data: https://fonts.gstatic.com https://at.alicdn.com; " +
               "connect-src 'self' https://a.openmentor.io https://us.i.posthog.com https://eu.i.posthog.com https://eu.posthog.com https://openmentor.io https://www.google-analytics.com https://region1.analytics.google.com https://stats.g.doubleclick.net https://google.com https://www.google.com https://faro-collector-prod-eu-west-3.grafana.net https://region1.google-analytics.com" + umamiOrigin + "; " +
               // mentor calendars (CalendarType 'calendlab')
-              'frame-src https://challenges.cloudflare.com https://calendly.com https://koalendar.com https://calendlab.ru https://docs.google.com; ' +
+              'frame-src https://challenges.cloudflare.com https://smartcaptcha.cloud.yandex.ru https://calendly.com https://koalendar.com https://calendlab.ru https://docs.google.com; ' +
               "object-src 'none'; " +
               "base-uri 'self'; " +
               "form-action 'self'; " +

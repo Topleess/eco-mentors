@@ -109,6 +109,16 @@ func TestPerBinaryContracts(t *testing.T) {
 			},
 		},
 		{
+			setting:  "SES_FROM_EMAIL",
+			required: []config.Binary{config.BinaryWorker},
+			remove:   func(c *config.Config) { c.Email.SESFromEmail = "" },
+		},
+		{
+			setting:  "SES_FROM_NAME",
+			required: []config.Binary{config.BinaryWorker},
+			remove:   func(c *config.Config) { c.Email.SESFromName = "" },
+		},
+		{
 			setting:  "SES_*",
 			required: []config.Binary{config.BinaryWorker},
 			remove: func(c *config.Config) {
