@@ -4,10 +4,6 @@ module.exports = {
     './src/features/**/*.{js,ts,jsx,tsx}',
     './src/pages/**/*.{js,ts,jsx,tsx}',
     './src/lib/**/*.{js,ts,jsx,tsx}',
-    // STATUS_COLORS (the request status pills) lives in src/types. Without
-    // this glob its classes are only emitted when the same class happens to
-    // appear in a scanned file — 'reschedule' added bg-pastel-sand, which had
-    // no such twin, and the pill rendered with no background at all.
     './src/types/**/*.{js,ts,jsx,tsx}',
   ],
   darkMode: 'media', // or 'media' or 'class'
@@ -20,64 +16,41 @@ module.exports = {
       },
     },
 
-    // Redesign type system (docs/design-reference — component sheet):
-    // Archivo = display (CAPS headlines), Schibsted Grotesk = names/numbers,
-    // Inter = body, IBM Plex Mono = metadata. All self-hosted variable
-    // fonts via next/font (CSS variables set in _app.tsx).
     fontFamily: {
       sans: ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
-      display: ['var(--font-archivo)', 'Archivo', 'system-ui', 'sans-serif'],
-      name: ['var(--font-schibsted)', 'Schibsted Grotesk', 'system-ui', 'sans-serif'],
-      mono: ['var(--font-plex-mono)', 'IBM Plex Mono', 'ui-monospace', 'monospace'],
+      display: ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
+      name: ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
+      mono: ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
     },
 
     extend: {
-      // "Fresh Signal" brand palette. Hex values mirror the --om-* custom
-      // properties in src/styles/brand-tokens.css (copied from the brand
-      // asset pack in ../brand, which is the source of truth) plus the
-      // redesign token deltas in src/styles/design-tokens.css.
-      // Hex literals (rather than var() references) keep Tailwind's
-      // opacity modifiers (e.g. ring-ink/10, bg-brand-navy/90) working.
       colors: {
-        // Primary text — --om-ink
-        ink: '#161A20',
-        // Secondary text / captions — --om-ink-soft
-        'ink-soft': '#5B6270',
-        // Darker secondary text for tinted (pastel) surfaces — keeps
-        // WCAG AA (>= 5.0:1) on every pastel incl. the deepened hover tints
-        'ink-mute': '#4A5160',
-        // Disabled text/icons only, never body copy — --om-ink-faint
-        'ink-faint': '#B9BDC7',
-        // Card / control surface — --om-paper-dim
-        surface: '#F7F6F2',
-        // Deep paper (skeletons, neutral gradient stop) — --om-paper-deep
-        'surface-deep': '#EDEBE4',
-        // Hairline borders on brand surfaces — --om-line
-        line: '#DEDBD1',
-        // Errors / destructive actions (AA on white) — --om-danger
-        danger: '#E5484D',
-        // Mint-family text on light surfaces (AA 5.2:1) — --om-mint-ink
-        'mint-ink': '#0E7A70',
+        ink: '#000000',
+        'ink-soft': '#3F4A3D',
+        'ink-mute': '#344431',
+        'ink-faint': '#899586',
+        surface: '#F4FAF2',
+        'surface-deep': '#E3F0DF',
+        line: '#D1DFCD',
+        danger: '#B42318',
+        'mint-ink': '#246B20',
         brand: {
-          // Deep navy (the open ring) — --om-ring
-          navy: '#132A52',
-          // Cobalt (the directional stroke) — --om-bar
-          cobalt: '#2F5EFF',
-          // Mint (the arrival node) — --om-dot
-          mint: '#17C3B2',
+          green: '#70E852',
+          'light-green': '#C9FFBF',
+          'dark-green': '#246B20',
+          navy: '#000000',
+          cobalt: '#246B20',
+          mint: '#70E852',
         },
-        // Mentor card pastels. `deep` variants are the gradient bottom
-        // stop / hover tints. Assignment logic: src/lib/mentor-pastel.ts.
         pastel: {
-          sky: { DEFAULT: '#C9E6F2', deep: '#B7DCEE' },
-          sand: { DEFAULT: '#F4E3C0', deep: '#EED8AA' },
-          sage: { DEFAULT: '#CDE8C6', deep: '#BCE0B4' },
-          lavender: { DEFAULT: '#DDD9F4', deep: '#CFC9EE' },
-          rose: { DEFAULT: '#F6D4E2', deep: '#F0C3D6' },
+          sky: { DEFAULT: '#C9FFBF', deep: '#B4F5A7' },
+          sand: { DEFAULT: '#E5FFDF', deep: '#C9FFBF' },
+          sage: { DEFAULT: '#C9FFBF', deep: '#B4F5A7' },
+          lavender: { DEFAULT: '#D9F5D3', deep: '#C6E9BF' },
+          rose: { DEFAULT: '#ECF8E8', deep: '#D9F5D3' },
         },
       },
 
-      // Redesign radius scale — replaces the old mixed rounded-lg/xl/full.
       borderRadius: {
         field: '12px',
         card: '14px',
@@ -85,29 +58,25 @@ module.exports = {
         panel: '16px',
       },
 
-      // Redesign shadows (component sheet token deltas).
       boxShadow: {
-        btn: '2px 2px 0 rgb(47 94 255 / 0.4)',
-        'btn-hover': '4px 4px 0 rgb(47 94 255 / 0.4)',
-        'card-hover': '0 12px 26px -10px rgb(19 42 82 / 0.22)',
-        dropdown: '0 16px 36px -12px rgb(19 42 82 / 0.25)',
-        'focus-field': '0 0 0 3px rgb(47 94 255 / 0.13)',
-        'focus-ring': '0 0 0 3px #fff, 0 0 0 5.5px #2F5EFF',
+        btn: '2px 2px 0 rgb(36 107 32 / 0.4)',
+        'btn-hover': '4px 4px 0 rgb(36 107 32 / 0.4)',
+        'card-hover': '0 12px 26px -10px rgb(0 0 0 / 0.22)',
+        dropdown: '0 16px 36px -12px rgb(0 0 0 / 0.25)',
+        'focus-field': '0 0 0 3px rgb(36 107 32 / 0.13)',
+        'focus-ring': '0 0 0 3px #fff, 0 0 0 5.5px #246B20',
       },
 
-      // Pastel blocks render as top→bottom gradients (base → deep).
       backgroundImage: {
-        'pastel-sky-grad': 'linear-gradient(180deg,#C9E6F2 0%,#B7DCEE 100%)',
-        'pastel-sand-grad': 'linear-gradient(180deg,#F4E3C0 0%,#EED8AA 100%)',
-        'pastel-sage-grad': 'linear-gradient(180deg,#CDE8C6 0%,#BCE0B4 100%)',
-        'pastel-lavender-grad': 'linear-gradient(180deg,#DDD9F4 0%,#CFC9EE 100%)',
-        'pastel-rose-grad': 'linear-gradient(180deg,#F6D4E2 0%,#F0C3D6 100%)',
-        'pastel-neutral-grad': 'linear-gradient(180deg,#F7F6F2 0%,#EDEBE4 100%)',
-        shimmer: 'linear-gradient(90deg,#F7F6F2 25%,#EDEBE4 50%,#F7F6F2 75%)',
+        'pastel-sky-grad': 'linear-gradient(180deg,#C9FFBF 0%,#B4F5A7 100%)',
+        'pastel-sand-grad': 'linear-gradient(180deg,#E5FFDF 0%,#C9FFBF 100%)',
+        'pastel-sage-grad': 'linear-gradient(180deg,#C9FFBF 0%,#B4F5A7 100%)',
+        'pastel-lavender-grad': 'linear-gradient(180deg,#D9F5D3 0%,#C6E9BF 100%)',
+        'pastel-rose-grad': 'linear-gradient(180deg,#ECF8E8 0%,#D9F5D3 100%)',
+        'pastel-neutral-grad': 'linear-gradient(180deg,#F4FAF2 0%,#E3F0DF 100%)',
+        shimmer: 'linear-gradient(90deg,#F4FAF2 25%,#E3F0DF 50%,#F4FAF2 75%)',
       },
 
-      // Motion spec: 120ms focus/color, 150–180ms hover/press, 200–240ms
-      // entrances/crossfades, 300ms max one-off pops.
       transitionDuration: {
         120: '120ms',
         180: '180ms',

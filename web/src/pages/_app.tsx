@@ -8,7 +8,7 @@ import { createTranslator, normalizeLocale } from '@/i18n/core'
 import { messages } from '@/i18n/messages/common'
 import Head from 'next/head'
 import { useRouter } from 'next/router'
-import { Archivo, IBM_Plex_Mono, Inter, Schibsted_Grotesk } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import TagManager from 'react-gtm-module'
 import { CookieConsentBanner } from '@/components'
 import constants from '@/config/constants'
@@ -34,17 +34,16 @@ const siteJsonLd: Record<string, unknown> = {
     {
       '@type': 'Organization',
       '@id': organizationId,
-      name: 'OpenMentor.io',
+      name: 'Менторы ЭкоКарьеры',
       url: constants.BASE_URL,
       logo: `${constants.BASE_URL}brand/logo/png/icon-app/icon-app-512.png`,
       description: seo.description,
       sameAs: [SOURCE_REPOSITORY_URL],
-      email: 'hello@openmentor.io',
     },
     {
       '@type': 'WebSite',
       '@id': websiteId,
-      name: 'OpenMentor.io',
+      name: 'Менторы ЭкоКарьеры',
       url: constants.BASE_URL,
       publisher: { '@id': organizationId },
       inLanguage: 'en',
@@ -63,30 +62,6 @@ const inter = Inter({
   subsets: ['latin', 'cyrillic'],
   display: 'swap',
   variable: '--font-inter',
-})
-
-// Redesign display faces (component sheet type system): Archivo carries the
-// CAPS headlines, Schibsted Grotesk the names/numbers, IBM Plex Mono the
-// metadata rows. Inter stays the quiet body face.
-const archivo = Archivo({
-  subsets: ['latin'],
-  weight: 'variable',
-  display: 'swap',
-  variable: '--font-archivo',
-})
-
-const schibsted = Schibsted_Grotesk({
-  subsets: ['latin'],
-  weight: 'variable',
-  display: 'swap',
-  variable: '--font-schibsted',
-})
-
-const plexMono = IBM_Plex_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500'],
-  display: 'swap',
-  variable: '--font-plex-mono',
 })
 
 // Initialize observability on client-side only (outside component to run once).
@@ -161,8 +136,11 @@ function MyApp({ Component, pageProps }: AppProps): JSX.Element {
   return (
     <I18nProvider locale={locale}>
       <div
-        className={`${inter.variable} ${archivo.variable} ${schibsted.variable} ${plexMono.variable} flex min-h-screen flex-col font-sans`}
+        className={`${inter.variable} flex min-h-screen flex-col font-sans`}
       >
+        <style>{`
+          :root { --font-inter: ${inter.style.fontFamily}; }
+        `}</style>
         <Head>
           <script {...jsonLdScriptProps(localizedSiteJsonLd)} />
         </Head>

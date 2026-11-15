@@ -1,4 +1,16 @@
-# OpenMentor design system (2026-07 redesign)
+# Design system
+
+## Current edition: EcoCareer
+
+Client identity (D102) supersedes the historical OpenMentor palette and fonts below.
+Use black #000000, green #70E852, light green #C9FFBF and white #FFFFFF.
+All font-family tokens resolve to Inter with Cyrillic coverage. Primary buttons use black
+text on bright green; links and focus indicators use the accessible dark-green token.
+Approved assets live in `brand/` and served copies in `web/public/brand/`.
+The desktop logo pairs the symbol with «Лаборатория» / «ЭкоКарьеры»; mobile uses only the symbol.
+Keep the existing component, spacing, focus, reduced-motion and button-system mechanics.
+
+## Historical reference: OpenMentor (2026-07 redesign)
 
 The working reference for anyone — developer or agent — building or
 changing interfaces. The visual system was designed in Claude Design and

@@ -9,7 +9,8 @@ jest.mock('next/compat/router', () => ({ useRouter: () => ({ locale: 'ru', asPat
 it('renders Russian SEO with locale-aware canonical and reciprocal alternates', () => {
   const html = renderToStaticMarkup(<I18nProvider locale="ru"><MetaHeader /></I18nProvider>)
   expect(html).toContain('content="ru_RU"')
-  expect(html).toContain('открытое сообщество IT-менторов')
+  expect(html).toContain('Наставники ЭкоКарьеры — карьера в сфере экологии')
+  expect(html).toContain('property="og:site_name" content="Менторы ЭкоКарьеры"')
   expect(html).toContain('hrefLang="ru"')
   expect(html).toContain('hrefLang="en"')
   expect(html).not.toContain('?sort=')

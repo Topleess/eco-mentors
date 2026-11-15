@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import Image from 'next/image'
+import BrandLogo from '@/components/brand/BrandLogo'
 import { useRouter } from 'next/router'
 import { useForm } from 'react-hook-form'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -84,19 +84,10 @@ function LoginForm(): JSX.Element {
       <NoIndexHead title={t('loginTitle')} />
 
       <div className="mx-auto w-full max-w-[440px]">
-        <div className="rounded-[20px] border border-line bg-white p-7 shadow-[0_20px_50px_-24px_rgba(19,42,82,0.22)] sm:p-10">
+        <div className="rounded-panel border border-line bg-white p-7 shadow-card-hover sm:p-10">
           <div className="mb-4 flex justify-end"><LanguageSwitcher /></div>
           <div className="mb-5 flex items-center gap-2.5">
-            <Image
-              src="/brand/logo/svg/logomark.svg"
-              width={38}
-              height={38}
-              alt=""
-              unoptimized
-            />
-            <span className="font-display text-lg font-extrabold uppercase tracking-[-0.02em] text-brand-navy">
-              openmentor<span className="text-brand-cobalt">.io</span>
-            </span>
+            <BrandLogo />
           </div>
 
           <h1 className="text-[26px] tracking-[-0.02em] text-ink">{t('moderation')}</h1>
@@ -148,7 +139,7 @@ function LoginForm(): JSX.Element {
                   id="email"
                   type="email"
                   autoComplete="email"
-                  placeholder="moderator@openmentor.io"
+                  placeholder="moderator@example.org"
                   {...register('email', {
                     required: t('emailRequired'),
                     pattern: {

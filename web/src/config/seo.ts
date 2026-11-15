@@ -1,18 +1,14 @@
 import type { SEOConfig } from '@/types'
+import constants from '@/config/constants'
 
 const seo: SEOConfig = {
-  title: 'OpenMentor.io — an open community of tech mentors',
-  titleSuffix: 'OpenMentor.io',
+  title: 'Наставники ЭкоКарьеры — карьера в сфере экологии',
+  titleSuffix: 'Менторы ЭкоКарьеры',
   description:
-    'OpenMentor is an open community of tech mentors sharing their experience in one-on-one conversations. Free to browse, zero commission — many mentors are free.',
-  imageUrl: 'https://openmentor.io/images/banner.png',
+    'Открытое сообщество менторов для передачи опыта, развития навыков и профессионального роста.',
+  imageUrl: `${constants.BASE_URL}images/banner.png`,
 }
 
-/**
- * Page <title>. Kept short — SERPs truncate around 60 characters, so the
- * brand suffix must not eat the page-specific words. ".io" is part of the
- * brand name and stays in every title.
- */
 export function pageTitle(name: string): string {
   return `${name} | ${seo.titleSuffix}`
 }

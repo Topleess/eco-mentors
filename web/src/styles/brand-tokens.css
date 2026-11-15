@@ -1,45 +1,32 @@
-/*
-  Brand color tokens — copied verbatim from the brand asset pack:
-  openmentor-brand-assets/colors/tokens.css (source of truth).
-  Do not edit by hand; re-copy from the pack when it changes.
-*/
-
-/*
-  openmentor.io — color tokens
-  Direction: "Fresh Signal" (shipped brand)
-  Use these custom properties for anything logo-adjacent: header, favicon
-  background, buttons that echo the brand, dark-mode surfaces.
-*/
-
+/* EcoCareer palette. Legacy --om aliases preserve component compatibility. */
 :root {
-  /* --- logomark colors --- */
-  --om-ring: #132A52;   /* deep navy — the open ring */
-  --om-bar: #2F5EFF;    /* cobalt — the directional stroke */
-  --om-dot: #17C3B2;    /* mint — the arrival node */
+  --ec-black: #000000;
+  --ec-green: #70E852;
+  --ec-light-green: #C9FFBF;
+  --ec-white: #FFFFFF;
 
-  /* --- text / ink --- */
-  --om-ink: #161A20;        /* primary text on light backgrounds */
-  --om-ink-soft: #5B6270;   /* secondary text / .io, captions */
+  --om-ring: #000000;
+  --om-bar: #246B20;
+  --om-dot: #70E852;
 
-  /* --- surfaces (light mode) --- */
+  --om-ink: #000000;
+  --om-ink-soft: #3F4A3D;
+
   --om-paper: #FFFFFF;
-  --om-paper-dim: #F7F6F2;
-  --om-line: #DEDBD1;
+  --om-paper-dim: #F4FAF2;
+  --om-line: #D1DFCD;
 
-  /* --- surfaces (dark mode) --- */
-  --om-dark-bg: #0A0F1E;
-  --om-dark-ring: #5B8CFF;  /* brightened navy for contrast on dark bg */
-  --om-dark-bar: #2BD9C9;   /* brightened mint-cobalt for contrast on dark bg */
-  --om-dark-dot: #FFC15E;   /* brightened amber for contrast on dark bg */
-  --om-dark-ink: #F5F4F1;
-  --om-dark-ink-soft: #9AA3B4;
+  --om-dark-bg: #000000;
+  --om-dark-ring: #C9FFBF;
+  --om-dark-bar: #70E852;
+  --om-dark-dot: #C9FFBF;
+  --om-dark-ink: #FFFFFF;
+  --om-dark-ink-soft: #C9FFBF;
 
-  /* --- app icon / avatar tile gradient --- */
-  --om-tile-from: #132A52;
-  --om-tile-to: #0A1A38;
+  --om-tile-from: #000000;
+  --om-tile-to: #246B20;
 }
 
-/* Wordmark typography reference — see ../fonts/README.md */
 .om-wordmark {
   font-family: 'Inter', -apple-system, 'Segoe UI', sans-serif;
 }

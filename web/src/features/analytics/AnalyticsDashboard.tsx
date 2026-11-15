@@ -46,7 +46,7 @@ function useSource<T>(source: string, range: DateRange, revision: number) {
   }, [source, range.startDate, range.endDate, revision])
   return state
 }
-const colors = ['#2F5EFF', '#0E7A70', '#E5484D']
+const colors = ['#246B20', '#000000', '#B42318']
 export function AnalyticsDashboard(): JSX.Element {
   const locale = useLocale()
   const ru = locale === 'ru'

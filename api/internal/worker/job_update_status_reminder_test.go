@@ -45,9 +45,9 @@ func TestUpdateStatusReminderSendsOneEmailPerMentor(t *testing.T) {
 	// Status labels + staleness wording, mirroring the func's message class
 	// (unknown statuses fall back to the raw value).
 	text, _ := msg.Props["requests_list_text"].(string)
-	wantText := "- Mentee One — \"Contacted\" for 6 days\n" +
-		"- Mentee Two — \"In progress\" for 1 day\n" +
-		"- Mentee Three — \"weird_status\" for 8 days"
+	wantText := "- Mentee One — \"Связались\" — 6 дней\n" +
+		"- Mentee Two — \"В работе\" — 1 день\n" +
+		"- Mentee Three — \"weird_status\" — 8 дней"
 	if text != wantText {
 		t.Errorf("requests_list_text = %q, want %q", text, wantText)
 	}
@@ -56,7 +56,7 @@ func TestUpdateStatusReminderSendsOneEmailPerMentor(t *testing.T) {
 	if !strings.HasPrefix(htmlList, `<ul style="padding-left: 20px; margin: 0;">`) {
 		t.Errorf("requests_list missing <ul> wrapper: %q", htmlList)
 	}
-	if !strings.Contains(htmlList, `Mentee One — &#34;Contacted&#34; for 6 days`) {
+	if !strings.Contains(htmlList, `Mentee One — &#34;Связались&#34; — 6 дней`) {
 		t.Errorf("requests_list missing escaped first line: %q", htmlList)
 	}
 

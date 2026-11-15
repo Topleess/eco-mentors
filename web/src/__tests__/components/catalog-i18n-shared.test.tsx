@@ -17,31 +17,31 @@ function filters(): AppliedFilters {
   }
 }
 
-it('renders RU filter controls without changing canonical selection or analytics payloads', () => {
+it.each(['ru', 'en'] as const)('renders %s filter controls without changing canonical selection or analytics payloads', (locale) => {
   const applied = filters()
   const event = jest.spyOn(analytics, 'event').mockImplementation(() => {})
-  render(<I18nProvider locale="ru"><MentorsFilters appliedFilters={applied} mentors={[]} /></I18nProvider>)
-  expect(screen.getByRole('button', { name: 'Все менторы' })).toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: 'Опыт' }))
-  fireEvent.click(screen.getByRole('button', { name: /10\+ лет/ }))
+  render(<I18nProvider locale={locale}><MentorsFilters appliedFilters={applied} mentors={[]} /></I18nProvider>)
+  expect(screen.getByRole('button', { name: locale === 'ru' ? 'Все менторы' : 'All mentors' })).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: locale === 'ru' ? 'Опыт' : 'Experience' }))
+  fireEvent.click(screen.getByRole('button', { name: locale === 'ru' ? /10\+ лет/ : /10\+ years/ }))
   expect(applied.experience.set).toHaveBeenCalledWith(['10+ years'])
   expect(event).toHaveBeenCalledWith(analytics.events.MENTOR_FILTER_CHANGED, {
     filter_type: 'experience', filter_value: '10+ years', action: 'added',
   })
-  fireEvent.click(screen.getByRole('button', { name: 'Цена' }))
-  fireEvent.click(screen.getByRole('button', { name: /Бесплатно/ }))
+  fireEvent.click(screen.getByRole('button', { name: locale === 'ru' ? 'Цена' : 'Price' }))
+  fireEvent.click(screen.getByRole('button', { name: new RegExp(translateLabel(locale, 'Free')) }))
   expect(applied.price.set).toHaveBeenCalledWith('Free')
   expect(event).toHaveBeenCalledWith(analytics.events.MENTOR_FILTER_CHANGED, {
     filter_type: 'price', filter_value: 'Free', action: 'added',
   })
-  const categoryLabel = translateLabel('ru', 'Engineering')
-  expect(categoryLabel).not.toBe('Engineering')
+  const categoryLabel = translateLabel(locale, 'Экология предприятий')
+  expect(categoryLabel).toBe(locale === 'ru' ? 'Экология предприятий' : 'Enterprise ecology')
   fireEvent.click(screen.getByRole('button', { name: categoryLabel }))
-  expect(applied.category.set).toHaveBeenCalledWith('Engineering')
-  fireEvent.click(screen.getByRole('button', { name: new RegExp(translateLabel('ru', 'Backend')) }))
-  expect(applied.tags.set).toHaveBeenLastCalledWith(['Backend'])
+  expect(applied.category.set).toHaveBeenCalledWith('Экология предприятий')
+  fireEvent.click(screen.getByRole('button', { name: new RegExp(translateLabel(locale, 'Экологическая отчётность')) }))
+  expect(applied.tags.set).toHaveBeenLastCalledWith(['Экологическая отчётность'])
   expect(event).toHaveBeenCalledWith(analytics.events.MENTOR_FILTER_CHANGED, {
-    filter_type: 'tag', filter_value: 'Backend', action: 'added',
+    filter_type: 'tag', filter_value: 'Экологическая отчётность', action: 'added',
   })
   event.mockRestore()
 })

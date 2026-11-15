@@ -41,7 +41,7 @@ func TestUserPropsCannotEmitMarkup(t *testing.T) {
 		prop     string
 		props    map[string]interface{}
 	}{
-		{"new-request-mentor", "mentee_request", map[string]interface{}{
+		{"new-request-mentor", "mentee_request", map[string]interface{}{"base_url": "https://client.example",
 			"mentee_contact": "tg: @evil",
 			"mentee_email":   "evil@example.com",
 			"mentee_name":    "Evil Mentee",
@@ -49,13 +49,13 @@ func TestUserPropsCannotEmitMarkup(t *testing.T) {
 			"mentor_name":    "Alice",
 			"request_url":    "https://openmentor.io/mentor",
 		}},
-		{"new-request", "request_details", map[string]interface{}{
+		{"new-request", "request_details", map[string]interface{}{"base_url": "https://client.example",
 			"first_name":      "Alice",
 			"mentor_name":     "Bob",
 			"request_details": evilPayload,
 			"request_price":   "free",
 		}},
-		{"new-review", "review_text", map[string]interface{}{
+		{"new-review", "review_text", map[string]interface{}{"base_url": "https://client.example",
 			"first_name":  "Alice",
 			"mentee_name": "Evil Mentee",
 			"review_text": evilPayload,
@@ -98,7 +98,7 @@ func TestSubjectAndTextCarryNoEntities(t *testing.T) {
 
 	for _, name := range names {
 		t.Run(name, func(t *testing.T) {
-			subject, _, textBody := renderParts(t, "new-request", map[string]interface{}{
+			subject, _, textBody := renderParts(t, "new-request", map[string]interface{}{"base_url": "https://client.example",
 				"first_name":      name,
 				"mentor_name":     name,
 				"request_details": "I want to learn C++ & Go (rates < $50)",
@@ -129,7 +129,7 @@ func TestSubjectAndTextCarryNoEntities(t *testing.T) {
 func TestCalendarURLSchemeIsNeutralized(t *testing.T) {
 	render := func(t *testing.T, calendarURL string) string {
 		t.Helper()
-		_, htmlBody, _ := renderParts(t, "new-request-calendly", map[string]interface{}{
+		_, htmlBody, _ := renderParts(t, "new-request-calendly", map[string]interface{}{"base_url": "https://client.example",
 			"calendly_url":    calendarURL,
 			"first_name":      "Alice",
 			"mentor_name":     "Bob",
@@ -171,7 +171,7 @@ func TestCalendarURLSchemeIsNeutralized(t *testing.T) {
 // tags — while the user text the producer interpolated stays escaped.
 func TestServerBuiltFragmentsStayMarkup(t *testing.T) {
 	t.Run("decline_info", func(t *testing.T) {
-		_, htmlBody, _ := renderParts(t, "session-declined", map[string]interface{}{
+		_, htmlBody, _ := renderParts(t, "session-declined", map[string]interface{}{"base_url": "https://client.example",
 			"first_name":  "Alice",
 			"mentor_name": "Bob",
 			"decline_info": template.HTML(`<br><br><div style="font-family: inherit; text-align: inherit">` +
@@ -192,7 +192,7 @@ func TestServerBuiltFragmentsStayMarkup(t *testing.T) {
 	})
 
 	t.Run("requests_list", func(t *testing.T) {
-		_, htmlBody, _ := renderParts(t, "status-update-reminder", map[string]interface{}{
+		_, htmlBody, _ := renderParts(t, "status-update-reminder", map[string]interface{}{"base_url": "https://client.example",
 			"mentor_name":        "Bob",
 			"requests_list":      template.HTML(`<ul style="padding-left: 20px; margin: 0;"><li>Mentee &amp; Co</li></ul>`),
 			"requests_list_text": "- Mentee & Co",
@@ -206,7 +206,7 @@ func TestServerBuiltFragmentsStayMarkup(t *testing.T) {
 	// A plain string in the same prop is escaped: the type is what grants the
 	// exemption, so a future caller cannot inject markup by forgetting it.
 	t.Run("plain string in an HTML prop is escaped", func(t *testing.T) {
-		_, htmlBody, _ := renderParts(t, "status-update-reminder", map[string]interface{}{
+		_, htmlBody, _ := renderParts(t, "status-update-reminder", map[string]interface{}{"base_url": "https://client.example",
 			"mentor_name":        "Bob",
 			"requests_list":      `<ul><li>` + evilPayload + `</li></ul>`,
 			"requests_list_text": "- x",
@@ -228,7 +228,7 @@ func TestBuildSendEmailInputNeverSendsTemplateData(t *testing.T) {
 	input, err := s.BuildSendEmailInput(Message{
 		TemplateName: "profile-deactivated",
 		Recipient:    "mentor@example.com",
-		Props:        map[string]interface{}{"mentor_name": "Jane"},
+		Props:        map[string]interface{}{"base_url": "https://client.example", "mentor_name": "Jane"},
 	})
 	if err != nil {
 		t.Fatal(err)

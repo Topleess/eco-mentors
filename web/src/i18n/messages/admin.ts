@@ -8,7 +8,7 @@ export const messages = {
   analytics: { en: 'Analytics', ru: 'Аналитика' },
   vacancies: { en: 'Vacancies', ru: 'Вакансии' },
   research: { en: 'Research', ru: 'Исследования' },
-  adminBrand: { en: 'openmentor.io admin', ru: 'openmentor.io · управление' },
+  adminBrand: { en: 'EcoCareer Mentors · Admin', ru: 'Менторы ЭкоКарьеры · Управление' },
   adminRole: { en: 'admin', ru: 'Администратор' },
   moderatorRole: { en: 'moderator', ru: 'Модератор' },
   logout: { en: 'Log out', ru: 'Выйти' },

@@ -10,7 +10,6 @@ import { MAX_IMAGE_FILE_BYTES, MAX_IMAGE_FILE_LABEL } from '@/config/uploads'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircleNotch, faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
 import { Tooltip } from 'react-tooltip'
-import Link from 'next/link'
 import { useState, useRef, type ChangeEvent } from 'react'
 import { imageLoader, updatedAtToVersion } from '@/lib/image-loader'
 import { isValidCalendarUrl } from '@/lib/safe-url'
@@ -64,45 +63,48 @@ interface ProfileFormProps {
 
 // Custom styles for react-select to match the previous Multiselect styling
 const selectStyles: StylesConfig<TagOption, true> = {
-  control: (base) => ({
+  control: (base, state) => ({
     ...base,
     padding: '0.25rem 0.5rem',
-    borderColor: '#DEDBD1', // --om-line
+    borderColor: state.isFocused ? 'var(--om-bar)' : 'var(--om-line)',
     borderRadius: '0.75rem',
-    boxShadow: 'none',
+    boxShadow: state.isFocused ? '0 0 0 3px rgb(36 107 32 / 0.13)' : 'none',
     '&:hover': {
-      borderColor: '#DEDBD1', // --om-line
+      borderColor: 'var(--om-line)', // --om-line
     },
   }),
   multiValue: (base) => ({
     ...base,
     borderRadius: '1rem',
-    backgroundColor: '#132A52', // brand navy
+    backgroundColor: 'var(--ec-light-green)', // brand navy
   }),
   multiValueLabel: (base) => ({
     ...base,
-    color: 'white',
+    color: 'var(--om-ink)',
     fontSize: '0.875rem',
     lineHeight: '1.25rem',
     padding: '0.125rem 0.5rem',
   }),
   multiValueRemove: (base) => ({
     ...base,
-    color: 'white',
+    color: 'var(--om-ink)',
     '&:hover': {
-      backgroundColor: '#0E2140', // navy, one step darker
-      color: 'white',
+      backgroundColor: 'var(--ec-green)', // navy, one step darker
+      color: 'var(--om-ink)',
     },
   }),
-  option: (base) => ({
+  option: (base, state) => ({
     ...base,
+    color: 'var(--om-ink)',
+    backgroundColor: state.isSelected ? 'var(--ec-light-green)' : state.isFocused ? 'var(--om-paper-dim)' : 'white',
+    '&:active': { backgroundColor: 'var(--ec-light-green)' },
     fontSize: '0.875rem',
     lineHeight: '1.25rem',
     padding: '0.5rem 0.75rem',
   }),
   menu: (base) => ({
     ...base,
-    border: '1px solid #DEDBD1', // --om-line
+    border: '1px solid var(--om-line)', // --om-line
   }),
   input: (base) => ({
     ...base,
@@ -388,7 +390,7 @@ export default function ProfileForm({
           type="text"
           {...register('job', { required: true })}
           defaultValue={mentor.job}
-          id="job"
+          id="job" placeholder={t('jobPlaceholder')}
           autoComplete="organization-title"
           className="field"
         />
@@ -412,7 +414,7 @@ export default function ProfileForm({
           type="text"
           {...register('workplace', { required: true })}
           defaultValue={mentor.workplace}
-          id="workplace"
+          id="workplace" placeholder={t('companyPlaceholder')}
           autoComplete="organization"
           className="field"
         />
@@ -590,19 +592,13 @@ export default function ProfileForm({
           type="text"
           {...register('competencies', { required: true })}
           defaultValue={mentor.competencies}
-          id="competencies"
+          id="competencies" placeholder="ОВОС, QGIS"
           className="field"
         />
       </div>
 
       <div>
-        <label htmlFor="calendarUrl" className="block mb-2 font-medium text-ink">{' '}{t('calendarLabelPrefix')}{' '}<Link href="https://koalendar.com" target="_blank" className="link" rel="noreferrer">
-            Koalendar
-          </Link>
-          ,{' '}
-          <Link href="https://calendly.com" target="_blank" className="link" rel="noreferrer">
-            Calendly
-          </Link>{' '}{' '}{t('calendarLabelSuffix')}{' '}{' '}
+        <label htmlFor="calendarUrl" className="block mb-2 font-medium text-ink">{' '}{t('calendarLabel')}{' '}{' '}
           <a data-tooltip-id="calendar-tip">
             <FontAwesomeIcon icon={faQuestionCircle} />
           </a>

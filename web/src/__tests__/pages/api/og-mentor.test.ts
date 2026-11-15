@@ -75,6 +75,19 @@ beforeEach(() => {
   global.fetch = mockFetch as unknown as typeof global.fetch
 })
 
+describe('api/og/mentor identity', () => {
+  it('renders the client brand and Inter instead of the upstream wordmark', async () => {
+    const res = await call({ slug: 'ada-lovelace-1' })
+    expect(res.statusCode).toBe(200)
+    const [tree, options] = mockImageResponse.mock.calls[0]
+    const content = JSON.stringify(tree)
+    expect(content).toContain('Лаборатория')
+    expect(content).toContain('ЭкоКарьеры')
+    expect(content).not.toContain('OPENMENTOR')
+    expect(options.fonts.map((font: { name: string }) => font.name)).toEqual(['Inter'])
+  })
+})
+
 describe('api/og/mentor bounds', () => {
   it.each<RequestMethod>(['POST', 'PUT', 'DELETE', 'PATCH'])(
     'refuses %s without doing any work',

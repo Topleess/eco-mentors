@@ -31,13 +31,13 @@ export default function CookieConsentBanner(): JSX.Element | null {
     <div
       role="dialog"
       aria-label={t('cookieTitle')}
-      className="fixed inset-x-0 bottom-0 z-50 bg-gray-900 px-4 py-4 text-sm text-white"
+      className="fixed inset-x-0 bottom-0 z-50 bg-ink px-4 py-4 text-sm text-white"
       data-section="cookie-consent"
     >
       <div className="mx-auto flex max-w-4xl flex-col items-center gap-3 sm:flex-row sm:justify-between">
         <p className="text-center sm:text-left">
           {t('cookieCopy')}{' '}
-          <Link href="/privacy" className="underline hover:text-gray-300">
+          <Link href="/privacy" className="underline hover:text-brand-light-green">
             {t('learnMore')}
           </Link>
         </p>
@@ -47,7 +47,7 @@ export default function CookieConsentBanner(): JSX.Element | null {
           </button>
           <button
             type="button"
-            className="rounded border border-gray-500 px-4 py-2 hover:bg-gray-700"
+            className="button-secondary"
             onClick={() => choose('declined')}
           >
             {t('decline')}

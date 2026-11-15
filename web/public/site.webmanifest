@@ -1,21 +1,21 @@
 {
-  "name": "openmentor.io",
-  "short_name": "openmentor.io",
+  "name": "Лаборатория ЭкоКарьеры",
+  "short_name": "ЭкоКарьеры",
   "icons": [
     {
       "src": "/brand/logo/png/icon-app/icon-app-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "/brand/logo/png/icon-app/icon-app-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ],
-  "theme_color": "#132A52",
+  "theme_color": "#70E852",
   "background_color": "#FFFFFF",
   "display": "browser"
 }

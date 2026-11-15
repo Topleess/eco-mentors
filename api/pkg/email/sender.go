@@ -11,6 +11,7 @@ package email
 import (
 	"context"
 	"fmt"
+	"net/mail"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -25,10 +26,9 @@ import (
 )
 
 const (
-	// senderEmail / senderName mirror PostboxEmailSender.SENDER_EMAIL and
-	// SENDER_NAME in openmentor-func/lib/postbox/PostboxEmailSender.ts.
+	// Legacy defaults are retained only for non-production without an endpoint override.
 	senderEmail = "hello@openmentor.io"
-	senderName  = "The OpenMentor Team"
+	senderName  = "Менторы ЭкоКарьеры"
 
 	// DefaultModeratorsEmail is the fallback moderators mailbox used when
 	// MODERATORS_EMAIL is not configured (mirrors the func app's default).
@@ -50,6 +50,8 @@ type Config struct {
 	AccessKeyID     string
 	SecretAccessKey string
 	Endpoint        string
+	FromEmail       string
+	FromName        string
 
 	AppEnv           string
 	DevEmailOverride string
@@ -58,6 +60,8 @@ type Config struct {
 // Sender sends transactional emails via the AWS SESv2 API, rendering the
 // templates from pkg/email/templates locally.
 type Sender struct {
+	fromEmail        string
+	fromName         string
 	client           SESClient
 	appEnv           string
 	devEmailOverride string
@@ -80,13 +84,22 @@ func NewSender(cfg Config) *Sender {
 		}
 	})
 
-	return NewSenderWithClient(client, cfg.AppEnv, cfg.DevEmailOverride)
+	sender := NewSenderWithClient(client, cfg.AppEnv, cfg.DevEmailOverride)
+	if cfg.FromEmail != "" {
+		sender.fromEmail = cfg.FromEmail
+	}
+	if cfg.FromName != "" {
+		sender.fromName = cfg.FromName
+	}
+	return sender
 }
 
 // NewSenderWithClient builds a Sender with a caller-provided SES client
 // (used by tests to inject a mock).
 func NewSenderWithClient(client SESClient, appEnv, devEmailOverride string) *Sender {
 	return &Sender{
+		fromEmail:        senderEmail,
+		fromName:         senderName,
 		client:           client,
 		appEnv:           appEnv,
 		devEmailOverride: devEmailOverride,
@@ -94,7 +107,7 @@ func NewSenderWithClient(client SESClient, appEnv, devEmailOverride string) *Sen
 }
 
 // BuildSendEmailInput constructs the SESv2 SendEmail parameters for a
-// message, mirroring what PostboxEmailSender.send() assembles: the fixed
+// message, mirroring what PostboxEmailSender.send() assembles: the configured
 // FromEmailAddress, the (possibly overridden) recipient and the message
 // body. The template is rendered here rather than by SES, so the content is
 // Simple (Subject + Body.Html + Body.Text) instead of Template +
@@ -109,7 +122,7 @@ func (s *Sender) BuildSendEmailInput(msg Message) (*sesv2.SendEmailInput, error)
 	recipient := ResolveRecipient(msg.Recipient, s.devEmailOverride, s.appEnv)
 
 	return &sesv2.SendEmailInput{
-		FromEmailAddress: aws.String(fmt.Sprintf("%s <%s>", senderName, senderEmail)),
+		FromEmailAddress: aws.String((&mail.Address{Name: s.fromName, Address: s.fromEmail}).String()),
 		Destination: &sesv2types.Destination{
 			ToAddresses: []string{recipient},
 		},

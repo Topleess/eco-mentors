@@ -26,7 +26,7 @@ export function RequestProgressFunnel({
         working: 'Reached work',
         done: 'Completed',
       }
-  const fills = ['#2F5EFF', '#132A52', '#0E7A70', '#132A52']
+  const fills = ['#246B20', '#000000', '#344431', '#246B20']
   const number = new Intl.NumberFormat(ru ? 'ru-RU' : 'en-US', { maximumFractionDigits: 1 })
   const data = stages.map((stage, index) => ({
     ...stage,

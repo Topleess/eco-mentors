@@ -173,7 +173,7 @@ enforced by [`check-service-env.sh`](check-service-env.sh). Sensitive keys are
 | **`WORKER_AUTH_TOKEN`** | | | | | | ○ | ● | ● | |
 | `*_TRIGGER_URL` | | | | | | | ● | | |
 | **`S3_STORAGE_*`** | | | | | | ○ | ● | ○ | |
-| **`SES_*`**, `MODERATORS_EMAIL`, `DISCORD_MENTORS_PRIVATE_INVITE_LINK`, `DEV_EMAIL_OVERRIDE` | | | | | | | | ● | |
+| **`SES_*`** (including worker-only `SES_FROM_EMAIL`, `SES_FROM_NAME`), `MODERATORS_EMAIL`, `DISCORD_MENTORS_PRIVATE_INVITE_LINK`, `DEV_EMAIL_OVERRIDE` | | | | | | | | ● | |
 | `WORKER_CRON_ENABLED`, `WORKER_DB_MAX_CONNS`, `HIGHLIGHTED_MENTORS` | | | | | | | | ● | |
 | `WORKER_PROFILE_PURGE_CRON`, `WORKER_PROFILE_PURGE_RETENTION_DAYS` | | | | | | | | ● | |
 | `ANALYTICS_*`, **`POSTHOG_API_KEY`**, `POSTHOG_HOST/ENABLED/CAPTURE_ENDPOINT` | | | | | | ○ | ● | ● | |
@@ -301,3 +301,7 @@ docker exec openmentor-postgres pg_isready -U openmentor -d openmentor
 | `.env` | Runtime config + image tags | local / VM | compose interpolation, deploy scripts |
 | `.env.production` | Deploy creds + build args + prod runtime | local + uploaded to VM as `.env` | `deploy.sh`, `rollback.sh` |
 | `env-allowlist.txt` | Which env keys each service may receive | committed | `check-service-env.sh` |
+
+## CAPTCHA providers
+
+`CAPTCHA_PROVIDER` and `NEXT_PUBLIC_CAPTCHA_PROVIDER` default to `turnstile`; set both to `smartcaptcha` to switch. Backend-only `SMARTCAPTCHA_SERVER_KEY` and mandatory `SMARTCAPTCHA_EXPECTED_HOSTNAME` replace Turnstile settings for this provider. `NEXT_PUBLIC_SMARTCAPTCHA_CLIENT_KEY` is public and must be bundled at build time. Unknown providers fail closed. Never pass the server key as a frontend variable or build argument.

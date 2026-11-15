@@ -16,7 +16,7 @@ const baseMentors: MentorListItem[] = [
     competencies: 'React, JS',
     experience: '5-10',
     price: '$120',
-    tags: ['Frontend', 'React'],
+    tags: ['Производственный экологический контроль'],
     menteeCount: 10,
     photo_url: null,
     sortOrder: 1,
@@ -36,7 +36,7 @@ const baseMentors: MentorListItem[] = [
     competencies: 'Go, API',
     experience: '10+',
     price: '$45',
-    tags: ['Backend'],
+    tags: ['Экологическая отчётность'],
     menteeCount: 0,
     photo_url: null,
     sortOrder: 2,
@@ -75,7 +75,7 @@ describe('useMentors', () => {
     ) as string
 
     act(() => {
-      result.current[5].tags.set(['Backend'])
+      result.current[5].tags.set(['Экологическая отчётность'])
       result.current[5].experience.set([experienceKey])
     })
 
@@ -88,14 +88,14 @@ describe('useMentors', () => {
     const { result } = renderHook(() => useMentors(baseMentors, 10))
 
     act(() => {
-      result.current[5].category.set('Engineering')
+      result.current[5].category.set('Экология предприятий')
     })
 
-    // Both mentors have an Engineering tag (Frontend / Backend)
+    // Each mentor matches a different tag in the enterprise ecology category.
     expect(result.current[0]).toHaveLength(2)
 
     act(() => {
-      result.current[5].category.set('AI & Data')
+      result.current[5].category.set('Климат')
     })
 
     expect(result.current[0]).toHaveLength(0)

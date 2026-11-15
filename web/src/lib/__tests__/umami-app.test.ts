@@ -21,7 +21,7 @@ jest.mock('@/lib/consent', () => ({
 }))
 jest.mock('@/components', () => ({ CookieConsentBanner: () => null }))
 jest.mock('next/font/google', () => ({
-  Inter: () => ({}),
+  Inter: () => ({ variable: 'font-inter', style: { fontFamily: 'Inter' } }),
   Archivo: () => ({}),
   IBM_Plex_Mono: () => ({}),
   Schibsted_Grotesk: () => ({}),

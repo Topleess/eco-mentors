@@ -146,6 +146,8 @@ func main() {
 		AccessKeyID:      cfg.Email.SESAccessKeyID,
 		SecretAccessKey:  cfg.Email.SESSecretAccessKey,
 		Endpoint:         cfg.Email.SESEndpoint,
+		FromEmail:        cfg.Email.SESFromEmail,
+		FromName:         cfg.Email.SESFromName,
 		AppEnv:           cfg.Server.AppEnv,
 		DevEmailOverride: cfg.Email.DevEmailOverride,
 	})

@@ -3,7 +3,7 @@ import { messages, translateFormError } from '@/i18n/messages/forms'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useForm } from 'react-hook-form'
 import classNames from 'classnames'
-import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
+import Turnstile, { type CaptchaInstance as TurnstileInstance } from '@/components/forms/Captcha'
 import TextareaAutosize from 'react-textarea-autosize'
 import { GENERIC_SUBMIT_ERROR } from '@/lib/upstream-error'
 

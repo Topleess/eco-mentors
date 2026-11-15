@@ -38,7 +38,7 @@ export default function DevPage(): JSX.Element {
 
   return (
     <main className="bg-surface px-5 py-12">
-      <NoIndexHead title="Локальная разработка — OpenMentor" />
+      <NoIndexHead title="Локальная разработка — Менторы ЭкоКарьеры" />
       <section className="mx-auto max-w-xl space-y-6 rounded-panel border border-line bg-white p-6 sm:p-10">
         <p className="meta-mono text-brand-cobalt">LOCAL DEVELOPMENT</p>
         <h1>Локальная разработка</h1>

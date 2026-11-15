@@ -50,10 +50,7 @@ export default function About(): JSX.Element {
 
         <Block title={t('communityFirst')}>
           <p className="my-0">{t('thisIsCommunityHelpOrganizedNotA')}</p>
-          <p className="my-0">
-            {t('theRunningCostsServersAndEmailEssentially')}{' '}
-            <Link href="/donate">{t('donations')}</Link> {t('fromPeopleWhoFindThePlatformUseful')}
-          </p>
+
         </Block>
 
         <Block title={t('lightweightByDesign')}>
@@ -70,22 +67,7 @@ export default function About(): JSX.Element {
         </Block>
 
         <Block title={t('openByNature')}>
-          <p className="my-0">
-            {t('openmentorIsACommunityProjectAndThe')}{' '}
-            <a href={SOURCE_REPOSITORY_URL} target="_blank" rel="noopener noreferrer">
-              {t('openSource')}
-            </a>{' '}
-            {t('agplTheCatalogTheDashboardThisVery')}{' '}
-            <a href="https://getmentor.dev" target="_blank" rel="noopener noreferrer">
-              getmentor.dev
-            </a>
-            {t('theRussianLanguageCommunityThatProvedThousands')}
-          </p>
-          <p className="my-0">
-            {t('questionsIdeasOrSomethingBrokenWriteTo')}{' '}
-            <a href="mailto:hello@openmentor.io">hello@openmentor.io</a>{' '}
-            {t('aHumanReadsEveryEmailMorePractical')} <Link href="/faq">{t('faq')}</Link>.
-          </p>
+          <p className="my-0">{t('sourceAttribution')} <a href={SOURCE_REPOSITORY_URL} target="_blank" rel="noopener noreferrer">{t('openSource')}</a>.</p>
         </Block>
 
         {/* ── CTA band ─────────────────────────────────────────────────── */}

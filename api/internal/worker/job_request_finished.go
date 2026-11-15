@@ -20,7 +20,7 @@ import (
 
 // defaultDeclineReasonText mirrors DEFAULT_DECLINE_REASON_TEXT in the func's
 // SessionDeclinedMessage.
-const defaultDeclineReasonText = "They may be short on time right now, or unsure they can help with this particular topic."
+const defaultDeclineReasonText = "Возможно, у ментора сейчас нет времени или подходящего опыта по этой теме."
 
 // RequestProcessFinished ports openmentor-func/request-process-finished/index.ts:
 // notify the mentee after the mentor finalized a request. Status 'done'
@@ -162,15 +162,15 @@ func (h *Handlers) issueReviewInvitation(ctx context.Context, requestID string) 
 func mapDeclineReason(reason string) string {
 	switch reason {
 	case "no_time":
-		return "No time at the moment"
+		return "Сейчас нет времени"
 	case "topic_mismatch":
-		return "The topic isn't a good fit"
+		return "Тема не соответствует опыту"
 	case "helping_others":
-		return "Already helping other mentees"
+		return "Уже помогает другим участникам"
 	case "on_break":
-		return "Taking a break from mentoring"
+		return "Перерыв в менторстве"
 	case "other":
-		return "Other"
+		return "Другое"
 	default:
 		return reason
 	}
@@ -187,8 +187,8 @@ type declineInfo struct {
 // SessionDeclinedMessage.buildDeclineInfoHtml.
 var declineInfoTpl = template.Must(template.New("declineInfo").Parse(
 	`<br><br>` +
-		`{{with .Reason}}<div style="font-family: inherit; text-align: inherit"><strong>Reason:</strong> {{.}}<br></div>{{end}}` +
-		`{{with .Comment}}<div style="font-family: inherit; text-align: inherit"><strong>Comment:</strong> {{.}}</div>{{end}}`))
+		`{{with .Reason}}<div style="font-family: inherit; text-align: inherit"><strong>Причина:</strong> {{.}}<br></div>{{end}}` +
+		`{{with .Comment}}<div style="font-family: inherit; text-align: inherit"><strong>Комментарий:</strong> {{.}}</div>{{end}}`))
 
 // buildDeclineInfoHTML mirrors SessionDeclinedMessage.buildDeclineInfoHtml.
 // The result is template.HTML because the session-declined template
@@ -221,12 +221,12 @@ func buildDeclineInfoText(reason, comment string) string {
 	var b strings.Builder
 	b.WriteString("\n\n")
 	if hasReason {
-		b.WriteString("Reason: ")
+		b.WriteString("Причина: ")
 		b.WriteString(mapDeclineReason(reason))
 		b.WriteString("\n")
 	}
 	if hasComment {
-		b.WriteString("Comment: ")
+		b.WriteString("Комментарий: ")
 		b.WriteString(comment)
 	}
 	return b.String()

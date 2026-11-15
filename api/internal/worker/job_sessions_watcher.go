@@ -142,10 +142,10 @@ var pendingRequestsListTpl = template.Must(template.New("pendingRequestsList").P
 		requestsListClose))
 
 // describePendingRequest mirrors describeRequest() in the func's message
-// class: "{name} — waiting for {1 day|N days}" plus a 160-char description
+// class: "{name} — ожидает ответа {1 day|N days}" plus a 160-char description
 // preview ("..."-suffixed when truncated).
 func describePendingRequest(req JobReminderRequest) (title, preview string) {
-	title = req.Name + " — waiting for " + daysWording(req.DaysAgo)
+	title = req.Name + " — ожидает ответа " + daysWording(req.DaysAgo)
 
 	preview = req.Description
 	if runes := []rune(preview); len(runes) > descriptionPreviewLength {

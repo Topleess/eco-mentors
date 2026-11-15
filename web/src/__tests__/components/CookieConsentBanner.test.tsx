@@ -20,7 +20,9 @@ describe('CookieConsentBanner', () => {
   it('renders the banner with Accept/Decline buttons and a privacy link when no choice stored', () => {
     render(<CookieConsentBanner />)
 
-    expect(screen.getByText(/We use analytics cookies to improve OpenMentor/i)).toBeInTheDocument()
+    expect(screen.getByText(/We use analytics cookies to improve EcoCareer Mentors/i)).toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toHaveClass('bg-ink')
+    expect(screen.getByRole('button', { name: 'Decline' })).toHaveClass('button-secondary')
     expect(screen.getByRole('button', { name: 'Accept' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Decline' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /learn more/i })).toHaveAttribute('href', '/privacy')

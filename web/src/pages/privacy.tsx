@@ -6,8 +6,8 @@ import { legalMessages } from '@/i18n/messages/legal'
 import { pageTitle } from '@/config/seo'
 
 export default function Privacy(): JSX.Element {
-  const { t, locale } = useTranslation(legalMessages)
-  const title = pageTitle('Privacy Policy')
+  const { t } = useTranslation(legalMessages)
+  const title = pageTitle(t('privacyPrivacyPolicy'))
 
   return (
     <>
@@ -15,7 +15,7 @@ export default function Privacy(): JSX.Element {
         <title>{title}</title>
       </Head>
 
-      <MetaHeader customTitle="Privacy Policy" />
+      <MetaHeader customTitle={t('privacyPrivacyPolicy')} />
 
       <NavHeader />
 
@@ -32,28 +32,8 @@ export default function Privacy(): JSX.Element {
       <main>
         <Section className="bg-white py-12">
           <div className="prose mx-auto max-w-[720px] px-4 prose-headings:font-display prose-headings:font-extrabold prose-headings:uppercase prose-h2:text-xl prose-h2:tracking-[-0.01em] prose-h3:text-base prose-hr:border-line">
-            {locale === 'ru' && (
-              <p className="text-sm text-ink-soft">
-                {t('translationNotice')}{' '}
-                <Link href="/privacy" locale="en">{t('originalEnglish')}</Link>
-              </p>
-            )}
             <p>
               <strong>{t('privacyLastUpdated')}</strong>{t('privacy6August2026')}</p>
-
-            <p>
-              <strong>{t('privacyDataController')}</strong>
-              <br />{t('privacyGeorgiyMogelashviliAnIndividualSoleOperatorOf')}</p>
-
-            <p>
-              <strong>{t('privacyWebsite')}</strong> <a href="https://openmentor.io">{t('privacyHttpsOpenmentorIo')}</a>
-              <br />
-              <strong>{t('privacyPrivacyContact')}</strong>{' '}
-              <a href="mailto:privacy@openmentor.io">{t('privacyPrivacyOpenmentorIo')}</a>
-              <br />
-              <strong>{t('privacyGeneralContact')}</strong>{' '}
-              <a href="mailto:hello@openmentor.io">{t('privacyHelloOpenmentorIo')}</a>
-            </p>
 
             <p>{t('privacyThisPolicyExplainsWhatPersonalDataOpenMentor')}</p>
 
@@ -207,10 +187,7 @@ export default function Privacy(): JSX.Element {
               <strong>{t('privacyErasingYourMentorProfileYourself')}</strong>{t('privacyYouDoNotNeedToEmailUs')}{' '}
               <strong>{t('privacyDeleteProfile')}</strong>{t('privacyOnYourProfilePageTheProfileLeaves')}</p>
 
-            <p>{t('privacyToExerciseAnyOfTheseRightsEmail')}{' '}
-              <strong>
-                <a href="mailto:privacy@openmentor.io">{t('privacyPrivacyOpenmentorIo')}</a>
-              </strong>{t('privacyWeMayAskYouToVerifyYour')}</p>
+            <p>{t('privacyWeMayAskYouToVerifyYour').replace(/^\.\s*/, '')}</p>
 
             <hr />
 

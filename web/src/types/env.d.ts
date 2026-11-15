@@ -4,6 +4,9 @@
 
 declare namespace NodeJS {
   interface ProcessEnv {
+      NEXT_PUBLIC_CAPTCHA_PROVIDER?: string
+      NEXT_PUBLIC_SMARTCAPTCHA_CLIENT_KEY?: string
+    // SES_FROM_EMAIL / SES_FROM_NAME belong to the Go worker only, not ProcessEnv.
     // Go API
     NEXT_PUBLIC_GO_API_URL?: string
     GO_API_INTERNAL_TOKEN?: string

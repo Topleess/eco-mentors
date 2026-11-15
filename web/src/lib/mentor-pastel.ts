@@ -1,23 +1,4 @@
-/**
- * Deterministic pastel card colors (redesign catalog).
- *
- * The five hues are sampled from the design reference and tuned to the
- * "Fresh Signal" brand: desaturated and warmed toward --om-paper-dim
- * (#F7F6F2) so they sit quietly on the paper background. Hex values live
- * in tailwind.config.js under `colors.pastel`; the card photo blocks
- * render them as top→bottom gradients (base → deep) via the
- * `bg-pastel-*-grad` backgroundImage utilities.
- *
- * Contrast (WCAG AA, verified):
- * - ink #161A20 on every base/deep pastel: >= 11.0:1
- * - ink-mute #4A5160 (card meta text) on every base/deep pastel: >= 5.0:1
- * - brand navy #132A52 on the white/90 badge over any pastel: >= 12.7:1
- *
- * A mentor keeps the same color across pages and reloads: the class is
- * picked by an FNV-1a hash of the mentor slug. The neutral paper gradient
- * is kept as the *fallback* (empty key), not as a sixth rotation color,
- * to match the fully-pastel grid of the design.
- */
+/** Deterministic mentor colors shared by catalog portraits and social cards. */
 
 /** Pastel photo-block gradients, as full class strings so Tailwind can see them. */
 export const MENTOR_PASTEL_GRAD_CLASSES = [
@@ -35,11 +16,11 @@ export const MENTOR_PASTEL_GRAD_CLASSES = [
  * the satori-rendered social card (/api/og/mentor).
  */
 export const MENTOR_PASTEL_GRAD_HEX: ReadonlyArray<readonly [string, string]> = [
-  ['#C9E6F2', '#B7DCEE'], // sky
-  ['#F4E3C0', '#EED8AA'], // sand
-  ['#CDE8C6', '#BCE0B4'], // sage
-  ['#DDD9F4', '#CFC9EE'], // lavender
-  ['#F6D4E2', '#F0C3D6'], // rose
+  ['#C9FFBF', '#B4F5A7'], // sky
+  ['#E5FFDF', '#C9FFBF'], // sand
+  ['#C9FFBF', '#B4F5A7'], // sage
+  ['#D9F5D3', '#C6E9BF'], // lavender
+  ['#ECF8E8', '#D9F5D3'], // rose
 ]
 
 /** Neutral paper gradient, kept as the fallback when no stable key exists. */
@@ -49,7 +30,7 @@ export const MENTOR_PASTEL_NEUTRAL_GRAD_CLASS = 'bg-pastel-neutral-grad'
 export const MENTOR_INITIALS_CLASSES = ['bg-brand-navy', 'bg-brand-cobalt'] as const
 
 /** Initials fills as hex (brand navy / cobalt), same parity as the classes. */
-export const MENTOR_INITIALS_HEX = ['#132A52', '#2F5EFF'] as const
+export const MENTOR_INITIALS_HEX = ['#000000', '#246B20'] as const
 
 /**
  * Deterministic pastel index for a mentor key (0..4). Exposed so non-Tailwind

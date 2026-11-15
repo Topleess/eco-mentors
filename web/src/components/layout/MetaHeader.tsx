@@ -55,9 +55,7 @@ export default function MetaHeader({
   const router = useRouter()
   const { t, locale } = useTranslation(messages)
 
-  // Social titles stay short: og:site_name already carries the brand, and
-  // scrapers truncate around 65 chars — no "| OpenMentor.io" suffix here
-  // (the <title> tag, set by each page, keeps the full suffixed form).
+  // Social titles stay short; the site name is carried by og:site_name.
   const page_title = customTitle || t('seoTitle')
   const page_description = customDescription || t('seoDescription')
   const page_image = customImage ?? seo.imageUrl
@@ -100,7 +98,7 @@ export default function MetaHeader({
         }
       />
 
-      <meta property="og:site_name" content="OpenMentor.io" />
+      <meta property="og:site_name" content="Менторы ЭкоКарьеры" />
       <meta property="og:type" content={ogType} />
       <meta property="og:locale" content={locale === 'ru' ? 'ru_RU' : 'en_US'} />
       <meta property="og:title" content={page_title} />

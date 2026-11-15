@@ -13,7 +13,7 @@ jest.mock('@/lib/analytics', () => ({ __esModule: true, default: { event: jest.f
 const mentor: MentorBase = {
   id: 7, mentorId: 'test-id', slug: 'original-slug', name: 'Original Name', job: 'Engineer', workplace: 'Company',
   description: 'Original help', about: 'Original about', competencies: 'Original skills', experience: '5', price: '$100',
-  tags: ['Backend'], menteeCount: 21, sessionsCount: 2, legacySessionsCount: 1, photo_url: null, sortOrder: 1,
+  tags: ['Экологическая отчётность'], menteeCount: 21, sessionsCount: 2, legacySessionsCount: 1, photo_url: null, sortOrder: 1,
   isVisible: true, isNew: false, calendarType: 'none',
 }
 
@@ -23,6 +23,6 @@ it('localizes Russian profile availability and session plurals, preserving user 
   expect(screen.getAllByText('Принимает запросы')).toHaveLength(2)
   expect(screen.getAllByText('в т. ч. 1 на getmentor.dev')).toHaveLength(2)
   expect(screen.getByText('Original about')).toBeInTheDocument()
-  expect(screen.getByRole('link', {name:'Бэкенд'})).toHaveAttribute('href', '/mentors/backend')
+  expect(screen.getByRole('link', {name:'Экологическая отчётность'})).toHaveAttribute('href', '/mentors/environmental-reporting')
   expect(screen.getAllByRole('link', {name:'Отправить запрос'})[0]).toHaveAttribute('href', '/mentor/original-slug/contact')
 })

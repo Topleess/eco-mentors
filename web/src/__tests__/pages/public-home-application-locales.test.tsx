@@ -23,7 +23,7 @@ jest.mock('@/lib/analytics', () => ({ __esModule: true, default: { event: jest.f
 
 it('renders the Russian homepage and Russian mentor plurals', () => {
   render(<I18nProvider locale="ru"><Home pageMentors={[]} /></I18nProvider>)
-  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Ваш путь в менторстве начинается именно здесь')
+  expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Расти с теми, кто в теме')
   expect(screen.getByText('22 ментора')).toBeInTheDocument()
   expect(screen.getByRole('button', {name:'Найти ментора'})).toBeInTheDocument()
 })
@@ -34,7 +34,7 @@ it('renders Russian public application success guidance', async () => {
   render(<I18nProvider locale="ru"><Bementor /></I18nProvider>)
   fireEvent.click(screen.getByRole('button', {name:'Submit fixture'}))
   expect(await screen.findByRole('heading', {name:'Спасибо за заявку!'})).toBeInTheDocument()
-  expect(screen.getByText(/ВАЖНО! Проверьте почту/)).toBeInTheDocument()
+  expect(screen.getByText(/Перейдите по ссылке в письме/)).toBeInTheDocument()
 })
 
 it('does not leak an English API error into Russian application recovery', async () => {

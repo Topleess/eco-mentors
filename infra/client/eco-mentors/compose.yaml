@@ -1,0 +1,134 @@
+# New isolated stack only; NOT an in-place replacement of the live multi-project stack.
+name: ${COMPOSE_PROJECT_NAME:-eco-mentors-rehearsal}
+x-runtime: &runtime
+  restart: unless-stopped
+  security_opt: ["no-new-privileges:true"]
+  logging:
+    driver: json-file
+    options: {max-size: "10m", max-file: "3"}
+services:
+  postgres:
+    <<: *runtime
+    image: postgres:16.14-alpine
+    mem_limit: 384m
+    environment:
+      POSTGRES_USER: eco_bootstrap
+      POSTGRES_DB: eco_mentors
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres-password
+    secrets: [postgres-password]
+    volumes: ["database:/var/lib/postgresql/data"]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U eco_bootstrap -d eco_mentors"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+  migrate:
+    image: eco-mentors/backend:${RELEASE:?set RELEASE}
+    platform: ${PLATFORM:-linux/amd64}
+    build: {context: ../../../api}
+    command: [/app/migrate]
+    env_file: [migrate.env]
+    healthcheck: {disable: true}
+    restart: "no"
+    security_opt: ["no-new-privileges:true"]
+    depends_on:
+      postgres: {condition: service_healthy}
+  backend:
+    <<: *runtime
+    image: eco-mentors/backend:${RELEASE:?set RELEASE}
+    platform: ${PLATFORM:-linux/amd64}
+    mem_limit: 512m
+    env_file: [backend.env]
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+    # Garage is bootstrapped manually before accepting uploads.
+  worker:
+    <<: *runtime
+    image: eco-mentors/backend:${RELEASE:?set RELEASE}
+    platform: ${PLATFORM:-linux/amd64}
+    mem_limit: 256m
+    command: [/app/worker]
+    env_file: [worker.env]
+    profiles: [mail]
+    healthcheck:
+      test: [CMD, curl, -fsS, "http://localhost:8090/healthz"]
+      interval: 20s
+      timeout: 3s
+      retries: 3
+    depends_on:
+      migrate: {condition: service_completed_successfully}
+  frontend:
+    <<: *runtime
+    image: eco-mentors/frontend:${RELEASE:?set RELEASE}
+    platform: ${PLATFORM:-linux/amd64}
+    mem_limit: 768m
+    build:
+      context: ../../../web
+      args:
+        NEXT_PUBLIC_GO_API_URL: http://backend:8081
+        NEXT_PUBLIC_APP_ENV: ${APP_ENV:-staging}
+        NEXT_PUBLIC_CAPTCHA_PROVIDER: ${NEXT_PUBLIC_CAPTCHA_PROVIDER:-smartcaptcha}
+        NEXT_PUBLIC_SMARTCAPTCHA_CLIENT_KEY: ${NEXT_PUBLIC_SMARTCAPTCHA_CLIENT_KEY:-}
+        NEXT_PUBLIC_TURNSTILE_SITE_KEY: ${NEXT_PUBLIC_TURNSTILE_SITE_KEY:-}
+        NEXT_PUBLIC_S3_STORAGE_ENDPOINT: ${NEXT_PUBLIC_S3_STORAGE_ENDPOINT:-s3.storage:3900}
+        NEXT_PUBLIC_S3_STORAGE_BUCKET: ${NEXT_PUBLIC_S3_STORAGE_BUCKET:-eco-mentors-media}
+        NEXT_PUBLIC_ANALYTICS_PROVIDER: umami
+        NEXT_PUBLIC_ANALYTICS_EVENT_VERSION: v1
+        NEXT_PUBLIC_UMAMI_URL: https://${DOMAIN:?set DOMAIN}/_analytics
+        NEXT_PUBLIC_UMAMI_WEBSITE_ID: ${NEXT_PUBLIC_UMAMI_WEBSITE_ID:-}
+    env_file: [frontend.env]
+    ports: ["127.0.0.1:${FRONTEND_PORT:-13000}:3000"]
+    depends_on:
+      backend: {condition: service_healthy}
+  storage:
+    <<: *runtime
+    image: dxflrs/garage:v1.0.1
+    mem_limit: 256m
+    volumes:
+      - ./secrets/garage.toml:/etc/garage.toml:ro
+      - objects:/var/lib/garage
+    networks:
+      default:
+        aliases: [s3.storage, eco-mentors-media.s3.storage]
+  analytics-db:
+    <<: *runtime
+    image: postgres:16.14-alpine
+    mem_limit: 256m
+    command: [postgres, -c, shared_buffers=32MB, -c, max_connections=30]
+    environment:
+      POSTGRES_USER: umami
+      POSTGRES_DB: umami
+      POSTGRES_PASSWORD_FILE: /run/secrets/umami-password
+    secrets: [umami-password]
+    volumes: ["analytics:/var/lib/postgresql/data"]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U umami -d umami"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    networks: [analytics]
+  umami:
+    <<: *runtime
+    image: ghcr.io/umami-software/umami:3.4.1@sha256:e69d1a7932e9dab0fc523edc7be1f3a53f3c261f57856fc2167ae74a8fc022e8
+    mem_limit: 640m
+    env_file: [umami.env]
+    ports: ["127.0.0.1:${UMAMI_PORT:-18185}:3000"]
+    healthcheck:
+      test: [CMD, node, -e, 'fetch("http://localhost:3000/api/heartbeat").then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))']
+      interval: 10s
+      timeout: 5s
+      retries: 18
+      start_period: 20s
+    depends_on:
+      analytics-db: {condition: service_healthy}
+    networks: [default, analytics]
+networks:
+  default: {}
+  analytics: {internal: true}
+volumes:
+  database: {}
+  objects: {}
+  analytics: {}
+secrets:
+  postgres-password: {file: ./secrets/postgres-password}
+  umami-password: {file: ./secrets/umami-password}

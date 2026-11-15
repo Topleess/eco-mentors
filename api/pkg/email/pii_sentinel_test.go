@@ -20,6 +20,7 @@ const sentinelRecipient = "mentee.person@example.com"
 // reviewProps are the props the new-review template needs — the template from
 // the production line the audit found. Every value is obviously fake.
 var reviewProps = map[string]interface{}{
+	"base_url":    "https://client.example",
 	"first_name":  "Alice",
 	"mentee_name": "Sam Example",
 	"review_text": "helpful session",

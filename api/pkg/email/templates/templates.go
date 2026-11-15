@@ -1,10 +1,9 @@
 // Package templates holds the transactional email templates and renders
 // them locally with Go's html/template and text/template.
 //
-// The templates are a 1:1 port of openmentor-func/lib/postbox/templates/*.ts
-// (subject/html/text copied verbatim). They are embedded as JSON assets and
-// exposed through a GetTemplate(name) registry that mirrors
-// openmentor-func/lib/postbox/templates.ts.
+// EcoCareer copy is embedded as JSON assets. Template names and per-message
+// placeholders retain the upstream registry contract; base_url is supplied by
+// the worker for deployment-specific navigation and brand assets.
 //
 // Rendering must not move back to SES: SES does not escape substituted values
 // ("SES doesn't escape HTML content when rendering the HTML template for a
@@ -128,7 +127,7 @@ func mustLoadTemplates() (map[string]EmailTemplate, map[string]compiled) {
 }
 
 // toGoTemplate rewrites the assets' {{name}} markers into Go's {{.name}} map
-// lookup so the JSON assets stay byte-identical to the func app's originals.
+// lookup while keeping the JSON assets' original marker syntax.
 // Indexing with {{.name}} rather than {{index . "name"}} is deliberate: only
 // the field form honors missingkey=error.
 func toGoTemplate(s string) string {

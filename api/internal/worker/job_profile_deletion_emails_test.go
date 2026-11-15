@@ -70,7 +70,7 @@ func TestProfileDeletedDoesNotDiscloseTheRetentionWindow(t *testing.T) {
 		assert.NotContains(t, part, "30 days")
 		assert.NotRegexp(t, `(?i)\b(kept|retained|erased|deleted)\s+(for|after|within)\s+\d+`, part)
 	}
-	assert.Contains(t, rendered.Text, "as soon as possible")
+	assert.Contains(t, rendered.Text, "как можно скорее")
 }
 
 // The ordinary mentor lookup hides deleted profiles precisely so the worker

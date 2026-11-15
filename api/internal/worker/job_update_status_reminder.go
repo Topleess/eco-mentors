@@ -15,8 +15,8 @@ import (
 // requestStatusLabels mirrors STATUS_LABELS in the func's
 // StatusUpdateReminderMessage (unknown statuses fall back to the raw value).
 var requestStatusLabels = map[string]string{
-	"contacted": "Contacted",
-	"working":   "In progress",
+	"contacted": "Связались",
+	"working":   "В работе",
 }
 
 // UpdateStatusReminder ports openmentor-func/update-status-reminder/index.ts
@@ -134,5 +134,5 @@ func describeStaleRequest(req JobReminderRequest) string {
 	if !ok {
 		label = req.Status
 	}
-	return req.Name + ` — "` + label + `" for ` + daysWording(req.DaysAgo)
+	return req.Name + ` — "` + label + `" — ` + daysWording(req.DaysAgo)
 }

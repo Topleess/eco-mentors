@@ -84,8 +84,8 @@ const mentor: MentorBase = {
 /** Fill the real form and send it, so the page runs its own fetch handling. */
 async function submitContactForm(): Promise<void> {
   const user = userEvent.setup()
-  await user.type(screen.getByLabelText(/Your email/i), 'mentee@example.com')
-  await user.type(screen.getByLabelText(/Your full name/i), 'Jane Mentee')
+  await user.type(screen.getByLabelText(/Email address/i), 'mentee@example.com')
+  await user.type(screen.getByLabelText(/First and last name/i), 'Jane Mentee')
   await user.type(
     screen.getByLabelText(/What would you like to talk about/i),
     'I would like help planning a move into platform engineering.'
@@ -120,7 +120,7 @@ describe('Mentor contact page error surface', () => {
       'href',
       '/demo-login'
     )
-    expect(screen.queryByLabelText(/Your email/i)).not.toBeInTheDocument()
+    expect(screen.queryByLabelText(/Email address/i)).not.toBeInTheDocument()
   })
 
   // The route forwards the upstream 4xx body; if the page drops it, the mentee

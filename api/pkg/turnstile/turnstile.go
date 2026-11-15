@@ -28,6 +28,7 @@ type Response struct {
 // token solved on someone else's page or harvested from another form cannot be
 // replayed here. Empty means "accept whatever Cloudflare reports".
 type Options struct {
+	Provider         string
 	SecretKey        string
 	ExpectedHostname string
 	ExpectedAction   string
@@ -55,6 +56,12 @@ func NewVerifier(opts Options, httpClient httpclient.Client) *Verifier {
 // slot and DB connection — for the HTTP client's full 30s timeout, long after
 // the browser gave up.
 func (v *Verifier) Verify(ctx context.Context, token string) error {
+	if v.opts.Provider == "smartcaptcha" {
+		return v.verifySmartCaptcha(ctx, token)
+	}
+	if v.opts.Provider != "" && v.opts.Provider != "turnstile" {
+		return fmt.Errorf("unsupported captcha provider")
+	}
 	data := url.Values{}
 	data.Set("secret", v.opts.SecretKey)
 	data.Set("response", token)

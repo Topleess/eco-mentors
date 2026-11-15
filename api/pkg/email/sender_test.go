@@ -3,6 +3,7 @@ package email
 import (
 	"context"
 	"errors"
+	"net/mail"
 	"strings"
 	"testing"
 
@@ -32,7 +33,7 @@ func TestSendBuildsSESParams(t *testing.T) {
 	messageID, err := sender.Send(context.Background(), Message{
 		TemplateName: "mentor-login",
 		Recipient:    "mentor@example.com",
-		Props: map[string]interface{}{
+		Props: map[string]interface{}{"base_url": "https://client.example",
 			"mentor_name": "Jane",
 			"login_url":   "https://openmentor.io/login?token=abc",
 		},
@@ -49,9 +50,18 @@ func TestSendBuildsSESParams(t *testing.T) {
 		t.Fatal("SendEmail was not called")
 	}
 
-	// FromEmailAddress mirrors PostboxEmailSender: "The OpenMentor Team <hello@openmentor.io>"
-	if got, want := aws.ToString(input.FromEmailAddress), "The OpenMentor Team <hello@openmentor.io>"; got != want {
-		t.Errorf("FromEmailAddress = %q, want %q", got, want)
+	// SES requires MIME encoding for a non-ASCII sender display name.
+	for _, char := range aws.ToString(input.FromEmailAddress) {
+		if char > 127 {
+			t.Fatal("SES From display name must use MIME encoded words")
+		}
+	}
+	from, err := mail.ParseAddress(aws.ToString(input.FromEmailAddress))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if from.Name != "Менторы ЭкоКарьеры" || from.Address != "hello@openmentor.io" {
+		t.Errorf("unexpected sender identity: %#v", from)
 	}
 
 	if len(input.Destination.ToAddresses) != 1 || input.Destination.ToAddresses[0] != "mentor@example.com" {
@@ -68,7 +78,7 @@ func TestSendBuildsSESParams(t *testing.T) {
 		t.Fatal("Content.Simple is nil")
 	}
 
-	if got := aws.ToString(simple.Subject.Data); got != "Your OpenMentor sign-in link" {
+	if got := aws.ToString(simple.Subject.Data); got != "Вход в «Менторы ЭкоКарьеры»" {
 		t.Errorf("Subject = %q, want the mentor-login subject", got)
 	}
 	// The subjects and bodies contain non-ASCII characters, so every part
@@ -109,7 +119,7 @@ func TestSendAppliesDevEmailOverride(t *testing.T) {
 	_, err := sender.Send(context.Background(), Message{
 		TemplateName: "profile-deactivated",
 		Recipient:    "mentor@example.com",
-		Props:        map[string]interface{}{"mentor_name": "Jane"},
+		Props:        map[string]interface{}{"base_url": "https://client.example", "mentor_name": "Jane"},
 	})
 	if err != nil {
 		t.Fatalf("Send failed: %v", err)
@@ -127,7 +137,7 @@ func TestSendIgnoresOverrideInProduction(t *testing.T) {
 	_, err := sender.Send(context.Background(), Message{
 		TemplateName: "profile-deactivated",
 		Recipient:    "mentor@example.com",
-		Props:        map[string]interface{}{"mentor_name": "Jane"},
+		Props:        map[string]interface{}{"base_url": "https://client.example", "mentor_name": "Jane"},
 	})
 	if err != nil {
 		t.Fatalf("Send failed: %v", err)
@@ -163,8 +173,8 @@ func TestSendRejectsMissingProps(t *testing.T) {
 		props   map[string]interface{}
 		missing string
 	}{
-		{"nil props", nil, "mentor_name"},
-		{"partial props", map[string]interface{}{"mentor_name": "Jane"}, "login_url"},
+		{"nil props", nil, "base_url"},
+		{"partial props", map[string]interface{}{"base_url": "https://client.example", "mentor_name": "Jane"}, "login_url"},
 	}
 
 	for _, tc := range cases {
@@ -197,7 +207,7 @@ func TestSendPropagatesSESError(t *testing.T) {
 	_, err := sender.Send(context.Background(), Message{
 		TemplateName: "mentor-login",
 		Recipient:    "mentor@example.com",
-		Props: map[string]interface{}{
+		Props: map[string]interface{}{"base_url": "https://client.example",
 			"mentor_name": "Jane",
 			"login_url":   "https://openmentor.io/login?token=abc",
 		},

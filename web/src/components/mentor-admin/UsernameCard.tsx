@@ -86,7 +86,7 @@ export default function UsernameCard({
         <div className="min-w-0">
           <span className="font-name text-base font-bold text-ink">{t('yourProfileLink')}</span>
           <p className="my-0 mt-1 truncate text-[13px] leading-normal text-ink-soft">
-            openmentor.io/mentor/<span className="font-mono text-ink">{username}</span>
+            /mentor/<span className="font-mono text-ink">{username}</span>
           </p>
           {!canChange && status?.nextChangeAt && (
             <p className="my-0 mt-1 text-[13px] leading-normal text-ink-soft">
@@ -235,7 +235,7 @@ function UsernameChangeModal({
                 </label>
                 <div className="flex items-center overflow-hidden rounded-field border-[1.5px] border-line bg-white focus-within:border-brand-cobalt">
                   <span className="select-none whitespace-nowrap py-2.5 pl-3.5 pr-0 font-mono text-sm text-ink-soft">
-                    openmentor.io/mentor/
+                    /mentor/
                   </span>
                   <input
                     id="new-username"

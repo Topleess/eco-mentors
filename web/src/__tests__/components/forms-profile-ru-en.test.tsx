@@ -71,7 +71,7 @@ function renderForm(overrides: Partial<MentorWithSecureFields> = {}): void {
 
 it('Russian profile save preserves stored price, experience and tags', async () => {
   renderForm({ experience: '15 years', price: '$75' })
-  expect(screen.getByLabelText(/Ваше полное имя/)).toHaveValue('Jane Doe')
+  expect(screen.getByLabelText(/Имя и фамилия/)).toHaveValue('Jane Doe')
   expect(screen.getByRole('option', { name: '15 years' })).toHaveValue('15 years')
   fireEvent.click(screen.getByRole('button', { name: 'Сохранить' }))
   await waitFor(() => expect(mockOnSubmit).toHaveBeenCalledWith(expect.objectContaining({ price: '$75', experience: '15 years', tags: ['Backend'] })))

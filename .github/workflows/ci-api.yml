@@ -256,6 +256,9 @@ jobs:
             'SES_REGION=eu-central-1' \
             'SES_ACCESS_KEY_ID=ci-ses-key-id' \
             'SES_SECRET_ACCESS_KEY=ci-ses-secret' \
+            'SES_FROM_EMAIL=hello@eco.example' \
+            'SES_FROM_NAME=Eco Mentors' \
+            'MODERATORS_EMAIL=mods@eco.example' \
             > ci-worker.env
 
           # api: the full public-surface contract, including the event trigger

@@ -1,4 +1,4 @@
-# openmentor.io — AI-crawler policy: docs/migration/DECISIONS.md (D35).
+# EcoCareer — crawler policy inherited from OpenMentor (D35).
 #
 # Private pages (mentor portal, admin, contact forms) are deliberately NOT
 # disallowed here: they carry <meta name="robots" content="noindex">, and a
@@ -60,5 +60,3 @@ Disallow: /
 
 User-agent: cohere-ai
 Disallow: /
-
-Sitemap: https://openmentor.io/sitemap.xml

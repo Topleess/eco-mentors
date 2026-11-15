@@ -11,7 +11,7 @@ import { messages } from '@/i18n/messages/mentor'
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
+import BrandLogo from '@/components/brand/BrandLogo'
 import { useRouter } from 'next/router'
 import { useForm } from 'react-hook-form'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -107,7 +107,7 @@ function LoginForm(): JSX.Element {
       />
 
       <div className="relative mx-auto w-full max-w-[440px]">
-        <div className="animate-rise-in rounded-[20px] border border-line bg-white p-7 shadow-[0_20px_50px_-24px_rgba(19,42,82,0.22)] sm:p-10">
+        <div className="animate-rise-in rounded-panel border border-line bg-white p-7 shadow-card-hover sm:p-10">
           {/* Session expired message */}
           {expired === 'true' && (
             <div className="mb-5 rounded-field border border-line bg-surface p-3.5">
@@ -173,16 +173,7 @@ function LoginForm(): JSX.Element {
             /* Email step */
             <div className="flex flex-col gap-5">
               <div className="flex items-center gap-2.5">
-                <Image
-                  src="/brand/logo/svg/logomark.svg"
-                  width={38}
-                  height={38}
-                  alt=""
-                  unoptimized
-                />
-                <span className="font-display text-lg font-extrabold uppercase tracking-[-0.02em] text-brand-navy">
-                  openmentor<span className="text-brand-cobalt">.io</span>
-                </span>
+                <BrandLogo />
               </div>
 
               <div>
@@ -244,16 +235,7 @@ function LoginForm(): JSX.Element {
             </div>
           )}
 
-          {/* Help text */}
-          <div className="mt-6 border-t border-line pt-5">
-            <p className="my-0 text-center text-xs text-ink-soft">
-              {t('useTheEmailYouProvidedWhen')}{' '}
-              <a href="mailto:hello@openmentor.io" className="font-semibold text-brand-cobalt">
-                {t('writeToUs')}
-              </a>
-              .
-            </p>
-          </div>
+
         </div>
       </div>
     </div>

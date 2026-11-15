@@ -1,0 +1,27 @@
+# HOST Caddy, not a container. Merge into existing configuration; never replace it wholesale.
+{$ECO_DOMAIN} {
+    route {
+        handle_path /_analytics/* {
+            @script {
+                method GET
+                path /script.js
+            }
+            reverse_proxy @script 127.0.0.1:18185
+            @ingest {
+                method POST
+                path /api/send
+            }
+            reverse_proxy @ingest 127.0.0.1:18185
+            @reports {
+                method GET
+                path /api/websites/*
+            }
+            reverse_proxy @reports 127.0.0.1:18185
+            respond 404
+        }
+        # No public metrics. Umami admin is reachable only via SSH tunnel.
+        @private path /api/metrics /metrics
+        respond @private 403
+        reverse_proxy 127.0.0.1:13000
+    }
+}

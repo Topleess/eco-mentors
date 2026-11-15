@@ -83,7 +83,7 @@ const _getServerSideProps: GetServerSideProps<MentorPageProps> = async (context)
   // Absolute URLs for social scrapers (og:url / og:image must not be
   // relative). BASE_URL ends with a slash; the ?v= version busts scraper
   // caches when the profile (photo) changes.
-  const base = constants.BASE_URL ?? 'https://openmentor.io/'
+  const base = constants.BASE_URL
   const version = updatedAtToVersion(mentor.updatedAt)
   const ogImageUrl = `${base}api/og/mentor?slug=${encodeURIComponent(mentor.slug)}${
     version !== undefined ? `&v=${version}` : ''

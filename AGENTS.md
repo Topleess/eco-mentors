@@ -324,7 +324,10 @@ in `__tests__/` beside what they cover.
 
 ### Design system
 
-All UI work follows the 2026-07 redesign. **Read `docs/design-reference/design-system.md`
+All UI work retains the 2026-07 component structure, with the EcoCareer identity in D102
+superseding the inherited palette/fonts/wordmark. The client brief and approved assets in
+`brand/` govern current identity; archived OpenMentor mockups are layout references only.
+**Read `docs/design-reference/design-system.md`
 before touching an interface**; the authoritative mockups are
 `docs/design-reference/redesign/*.dc.html`. Hard rules: no Tailwind `gray-*` (ink/surface/line
 family only), one button system (the `.button*` classes), radii/shadows/pastels only through the
