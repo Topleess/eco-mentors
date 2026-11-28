@@ -8,6 +8,7 @@ export const messages = {
   analytics: { en: 'Analytics', ru: 'Аналитика' },
   vacancies: { en: 'Vacancies', ru: 'Вакансии' },
   research: { en: 'Research', ru: 'Исследования' },
+  feedback: { en: 'Feedback', ru: 'Обратная связь' },
   staff: { en: 'Team access', ru: 'Доступ команды' },
   adminBrand: { en: 'EcoCareer Mentors · Admin', ru: 'Менторы ЭкоКарьеры · Управление' },
   adminRole: { en: 'admin', ru: 'Администратор' },

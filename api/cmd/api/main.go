@@ -562,7 +562,9 @@ func main() { //nolint:gocyclo
 	// Moderator/Admin web moderation routes
 	registerAdminModerationRoutes(router, cfg, adminAuthRateLimiter, profileRateLimiter, uploadAdmission, adminAuthHandler, adminMentorsHandler, adminMentorRequestsHandler, usernameHandler, adminAuthService.GetTokenManager(), moderatorRepo)
 
-	handlers.RegisterVacancyRoutes(router, pool, adminAuthService.GetTokenManager(), moderatorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure, turnstile.NewVerifier(turnstile.Options{Provider: cfg.Turnstile.Provider, SecretKey: cfg.Turnstile.SecretKey, ExpectedHostname: cfg.Turnstile.ExpectedHostname, ExpectedAction: cfg.Turnstile.ExpectedAction}, httpClient))
+	captchaVerifier := turnstile.NewVerifier(turnstile.Options{Provider: cfg.Turnstile.Provider, SecretKey: cfg.Turnstile.SecretKey, ExpectedHostname: cfg.Turnstile.ExpectedHostname, ExpectedAction: cfg.Turnstile.ExpectedAction}, httpClient)
+	handlers.RegisterVacancyRoutes(router, pool, adminAuthService.GetTokenManager(), moderatorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure, captchaVerifier)
+	handlers.RegisterFeedbackRoutes(router, pool, adminAuthService.GetTokenManager(), moderatorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure, captchaVerifier)
 	handlers.RegisterTelegramVacancyRoutes(router, pool, adminAuthService.GetTokenManager(), moderatorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure, handlers.TelegramVacancyOptions{Token: os.Getenv("TELEGRAM_VACANCY_BOT_TOKEN"), ChatID: os.Getenv("TELEGRAM_VACANCY_CHAT_ID"), PublicBaseURL: cfg.Server.BaseURL})
 	handlers.RegisterResearchRoutes(router, pool, adminAuthService.GetTokenManager(), moderatorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure)
 	handlers.RegisterStaffRoutes(router, pool, adminAuthService.GetTokenManager(), moderatorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure)
