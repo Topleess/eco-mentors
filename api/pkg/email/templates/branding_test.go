@@ -10,11 +10,11 @@ func TestTransactionalFactsMatchInBothBodies(t *testing.T) {
 	facts := map[string][]string{
 		"mentor-confirm-email":      {"24 часа"},
 		"mentor-login":              {"15 минут", "один раз"},
-		"new-mentor-approved":       {"без комиссии", "бесплатно"},
+		"new-mentor-approved":       {"бесплатны"},
 		"pending-requests-reminder": {"30 дней", "деактивируем", "снова активировать"},
 		"profile-deleted":           {"окончательно стёрты", "приглашения оставить отзыв уже отменены", "как можно скорее", "восстановление невозможно"},
 		"profile-restored":          {"скрыт из каталога", "заявками и отзывами"},
-		"profile-migrated":          {"getmentor.dev", "английский", "доллары США", "скрыт из каталога"},
+		"profile-migrated":          {"getmentor.dev", "английский", "скрыт из каталога"},
 		"session-complete":          {"Отзывы публичны", "адрес почты не публикуется"},
 	}
 	for name, required := range facts {

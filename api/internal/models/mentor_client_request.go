@@ -104,6 +104,7 @@ const (
 
 // MentorClientRequest represents a mentee's request to a mentor (full admin view)
 type MentorClientRequest struct {
+	AcceptedAt       *time.Time    `json:"acceptedAt"`
 	ID               string        `json:"id"`
 	Email            string        `json:"email"`
 	Name             string        `json:"name"`
@@ -188,6 +189,7 @@ func ScanClientRequest(row pgx.Row) (*MentorClientRequest, error) {
 		&declineReason, // Scan into nullable variable
 		&declineComment,
 		&review, // from LEFT JOIN reviews
+		&r.AcceptedAt,
 	)
 	if err != nil {
 		return nil, err

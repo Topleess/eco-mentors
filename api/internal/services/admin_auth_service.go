@@ -99,7 +99,7 @@ func (s *AdminAuthService) RequestLogin(ctx context.Context, email string) (*mod
 	}
 
 	expiration := time.Now().Add(time.Duration(s.config.MentorSession.LoginTokenTTLMinutes) * time.Minute)
-	if err := s.moderatorRepo.SetLoginToken(ctx, moderator.ID, token, expiration); err != nil {
+	if err := s.moderatorRepo.SetLoginToken(ctx, moderator.ID, token, expiration, moderator.SessionVersion); err != nil {
 		s.tracker.Track(ctx, analytics.EventAdminAuthLoginRequested, analytics.ModeratorDistinctID(moderator.ID), map[string]interface{}{
 			"moderator_id": moderator.ID,
 			"role":         string(moderator.Role),
@@ -225,7 +225,7 @@ func (s *AdminAuthService) RevokeSession(ctx context.Context, sessionToken strin
 	if err != nil {
 		return nil
 	}
-	if err := s.moderatorRepo.BumpModeratorSessionVersion(ctx, claims.MentorUUID); err != nil {
+	if err := s.moderatorRepo.BumpModeratorSessionVersionIfCurrent(ctx, claims.MentorUUID, claims.SessionVersion); err != nil {
 		if errors.Is(err, repository.ErrSessionSubjectGone) {
 			return nil
 		}

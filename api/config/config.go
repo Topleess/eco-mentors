@@ -124,6 +124,7 @@ type EventTriggerFunctionsConfig struct {
 	ModeratorLoginEmailTriggerURL    string
 	MentorModerationTriggerURL       string
 	RequestProcessFinishedTriggerURL string
+	RequestAcceptedTriggerURL        string
 	ReviewCreatedTriggerURL          string
 }
 
@@ -210,11 +211,13 @@ type DemoAuthConfig struct {
 // an internal HTTP server for async event triggers plus a cron scheduler
 // for daily jobs, with its own smaller DB pool.
 type WorkerConfig struct {
-	Port        string // WORKER_PORT: internal HTTP port (not publicly exposed)
-	DBMaxConns  int32  // WORKER_DB_MAX_CONNS: worker's own, smaller pool cap
-	CronEnabled bool   // WORKER_CRON_ENABLED: master switch for scheduled jobs
-	AuthToken   string // WORKER_AUTH_TOKEN: shared secret for X-Worker-Token
-	ServiceName string // O11Y_WORKER_SERVICE_NAME: observability identity
+	Port                       string // WORKER_PORT: internal HTTP port (not publicly exposed)
+	DBMaxConns                 int32  // WORKER_DB_MAX_CONNS: worker's own, smaller pool cap
+	CronEnabled                bool   // WORKER_CRON_ENABLED: master switch for scheduled jobs
+	RequestEmailRetryEnabled   bool   // WORKER_REQUEST_EMAIL_RETRY_ENABLED: retry jobs only
+	RequestEmailLiveRecipients bool   // WORKER_REQUEST_EMAIL_LIVE_RECIPIENTS: explicit non-production retry opt-in
+	AuthToken                  string // WORKER_AUTH_TOKEN: shared secret for X-Worker-Token
+	ServiceName                string // O11Y_WORKER_SERVICE_NAME: observability identity
 
 	// HighlightedMentors is the raw HIGHLIGHTED_MENTORS value: a
 	// comma-separated list of mentor ids the randomize-sort-order job pins
@@ -350,6 +353,8 @@ func load() *Config {
 	v.SetDefault("WORKER_PORT", "8090")
 	v.SetDefault("WORKER_DB_MAX_CONNS", 5)
 	v.SetDefault("WORKER_CRON_ENABLED", true)
+	v.SetDefault("WORKER_REQUEST_EMAIL_RETRY_ENABLED", false)
+	v.SetDefault("WORKER_REQUEST_EMAIL_LIVE_RECIPIENTS", false)
 	v.SetDefault("O11Y_WORKER_SERVICE_NAME", "openmentor-worker")
 	// Profile purge (D70): nightly at 03:15, keep deleted profiles 30 days.
 	// 03:15 stays clear of randomize-sort-order at 01:00 and sessions-watcher
@@ -456,6 +461,7 @@ func load() *Config {
 			ModeratorLoginEmailTriggerURL:    v.GetString("MODERATOR_LOGIN_EMAIL_TRIGGER_URL"),
 			MentorModerationTriggerURL:       v.GetString("MENTOR_MODERATION_TRIGGER_URL"),
 			RequestProcessFinishedTriggerURL: v.GetString("REQUEST_PROCESS_FINISHED_TRIGGER_URL"),
+			RequestAcceptedTriggerURL:        v.GetString("REQUEST_ACCEPTED_TRIGGER_URL"),
 			ReviewCreatedTriggerURL:          v.GetString("REVIEW_CREATED_TRIGGER_URL"),
 		},
 		Logging: LoggingConfig{
@@ -489,11 +495,13 @@ func load() *Config {
 			SessionTTLHours: v.GetInt("DEMO_AUTH_SESSION_TTL_HOURS"),
 		},
 		Worker: WorkerConfig{
-			Port:        v.GetString("WORKER_PORT"),
-			DBMaxConns:  v.GetInt32("WORKER_DB_MAX_CONNS"),
-			CronEnabled: v.GetBool("WORKER_CRON_ENABLED"),
-			AuthToken:   v.GetString("WORKER_AUTH_TOKEN"),
-			ServiceName: v.GetString("O11Y_WORKER_SERVICE_NAME"),
+			Port:                       v.GetString("WORKER_PORT"),
+			DBMaxConns:                 v.GetInt32("WORKER_DB_MAX_CONNS"),
+			CronEnabled:                v.GetBool("WORKER_CRON_ENABLED"),
+			RequestEmailRetryEnabled:   v.GetBool("WORKER_REQUEST_EMAIL_RETRY_ENABLED"),
+			RequestEmailLiveRecipients: v.GetBool("WORKER_REQUEST_EMAIL_LIVE_RECIPIENTS"),
+			AuthToken:                  v.GetString("WORKER_AUTH_TOKEN"),
+			ServiceName:                v.GetString("O11Y_WORKER_SERVICE_NAME"),
 
 			HighlightedMentors: v.GetString("HIGHLIGHTED_MENTORS"),
 

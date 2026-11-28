@@ -423,6 +423,11 @@ class GoApiClient {
   /**
    * Update request status
    */
+  async mentorAcceptRequest(cookies: string, id: string, contact: string): Promise<MentorClientRequest> {
+    const { data } = await this.requestWithCookies<MentorClientRequest>('POST', `/api/v1/mentor/requests/${encodeURIComponent(id)}/accept`, { cookies, body: { contact } })
+    return data
+  }
+
   async mentorUpdateRequestStatus(
     cookies: string,
     id: string,

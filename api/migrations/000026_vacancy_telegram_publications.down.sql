@@ -1,0 +1,1 @@
+DROP TABLE vacancy_telegram_publications;

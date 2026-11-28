@@ -21,6 +21,7 @@ import (
 
 // fakeRepo is an in-memory JobsRepository with error injection.
 type fakeRepo struct {
+	deliverySent       map[string]bool
 	mentors            map[string]*JobMentor
 	deletedMentors     map[string]*JobMentor
 	requests           map[string]*JobRequest
@@ -51,10 +52,12 @@ type fakeRepo struct {
 	reviewInvitations   []reviewInvitation
 	reviewInvitationErr error
 
-	finalized      []FinalizeNewMentorParams
-	released       []FinalizeNewMentorParams
-	requestUpdates map[string]string // requestID -> contact
-	requestClaims  map[string]int    // requestID -> successful claims
+	finalized        []FinalizeNewMentorParams
+	released         []FinalizeNewMentorParams
+	requestUpdates   map[string]string // requestID -> contact
+	acceptanceClaims map[string]time.Time
+	acceptanceSent   map[string]bool
+	requestClaims    map[string]int // requestID -> successful claims
 
 	// Cron job fixtures (stage 3).
 	stalePendingMentors   []JobMentor
@@ -101,6 +104,8 @@ func newFakeRepo() *fakeRepo {
 		reviews:               map[string]*JobReview{},
 		requestUpdates:        map[string]string{},
 		requestClaims:         map[string]int{},
+		acceptanceClaims:      map[string]time.Time{},
+		acceptanceSent:        map[string]bool{},
 		notActive:             map[string]bool{},
 		stalePendingRequests:  map[string][]JobReminderRequest{},
 		staleProgressRequests: map[string][]JobReminderRequest{},
@@ -527,3 +532,57 @@ func testMentor(id string) *JobMentor {
 		Price:            "$50",
 	}
 }
+
+func (f *fakeRepo) ClaimAcceptanceNotification(_ context.Context, id string) (time.Time, error) {
+	r := f.requestsWithMentor[id]
+	if r == nil || r.AcceptedContact == "" || f.acceptanceSent[id] || (!f.acceptanceClaims[id].IsZero() && time.Since(f.acceptanceClaims[id]) < 15*time.Minute) {
+		return time.Time{}, nil
+	}
+	claim := time.Now().UTC()
+	f.acceptanceClaims[id] = claim
+	return claim, nil
+}
+func (f *fakeRepo) FinishAcceptanceNotification(_ context.Context, id string, claim time.Time, sent bool) (bool, error) {
+	if !f.acceptanceClaims[id].Equal(claim) {
+		return false, nil
+	}
+	if sent {
+		delete(f.acceptanceClaims, id)
+		f.acceptanceSent[id] = true
+	} else {
+		f.acceptanceClaims[id] = time.Now().UTC()
+	}
+	return true, nil
+}
+func (f *fakeRepo) ListPendingAcceptanceNotifications(_ context.Context) ([]string, error) {
+	var ids []string
+	for id, r := range f.requestsWithMentor {
+		if r.AcceptedContact != "" && !f.acceptanceSent[id] && (f.acceptanceClaims[id].IsZero() || time.Since(f.acceptanceClaims[id]) >= 15*time.Minute) {
+			ids = append(ids, id)
+		}
+	}
+	return ids, nil
+}
+
+func (f *fakeRepo) ClaimRequestDelivery(_ context.Context, id, kind string) (string, error) {
+	if kind != "decline" && (f.requestAlreadyClaimed || f.requestClaims[id] == 0) {
+		return "", nil
+	}
+	if f.deliverySent == nil {
+		f.deliverySent = map[string]bool{}
+	}
+	key := id + ":" + kind
+	if f.deliverySent[key] {
+		return "", nil
+	}
+	return key, nil
+}
+func (f *fakeRepo) FinishRequestDelivery(_ context.Context, id, kind, token string, success bool) (bool, error) {
+	if success {
+		f.deliverySent[id+":"+kind] = true
+	}
+	return true, nil
+}
+func (f *fakeRepo) ListRequestDeliveries(context.Context) ([]deliveryItem, error) { return nil, nil }
+
+func (f *fakeRepo) DeferRequestDelivery(context.Context, string, string) error { return nil }

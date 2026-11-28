@@ -58,6 +58,13 @@ func (h *Handlers) RequestProcessFinished(c *gin.Context) {
 		return
 	}
 
+	// A decline retry must never dispatch the separate completed-session flow
+	// if the status changed since the retry listing.
+	if ctx.Value(declineRetryKey{}) != nil && request.Status != mentorStatusDeclined {
+		c.JSON(http.StatusOK, gin.H{"success": true})
+		return
+	}
+
 	var message *email.Message
 	switch request.Status {
 	case "done":
@@ -103,7 +110,13 @@ func (h *Handlers) RequestProcessFinished(c *gin.Context) {
 		return
 	}
 
-	if sendErr := h.sendEmail(ctx, job, *message); sendErr != nil {
+	var sendErr error
+	if request.Status == mentorStatusDeclined {
+		_, sendErr = h.sendRequestDelivery(ctx, request.ID, "decline", job, *message)
+	} else {
+		sendErr = h.sendEmail(ctx, job, *message)
+	}
+	if sendErr != nil {
 		h.track(ctx, analytics.EventRequestProcessFinishedNotified, analytics.MentorDistinctID(request.MentorID), map[string]interface{}{
 			"mentor_id":  request.MentorID,
 			"outcome":    "error",

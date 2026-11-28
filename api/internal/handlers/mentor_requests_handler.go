@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"net/http"
@@ -159,4 +160,37 @@ func (h *MentorRequestsHandler) handleRequestError(c *gin.Context, err error, de
 		return
 	}
 	c.JSON(http.StatusInternalServerError, gin.H{"error": "Internal server error"})
+}
+
+// AcceptRequest records the mentor's explicit agreement and contact to share.
+func (h *MentorRequestsHandler) AcceptRequest(c *gin.Context) {
+	session, err := middleware.GetMentorSession(c)
+	if err != nil {
+		respondError(c, http.StatusUnauthorized, "Unauthorized", err)
+		return
+	}
+	var payload struct {
+		Contact string `json:"contact" binding:"required,max=500"`
+	}
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		respondError(c, http.StatusBadRequest, "Invalid contact", err)
+		return
+	}
+	svc, ok := h.service.(interface {
+		AcceptRequest(context.Context, string, string, string) (*models.MentorClientRequest, error)
+	})
+	if !ok {
+		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "Acceptance unavailable"})
+		return
+	}
+	request, err := svc.AcceptRequest(c.Request.Context(), session.MentorID, c.Param("id"), payload.Contact)
+	if err != nil {
+		if err.Error() == "invalid contact" {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid contact"})
+			return
+		}
+		h.handleRequestError(c, err, err)
+		return
+	}
+	c.JSON(http.StatusOK, request)
 }

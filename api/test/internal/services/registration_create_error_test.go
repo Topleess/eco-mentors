@@ -12,7 +12,7 @@ import (
 )
 
 func registrationRequest() *models.RegisterMentorRequest {
-	return &models.RegisterMentorRequest{
+	return &models.RegisterMentorRequest{PrivacyConsent: true, PublishConsent: true,
 		Name:         "John Doe",
 		Email:        "john@example.com",
 		Username:     "johndoe",

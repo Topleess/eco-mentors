@@ -73,6 +73,24 @@ func TestVacancyPersistenceLifecycle(t *testing.T) {
 		_, _ = pool.Exec(t.Context(), "DELETE FROM vacancy_cities WHERE id=$1", cityID)
 	}()
 	payload := gin.H{"slug": slug, "title": "Fictional job", "company": "Fictional company", "industryId": industryID, "cityId": cityID, "status": "draft", "workFormat": "remote", "experience": "junior", "employment": "fullTime", "description": "Example", "responsibilities": []string{"Example task"}, "requirements": []string{}, "conditions": []string{}, "salary": nil, "provenance": "synthetic"}
+	sparse := gin.H{"slug": slug + "-sparse", "title": "", "company": "", "status": "draft", "description": ""}
+	draft := request("POST", "/admin/vacancies", sparse, token, 201)["vacancy"].(map[string]interface{})
+	sparse["version"] = draft["version"]
+	sparse["status"] = "published"
+	request("PUT", "/admin/vacancies/"+draft["id"].(string), sparse, token, 400)
+	sparse["status"] = "draft"
+	request("PUT", "/admin/vacancies/"+draft["id"].(string), sparse, token, 200)
+	for _, field := range []string{"industryId", "cityId", "workFormat", "experience", "employment", "description"} {
+		invalid := gin.H{}
+		for key, value := range payload {
+			invalid[key] = value
+		}
+		invalid["status"] = "published"
+		invalid[field] = ""
+		request("POST", "/admin/vacancies", invalid, token, 400)
+	}
+	invalidDraft := gin.H{"slug": slug + "-bad", "title": "Draft", "company": "Company", "status": "draft", "workFormat": "bogus"}
+	request("POST", "/admin/vacancies", invalidDraft, token, 400)
 	job := request("POST", "/admin/vacancies", payload, token, 201)["vacancy"].(map[string]interface{})
 	id := job["id"].(string)
 	if job["industry"] != "Test industry" || job["location"] != "Test city" {
@@ -108,6 +126,20 @@ func TestVacancyPersistenceLifecycle(t *testing.T) {
 	payload["version"] = published["version"]
 	payload["status"] = "archived"
 	request("PUT", "/admin/vacancies/"+id, payload, token, 200)
+	listed := request("GET", "/vacancies", nil, "", 200)["vacancies"].([]interface{})
+	found := false
+	for _, item := range listed {
+		v := item.(map[string]interface{})
+		if v["id"] == id {
+			found = v["status"] == "archived"
+		}
+		if v["status"] == "draft" {
+			t.Fatal("draft vacancy exposed in public list")
+		}
+	}
+	if !found {
+		t.Fatal("archived vacancy missing from public list")
+	}
 	request("GET", "/vacancies/"+slug, nil, "", 404)
 	request("PUT", "/admin/vacancy-cities/"+cityID, gin.H{"slug": slug, "name": "Renamed city", "active": true, "version": 3}, token, 200)
 	request("POST", "/admin/vacancies", payload, token, 409)

@@ -9,8 +9,6 @@ import Head from 'next/head'
 import type { GetServerSideProps, InferGetServerSidePropsType } from 'next'
 import { Footer, HtmlContent, MetaHeader, NavHeader } from '@/components'
 import MentorPortrait from '@/components/ui/MentorPortrait'
-import PriceBadge from '@/components/ui/PriceBadge'
-import { parsePrice } from '@/lib/price'
 import { priceTierLabel } from '@/config/filters'
 import { getOneMentorBySlug } from '@/server/mentors-data'
 import constants from '@/config/constants'
@@ -140,29 +138,6 @@ function AvailabilityMeta({ isVisible }: { isVisible: boolean }): JSX.Element {
   )
 }
 
-/** Big price value for the sidebar card / mobile CTA bar. */
-function PriceValue({ price, size }: { price: string; size: 'lg' | 'sm' }): JSX.Element {
-  const kind = parsePrice(price)?.kind
-
-  if (kind === 'free' || kind === 'negotiable') {
-    return <PriceBadge price={price} />
-  }
-
-  return (
-    <span
-      className={
-        size === 'lg'
-          ? price.length <= 8
-            ? 'font-name text-2xl font-bold leading-tight text-brand-navy'
-            : 'font-name text-lg font-bold leading-tight text-brand-navy'
-          : 'font-name text-[19px] font-bold leading-tight text-brand-navy'
-      }
-    >
-      {price}
-    </span>
-  )
-}
-
 export default function Mentor({
   mentor,
   canonicalUrl,
@@ -287,7 +262,7 @@ export default function Mentor({
         </div>
 
         <div className="mx-auto flex max-w-[1200px] animate-rise-in items-start gap-11 px-5 pb-14 pt-5 md:px-8 md:pt-11 lg:px-16">
-          {/* Sidebar (desktop): sticky photo + price + details cards. */}
+          {/* Sidebar (desktop): sticky photo + action + details cards. */}
           <aside className="sticky top-6 hidden w-[320px] flex-none flex-col gap-[18px] md:flex">
             <div className="overflow-hidden rounded-panel border border-line">
               <MentorPortrait
@@ -304,12 +279,6 @@ export default function Mentor({
             </div>
 
             <div className="flex flex-col gap-3 rounded-panel border border-line bg-white p-5">
-              <div className="flex items-baseline justify-between">
-                <span className="font-display text-sm font-extrabold uppercase tracking-[0.02em] text-ink">
-                  {t('price')}</span>
-                <PriceValue price={mentor.price} size="lg" />
-              </div>
-
               {mentor.isVisible ? (
                 <Link href={contactHref} className="button w-full py-[15px] text-[15px]">
                   {t('sendRequest')}</Link>
@@ -428,10 +397,6 @@ export default function Mentor({
       {/* Mobile: sticky bottom CTA bar (design 02 · 390). */}
       {mentor.isVisible && (
         <div className="sticky bottom-0 z-10 flex items-center gap-2.5 border-t border-line bg-white/[0.94] px-5 py-3 backdrop-blur-md md:hidden">
-          <div className="flex-none">
-            <div className="text-[11px] text-ink-soft">{t('perSession')}</div>
-            <PriceValue price={mentor.price} size="sm" />
-          </div>
           <Link href={contactHref} className="button flex-1 py-[15px] text-[15px]">
             {t('sendRequest')}</Link>
         </div>

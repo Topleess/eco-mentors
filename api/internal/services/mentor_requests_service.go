@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/openmentor-io/openmentor/api/config"
@@ -293,5 +294,42 @@ func (s *MentorRequestsService) DeclineRequest(ctx context.Context, mentorId str
 		zap.String("reason", string(payload.Reason)))
 
 	// Fetch updated request
+	return s.requestRepo.GetByID(ctx, requestID)
+}
+
+// AcceptRequest records an explicit, one-time agreement without changing status.
+func (s *MentorRequestsService) AcceptRequest(ctx context.Context, mentorID, requestID, contact string) (*models.MentorClientRequest, error) {
+	contact = strings.TrimSpace(contact)
+	if contact == "" || len(contact) > 500 {
+		return nil, fmt.Errorf("invalid contact")
+	}
+	request, err := s.GetRequestByID(ctx, mentorID, requestID)
+	if err != nil {
+		return nil, err
+	}
+	if request.Status.IsTerminalStatus() || request.AcceptedAt != nil {
+		return nil, ErrInvalidStatusTransition
+	}
+	triggerURL := s.config.EventTriggers.RequestAcceptedTriggerURL
+	if triggerURL == "" && strings.Contains(s.config.EventTriggers.RequestProcessFinishedTriggerURL, "request-process-finished") {
+		triggerURL = strings.Replace(s.config.EventTriggers.RequestProcessFinishedTriggerURL, "request-process-finished", "request-accepted", 1)
+	}
+	if triggerURL == "" {
+		return nil, fmt.Errorf("acceptance notification unavailable")
+	}
+	repo, ok := s.requestRepo.(interface {
+		AcceptRequest(context.Context, string, string, string) (bool, error)
+	})
+	if !ok {
+		return nil, fmt.Errorf("acceptance repository unavailable")
+	}
+	applied, err := repo.AcceptRequest(ctx, requestID, mentorID, contact)
+	if err != nil {
+		return nil, err
+	}
+	if !applied {
+		return nil, ErrInvalidStatusTransition
+	}
+	trigger.CallAsync(ctx, triggerURL, requestID, s.config.Worker.AuthToken, s.httpClient)
 	return s.requestRepo.GetByID(ctx, requestID)
 }

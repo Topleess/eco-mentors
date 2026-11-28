@@ -32,7 +32,7 @@ import {
   nameInitials,
 } from '@/components/mentor-admin'
 import { NoIndexHead, AuthGateScreen } from '@/components'
-import { getRequestById, updateRequestStatus, declineRequest } from '@/lib/mentor-admin-api'
+import { getRequestById, updateRequestStatus, declineRequest, acceptRequest } from '@/lib/mentor-admin-api'
 
 /**
  * Get the next status in the workflow
@@ -60,6 +60,7 @@ function RequestDetailsContent(): JSX.Element {
   const [error, setError] = useState<string | null>(null)
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false)
   const [statusError, setStatusError] = useState<string | null>(null)
+  const [acceptContact, setAcceptContact] = useState('')
   const [showDeclineModal, setShowDeclineModal] = useState(false)
 
   // Redirect to login if not authenticated
@@ -107,6 +108,14 @@ function RequestDetailsContent(): JSX.Element {
     } finally {
       setIsUpdatingStatus(false)
     }
+  }
+
+  const handleAccept = async (): Promise<void> => {
+    if (!request || !acceptContact.trim()) return
+    setIsUpdatingStatus(true); setStatusError(null)
+    try { setRequest(await acceptRequest(request.id, acceptContact.trim())) }
+    catch (err) { setStatusError(err instanceof Error ? err.message : t('failedToUpdateTheStatus')) }
+    finally { setIsUpdatingStatus(false) }
   }
 
   const handleDecline = async (reason: DeclineReasonValue, comment?: string): Promise<void> => {
@@ -268,6 +277,15 @@ function RequestDetailsContent(): JSX.Element {
                   </p>
                 )}
 
+                {!request.acceptedAt && ACTIVE_STATUSES.includes(request.status) && (
+                  <div className="mb-4">
+                    <label htmlFor="accept-contact" className="block text-sm font-semibold">{locale === 'ru' ? 'Контакт для связи с вами' : 'Your contact for the mentee'}</label>
+                    <p className="text-sm">{locale === 'ru' ? 'Принимая заявку, вы разрешаете отправить этот контакт участнику по электронной почте.' : 'By accepting, you agree to share this contact with the mentee by email.'}</p>
+                    <input id="accept-contact" value={acceptContact} maxLength={500} onChange={(event) => setAcceptContact(event.target.value)} className="w-full rounded border p-2" />
+                    <button type="button" onClick={handleAccept} disabled={isUpdatingStatus || !acceptContact.trim()} className="button mt-2 disabled:opacity-50">{locale === 'ru' ? 'Принять заявку и отправить контакт' : 'Accept request and share contact'}</button>
+                  </div>
+                )}
+                {request.acceptedAt && <p className="text-sm">{locale === 'ru' ? 'Заявка принята' : 'Request accepted'}</p>}
                 <div className="flex flex-wrap items-center gap-2.5">
                   {/* Next status button */}
                   {nextStatus && (

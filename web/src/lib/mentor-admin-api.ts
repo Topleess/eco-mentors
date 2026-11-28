@@ -295,3 +295,7 @@ export async function declineRequest(
   )
   return response
 }
+
+export async function acceptRequest(id: string, contact: string): Promise<MentorClientRequest> {
+  return apiRequest<MentorClientRequest>(`/api/mentor/requests/${encodeURIComponent(id)}/accept`, { method: 'POST', body: JSON.stringify({ contact }) })
+}

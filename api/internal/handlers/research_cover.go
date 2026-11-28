@@ -39,7 +39,7 @@ func researchAdminOnly(c *gin.Context) {
 		c.AbortWithStatusJSON(401, gin.H{"error": "Unauthorized"})
 		return
 	}
-	if string(session.Role) != "admin" {
+	if string(session.Role) != staffAdminRole {
 		c.AbortWithStatusJSON(403, gin.H{"error": "Access denied"})
 		return
 	}

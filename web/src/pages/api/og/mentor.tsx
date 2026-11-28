@@ -10,15 +10,13 @@
  * be spoofed via query params. Any failure falls back to a redirect to the
  * static site banner: a scraper must always get *an* image.
  *
- * The endpoint is bounded on four axes (C8), because one request costs two
- * upstream fetches plus a 1200x630 satori render and it is reachable
- * unauthenticated by anyone who can type a URL:
- *   - method: GET/HEAD only, so a POST flood cannot drive renders;
- *   - slug: rejected against the username grammar before any upstream call;
+ * The endpoint bounds unauthenticated work by method, slug and concurrency:
+ *   - method: GET/HEAD only;
+ *   - slug: bounded by charset and length before any upstream call;
  *   - concurrency: at most MAX_CONCURRENT_RENDERS in flight, the rest shed to
- *     the banner rather than queueing behind the event loop;
- *   - caching: rendered PNGs are held in-process, so a `?v=` sweep re-serves
- *     bytes instead of re-rendering.
+ *     the banner rather than queueing behind the event loop.
+ * Cards are rendered on every request because photo changes do not necessarily
+ * have a reliable profile revision; intermediaries must not cache them either.
  *
  * Runs in the regular Node runtime: next/og ships a Node build, and the edge
  * runtime variant is mis-bundled by Turbopack for Pages Router API routes
@@ -33,14 +31,12 @@ import type { NextApiRequest, NextApiResponse } from 'next'
 import { ImageResponse } from 'next/og'
 import logger from '@/lib/logger'
 import { withObservability } from '@/lib/with-observability'
-import { imageLoader, updatedAtToVersion } from '@/lib/image-loader'
 import {
   MENTOR_INITIALS_HEX,
   MENTOR_PASTEL_GRAD_HEX,
   mentorInitialsIndex,
   mentorPastelIndex,
 } from '@/lib/mentor-pastel'
-import { fixedAmount, isFree } from '@/lib/price'
 
 const WIDTH = 1200
 const HEIGHT = 630
@@ -50,7 +46,6 @@ const HEIGHT = 630
 const INK = '#000000'
 const INK_MUTE = '#465044'
 const NAVY = '#000000'
-const MINT_INK = '#246B1A'
 
 const FONT_DIR = path.join(process.cwd(), 'src', 'assets', 'og-fonts')
 
@@ -86,7 +81,7 @@ async function fetchMentor(slug: string): Promise<OgMentor | null> {
       'Content-Type': 'application/json',
       'x-internal-mentors-api-auth-token': token,
     },
-    body: JSON.stringify({}),
+    body: JSON.stringify({ only_visible: true }),
     signal: AbortSignal.timeout(5000),
   })
   if (!res.ok) {
@@ -96,13 +91,11 @@ async function fetchMentor(slug: string): Promise<OgMentor | null> {
 }
 
 /** Fetch the mentor photo bytes (keyed by the immutable mentor UUID). */
-async function fetchPhoto(mentorId: string, updatedAt?: string): Promise<ArrayBuffer | null> {
+async function fetchPhoto(mentorId: string, _updatedAt?: string): Promise<ArrayBuffer | null> {
   try {
-    const url = imageLoader({
-      src: mentorId,
-      quality: 'large',
-      version: updatedAtToVersion(updatedAt),
-    })
+    if (!/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(mentorId)) return null
+    const base = process.env.NEXT_PUBLIC_GO_API_URL || 'http://localhost:8081'
+    const url = `${base.replace(/\/$/, '')}/api/v1/mentor-photos/${mentorId}`
     const res = await fetch(url, { signal: AbortSignal.timeout(5000) })
     if (!res.ok || !(res.headers.get('content-type') || '').startsWith('image/')) {
       return null
@@ -116,26 +109,6 @@ async function fetchPhoto(mentorId: string, updatedAt?: string): Promise<ArrayBu
 /** "2-5" -> "2–5Y EXP", "10+" -> "10+Y EXP" (mirrors the catalog meta row). */
 function experienceLabel(experience: string): string {
   return `${experience.replace('-', '–')} лет опыта`
-}
-
-/** "FREE" / "$150" / "NEGOTIABLE" chip text + color (mirrors PriceBadge). */
-function priceChip(price: string): { label: string; color: string } {
-  if (isFree(price)) {
-    return { label: 'Бесплатно', color: MINT_INK }
-  }
-  const amount = fixedAmount(price)
-  if (amount !== null) {
-    // Canonical spelling, matching the card and the profile page ("$1000",
-    // no separator) — the social unfurl and the page it links to must not
-    // disagree on the price.
-    return { label: `$${amount}`, color: NAVY }
-  }
-  // Unlike the catalog card, a value predating the grammar is NOT rendered
-  // verbatim here but relabelled NEGOTIABLE: the raster is rendered once and
-  // cached, so an odd legacy string would be baked into the share card with
-  // no quick fix, and mentors_price_chk makes the case unreachable for stored
-  // data anyway.
-  return { label: 'По договорённости', color: INK_MUTE }
 }
 
 /** First letters of the first two name words (same rule as MentorPortrait). */
@@ -157,52 +130,6 @@ function initials(name: string): string {
  */
 const MAX_CONCURRENT_RENDERS = 3
 let activeRenders = 0
-
-/**
- * Rendered cards, keyed by slug alone.
- *
- * Deliberately NOT keyed by `?v=`: `v` exists to bust the CDN when a profile
- * changes, and keying on it would let an arbitrary `v` sweep miss the cache on
- * every request — the exact multiplication this is here to stop. Keying by slug
- * means such a sweep costs one render per slug per TTL, at the price of a card
- * lagging a profile edit by up to the TTL. That lag is invisible next to the
- * `s-maxage=86400` the response already carries.
- *
- * Bounded by entry count rather than bytes: a 1200x630 PNG is a few hundred KB,
- * so this is single-digit MB at the ceiling.
- */
-const CARD_CACHE_TTL_MS = 10 * 60 * 1000
-const CARD_CACHE_MAX_ENTRIES = 16
-const cardCache = new Map<string, { png: Buffer; expiresAt: number }>()
-
-function cachedCard(slug: string): Buffer | null {
-  const hit = cardCache.get(slug)
-  if (!hit) return null
-  if (hit.expiresAt <= Date.now()) {
-    cardCache.delete(slug)
-    return null
-  }
-  // Re-insert so Map iteration order stays least-recently-used first.
-  cardCache.delete(slug)
-  cardCache.set(slug, hit)
-  return hit.png
-}
-
-function cacheCard(slug: string, png: Buffer): void {
-  cardCache.delete(slug)
-  cardCache.set(slug, { png, expiresAt: Date.now() + CARD_CACHE_TTL_MS })
-  while (cardCache.size > CARD_CACHE_MAX_ENTRIES) {
-    const oldest = cardCache.keys().next()
-    if (oldest.done) break
-    cardCache.delete(oldest.value)
-  }
-}
-
-/** Test seam: the cache is process-global and would leak between test cases. */
-export function __resetCardCache(): void {
-  cardCache.clear()
-  activeRenders = 0
-}
 
 /**
  * The cache-buster the mentor page appends: `updatedAtToVersion`, i.e. epoch
@@ -231,11 +158,8 @@ const SLUG_BOUND = /^[a-z0-9-]{1,64}$/
 
 function sendCard(res: NextApiResponse, png: Buffer): void {
   res.setHeader('Content-Type', 'image/png')
-  // Cards change when the profile does — the page busts via ?v=.
-  res.setHeader(
-    'Cache-Control',
-    'public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800'
-  )
+  // A profile can become private at any time; intermediaries must not retain it.
+  res.setHeader('Cache-Control', 'no-store')
   res.status(200).send(png)
 }
 
@@ -266,12 +190,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
     return
   }
 
-  const cached = cachedCard(slug)
-  if (cached) {
-    sendCard(res, cached)
-    return
-  }
-
   if (activeRenders >= MAX_CONCURRENT_RENDERS) {
     logger.warn('OG card render shed at capacity, redirecting to banner', {
       slug,
@@ -297,7 +215,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
     const logoData = `data:image/svg+xml;base64,${logo.toString('base64')}`
     const [base, deep] = MENTOR_PASTEL_GRAD_HEX[mentorPastelIndex(mentor.slug)]
     const initialsFill = MENTOR_INITIALS_HEX[mentorInitialsIndex(mentor.slug)]
-    const price = priceChip(mentor.price)
 
     // Long names step down so they never collide with the photo column.
     const nameSize = mentor.name.length > 26 ? 52 : mentor.name.length > 18 ? 62 : 72
@@ -385,7 +302,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
               </div>
               <div style={{ display: 'flex', gap: 12, marginTop: 32 }}>
                 {chip(experienceLabel(mentor.experience), NAVY)}
-                {chip(price.label, price.color)}
               </div>
             </div>
 
@@ -448,7 +364,6 @@ async function handler(req: NextApiRequest, res: NextApiResponse): Promise<void>
     )
 
     const png = Buffer.from(await image.arrayBuffer())
-    cacheCard(slug, png)
     sendCard(res, png)
   } catch (error) {
     // Never break a scraper — but do leave a trace for us.

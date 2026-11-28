@@ -7,7 +7,7 @@ import type { AppliedFilters, MentorListItem } from '@/types'
 function makeAppliedFilters(overrides: Partial<AppliedFilters> = {}): AppliedFilters {
   return {
     tags: { values: [], set: jest.fn(), reset: jest.fn() },
-    category: { values: undefined, set: jest.fn(), reset: jest.fn() },
+    category: { values: [], set: jest.fn(), reset: jest.fn() },
     experience: { values: [], set: jest.fn(), reset: jest.fn() },
     price: { values: undefined, set: jest.fn(), reset: jest.fn() },
     noSessions: { value: false, set: jest.fn(), reset: jest.fn() },
@@ -46,7 +46,18 @@ const mentors: MentorListItem[] = [
 ]
 
 describe('MentorsFilters', () => {
-  it('renders the All pill, every category pill, and the Experience/Price pills', () => {
+  it('adds a second category without clearing existing topics', () => {
+    const appliedFilters = makeAppliedFilters({
+      category: { values: ['Климат'], set: jest.fn(), reset: jest.fn() },
+      tags: { values: ['Углеродный учёт'], set: jest.fn(), reset: jest.fn() },
+    })
+    render(<MentorsFilters appliedFilters={appliedFilters} mentors={mentors} />)
+    fireEvent.click(screen.getByRole('button', { name: 'Enterprise ecology' }))
+    expect(appliedFilters.category.set).toHaveBeenCalledWith(['Климат', 'Экология предприятий'])
+    expect(appliedFilters.tags.set).not.toHaveBeenCalled()
+  })
+
+  it('renders categories and experience without a price filter', () => {
     render(<MentorsFilters appliedFilters={makeAppliedFilters()} mentors={mentors} />)
 
     expect(screen.getByRole('button', { name: /All mentors/i })).toBeInTheDocument()
@@ -54,7 +65,7 @@ describe('MentorsFilters', () => {
       expect(screen.getByRole('button', { name: translateLabel('en', category.label) })).toBeInTheDocument()
     }
     expect(screen.getByRole('button', { name: 'Experience' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Price' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Price' })).not.toBeInTheDocument()
   })
 
   it('marks "All mentors" active only when no topic filter is applied', () => {
@@ -69,7 +80,7 @@ describe('MentorsFilters', () => {
     rerender(
       <MentorsFilters
         appliedFilters={makeAppliedFilters({
-          category: { values: 'Экология предприятий', set: jest.fn(), reset: jest.fn() },
+          category: { values: ['Экология предприятий'], set: jest.fn(), reset: jest.fn() },
         })}
         mentors={mentors}
       />
@@ -80,14 +91,14 @@ describe('MentorsFilters', () => {
     )
   })
 
-  it('activates a category (clearing any tag) and opens its dropdown with per-tag counts', () => {
+  it('activates a category and opens its dropdown with per-tag counts', () => {
     const appliedFilters = makeAppliedFilters()
     render(<MentorsFilters appliedFilters={appliedFilters} mentors={mentors} />)
 
     fireEvent.click(screen.getByRole('button', { name: 'Enterprise ecology' }))
 
-    expect(appliedFilters.category.set).toHaveBeenCalledWith('Экология предприятий')
-    expect(appliedFilters.tags.set).toHaveBeenCalledWith([])
+    expect(appliedFilters.category.set).toHaveBeenCalledWith(['Экология предприятий'])
+    expect(appliedFilters.tags.set).not.toHaveBeenCalled()
 
     // Dropdown lists the category's tags with counts from the loaded mentors
     const monitoringItem = screen.getByRole('button', { name: /Industrial environmental monitoring/ })
@@ -104,9 +115,9 @@ describe('MentorsFilters', () => {
     expect(screen.getByRole('button', { name: /Environmental reporting/ })).toHaveTextContent('0')
   })
 
-  it('narrows to a single tag from the category dropdown and closes the panel', () => {
+  it('selects a tag and keeps the panel open', () => {
     const appliedFilters = makeAppliedFilters({
-      category: { values: 'Экология предприятий', set: jest.fn(), reset: jest.fn() },
+      category: { values: ['Экология предприятий'], set: jest.fn(), reset: jest.fn() },
     })
     render(<MentorsFilters appliedFilters={appliedFilters} mentors={mentors} />)
 
@@ -115,26 +126,25 @@ describe('MentorsFilters', () => {
     fireEvent.click(screen.getByRole('button', { name: /Environmental reporting/ }))
 
     expect(appliedFilters.tags.set).toHaveBeenCalledWith(['Экологическая отчётность'])
-    expect(screen.queryByRole('button', { name: /Industrial environmental monitoring/ })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Industrial environmental monitoring/ })).toBeInTheDocument()
   })
 
   it('re-picking the selected tag widens back to the whole category', () => {
     const appliedFilters = makeAppliedFilters({
-      category: { values: 'Экология предприятий', set: jest.fn(), reset: jest.fn() },
+      category: { values: ['Экология предприятий'], set: jest.fn(), reset: jest.fn() },
       tags: { values: ['Экологическая отчётность'], set: jest.fn(), reset: jest.fn() },
     })
     render(<MentorsFilters appliedFilters={appliedFilters} mentors={mentors} />)
 
-    // Pill shows the narrowed tag as its label
-    fireEvent.click(screen.getByRole('button', { name: 'Environmental reporting' }))
-    fireEvent.click(screen.getAllByRole('button', { name: /Environmental reporting/ })[1])
+    fireEvent.click(screen.getByRole('button', { name: /Enterprise ecology/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Environmental reporting/ }))
 
     expect(appliedFilters.tags.set).toHaveBeenCalledWith([])
   })
 
   it('toggles the dropdown when the active category is clicked again', () => {
     const appliedFilters = makeAppliedFilters({
-      category: { values: 'Экология предприятий', set: jest.fn(), reset: jest.fn() },
+      category: { values: ['Экология предприятий'], set: jest.fn(), reset: jest.fn() },
     })
     render(<MentorsFilters appliedFilters={appliedFilters} mentors={mentors} />)
 
@@ -157,7 +167,7 @@ describe('MentorsFilters', () => {
 
   it('resets category and tags when "All mentors" is clicked', () => {
     const appliedFilters = makeAppliedFilters({
-      category: { values: 'Экология предприятий', set: jest.fn(), reset: jest.fn() },
+      category: { values: ['Экология предприятий'], set: jest.fn(), reset: jest.fn() },
       tags: { values: ['Экологическая отчётность'], set: jest.fn(), reset: jest.fn() },
     })
     render(<MentorsFilters appliedFilters={appliedFilters} mentors={mentors} />)
@@ -198,32 +208,6 @@ describe('MentorsFilters', () => {
     render(<MentorsFilters appliedFilters={appliedFilters} mentors={mentors} />)
 
     expect(screen.getByRole('button', { name: /Experience/ })).toHaveTextContent('Experience2')
-  })
-
-  it('single-selects a price bucket and closes the panel', () => {
-    const appliedFilters = makeAppliedFilters()
-    render(<MentorsFilters appliedFilters={appliedFilters} mentors={mentors} />)
-
-    fireEvent.click(screen.getByRole('button', { name: 'Price' }))
-
-    const freeItem = screen.getByRole('button', { name: /Free/ })
-    expect(freeItem).toHaveTextContent('1')
-
-    fireEvent.click(freeItem)
-    expect(appliedFilters.price.set).toHaveBeenCalledWith('Free')
-    expect(screen.queryByRole('button', { name: /Negotiable/ })).not.toBeInTheDocument()
-  })
-
-  it('unsets the price bucket when the selected one is picked again', () => {
-    const appliedFilters = makeAppliedFilters({
-      price: { values: 'Free', set: jest.fn(), reset: jest.fn() },
-    })
-    render(<MentorsFilters appliedFilters={appliedFilters} mentors={mentors} />)
-
-    fireEvent.click(screen.getByRole('button', { name: /^Price/ }))
-    fireEvent.click(screen.getByRole('button', { name: /Free/ }))
-
-    expect(appliedFilters.price.set).toHaveBeenCalledWith(undefined)
   })
 
   it('initializes tags from the #tags: URL hash on mount', () => {

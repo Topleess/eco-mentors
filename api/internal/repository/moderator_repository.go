@@ -21,7 +21,7 @@ func NewModeratorRepository(pool *pgxpool.Pool) *ModeratorRepository {
 
 func (r *ModeratorRepository) GetByEmail(ctx context.Context, email string) (*models.Moderator, error) {
 	query := `
-		SELECT id, name, email, role
+		SELECT id, name, email, role, session_version
 		FROM moderators
 		WHERE email = $1
 		LIMIT 1
@@ -34,6 +34,7 @@ func (r *ModeratorRepository) GetByEmail(ctx context.Context, email string) (*mo
 		&moderator.Name,
 		&moderator.Email,
 		&role,
+		&moderator.SessionVersion,
 	); err != nil {
 		return nil, err
 	}
@@ -126,16 +127,40 @@ func (r *ModeratorRepository) BumpModeratorSessionVersion(ctx context.Context, m
 	return nil
 }
 
+// BumpModeratorSessionVersionIfCurrent invalidates sessions only if the token's
+// version is still current. A legacy claim (0) is current only at baseline 1,
+// matching middleware.AdminSessionVersionCurrent. The predicate and increment
+// must be one UPDATE so concurrent replays cannot each invalidate new sessions.
+// A missing subject or stale claim is a successful no-op.
+func (r *ModeratorRepository) BumpModeratorSessionVersionIfCurrent(ctx context.Context, moderatorID string, claimed int) error {
+	_, err := r.pool.Exec(ctx, `UPDATE moderators
+		SET session_version = session_version + 1, updated_at = NOW()
+		WHERE id = $1 AND (($2 = 0 AND session_version = 1) OR ($2 > 0 AND session_version = $2))`, moderatorID, claimed)
+	if err != nil {
+		return fmt.Errorf("failed to bump moderator session version: %w", err)
+	}
+	return nil
+}
+
 // SetLoginToken stores a fresh magic-link token. Consumption is a single atomic
 // UPDATE (ConsumeLoginToken); there is deliberately no read-by-token and no
 // separate clear.
-func (r *ModeratorRepository) SetLoginToken(ctx context.Context, moderatorID, token string, exp time.Time) error {
+func (r *ModeratorRepository) SetLoginToken(ctx context.Context, moderatorID, token string, exp time.Time, expectedVersion ...int) error {
 	query := `
 		UPDATE moderators
 		SET login_token = $1, login_token_expires_at = $2, updated_at = NOW()
-		WHERE id = $3
+		WHERE id = $3 AND role IN ('admin','moderator') AND ($4::integer IS NULL OR session_version = $4)
 	`
-	// SECURITY: store the hash, never the plaintext token (L1).
-	_, err := r.pool.Exec(ctx, query, HashOneTimeToken(token), exp, moderatorID)
-	return err
+	var version any
+	if len(expectedVersion) > 0 {
+		version = expectedVersion[0]
+	}
+	tag, err := r.pool.Exec(ctx, query, HashOneTimeToken(token), exp, moderatorID, version)
+	if err != nil {
+		return err
+	}
+	if tag.RowsAffected() == 0 {
+		return ErrTokenNotConsumable
+	}
+	return nil
 }

@@ -15,14 +15,30 @@ beforeEach(() => {
 const metadata = { slug: 'custom', version: 1, updatedAt: '2026-11-09T00:00:00Z' }
 const dictionaries = { industries: [{ ...metadata, id: 'industry-1', name: 'Custom industry', active: true }], cities: [{ ...metadata, id: 'city-1', name: 'Custom city', active: true }] }
 
-it('starts in draft, validates required fields and saves canonical dictionary references', async () => {
+it('allows saving an incomplete draft', async () => {
   const user = userEvent.setup()
   const save = jest.fn().mockResolvedValue(undefined)
   render(<I18nProvider locale="en"><VacancyEditor dictionaries={dictionaries} onSave={save} onCancel={jest.fn()} /></I18nProvider>)
   expect(screen.getByLabelText('Status')).toHaveValue('draft')
-  fireEvent.submit(screen.getByRole('form', { name: 'Vacancy editor' }))
+  await user.click(screen.getByRole('button', { name: 'Save' }))
+  await waitFor(() => expect(save).toHaveBeenCalledWith(expect.objectContaining({ status: 'draft', title: '', company: '', description: '', industryId: '', cityId: '' })))
+  expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+})
+
+it('rejects publishing an incomplete vacancy', async () => {
+  const user = userEvent.setup()
+  const save = jest.fn().mockResolvedValue(undefined)
+  render(<I18nProvider locale="en"><VacancyEditor dictionaries={dictionaries} onSave={save} onCancel={jest.fn()} /></I18nProvider>)
+  await user.selectOptions(screen.getByLabelText('Status'), 'published')
+  await user.click(screen.getByRole('button', { name: 'Save' }))
   expect(await screen.findByRole('alert')).toHaveTextContent('Complete the required fields')
   expect(save).not.toHaveBeenCalled()
+})
+
+it('saves canonical dictionary references for a new vacancy', async () => {
+  const user = userEvent.setup()
+  const save = jest.fn().mockResolvedValue(undefined)
+  render(<I18nProvider locale="en"><VacancyEditor dictionaries={dictionaries} onSave={save} onCancel={jest.fn()} /></I18nProvider>)
   await user.type(screen.getByLabelText('Job title'), 'New role')
   await user.type(screen.getByLabelText('Company'), 'New company')
   await user.type(screen.getByLabelText('About the role'), 'A genuine description')

@@ -1,4 +1,3 @@
-import { translateLabel } from '@/i18n/labels'
 import { useTranslation } from '@/i18n'
 import { messages } from '@/i18n/messages/forms'
 import Link from 'next/link'
@@ -14,8 +13,6 @@ import {
   NoIndexHead,
 } from '@/components'
 import MentorPortrait from '@/components/ui/MentorPortrait'
-import PriceBadge from '@/components/ui/PriceBadge'
-import { parsePrice } from '@/lib/price'
 import { priceTierLabel } from '@/config/filters'
 import { getOneMentorBySlug } from '@/server/mentors-data'
 import analytics from '@/lib/analytics'
@@ -91,15 +88,6 @@ const _getServerSideProps: GetServerSideProps<{ mentor: MentorContact; demoReadO
 
 export const getServerSideProps = withSSRObservability(_getServerSideProps, 'mentor-contact')
 
-/** Small inline price for the recap card / mobile strip. */
-function RecapPrice({ price }: { price: string }): JSX.Element {
-  const kind = parsePrice(price)?.kind
-  if (kind === 'free' || kind === 'negotiable') {
-    return <PriceBadge price={price} />
-  }
-  return <span className="font-name text-[15px] font-bold text-brand-navy">{price}</span>
-}
-
 /** Desktop mentor recap card (design 03, right column). */
 function MentorRecapCard({ mentor }: { mentor: MentorContact }): JSX.Element {
   const { t } = useTranslation(messages)
@@ -126,7 +114,6 @@ function MentorRecapCard({ mentor }: { mentor: MentorContact }): JSX.Element {
         </div>
         <div className="mt-2.5 flex items-center justify-between gap-2">
           <span className="meta-mono text-ink-mute">{metaLead}</span>
-          <RecapPrice price={mentor.price} />
         </div>
       </div>
     </div>
@@ -135,7 +122,6 @@ function MentorRecapCard({ mentor }: { mentor: MentorContact }): JSX.Element {
 
 /** Mobile mentor recap strip under the header (design 03 · 390). */
 function MentorRecapStrip({ mentor }: { mentor: MentorContact }): JSX.Element {
-  const { locale } = useTranslation(messages)
   return (
     <div className="flex items-center gap-3 border-b border-line bg-surface px-5 py-4 lg:hidden">
       <MentorPortrait
@@ -150,7 +136,7 @@ function MentorRecapStrip({ mentor }: { mentor: MentorContact }): JSX.Element {
       <div className="min-w-0">
         <div className="truncate font-name text-[15px] font-bold text-ink">{mentor.name}</div>
         <div className="truncate text-xs text-ink-soft">
-          {mentor.job} · {mentor.workplace} · {translateLabel(locale, mentor.price)}
+          {mentor.job} · {mentor.workplace}
         </div>
       </div>
     </div>
@@ -165,6 +151,7 @@ export default function OrderMentor({
   const [readyStatus, setReadyStatus] = useState<ReadyStatus>('')
   const [formData, setFormData] = useState<ContactFormData | undefined>()
   const [submissionRequestId, setSubmissionRequestId] = useState<string | undefined>()
+  const [calendarUrl, setCalendarUrl] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string>()
 
   const today = new Date().toISOString().slice(0, 10)
@@ -274,7 +261,9 @@ export default function OrderMentor({
         }
 
         setSubmissionRequestId(responseData.requestId)
-        mentor.calendarUrl = responseData.calendar_url
+        const safeCalendarUrl = safeHttpUrl(responseData.calendar_url)
+        const parsedCalendarUrl = safeCalendarUrl ? new URL(safeCalendarUrl) : null
+        setCalendarUrl(parsedCalendarUrl && !parsedCalendarUrl.username && !parsedCalendarUrl.password ? safeCalendarUrl : null)
         setReadyStatus('success')
         incrementRequestsPerDay()
         // SECURITY (P14): the requestId is deliberately NOT sent — it is the
@@ -319,7 +308,7 @@ export default function OrderMentor({
         )}
 
         {mentor.isVisible && readyStatus === 'success' && (
-          <SuccessMessage mentor={mentor} formData={formData} requestId={submissionRequestId} />
+          <SuccessMessage mentor={mentor} formData={formData} requestId={submissionRequestId} calendarUrl={calendarUrl} />
         )}
 
         {mentor.isVisible && readyStatus === 'limit' && <LimitMessage />}
@@ -362,12 +351,17 @@ interface SuccessMessageProps {
   mentor: MentorContact
   formData?: ContactFormData
   requestId?: string
+  calendarUrl: string | null
 }
 
 /** Success state (design 03): open ring + mint node, CAPS header, CTAs. */
-function SuccessMessage({ mentor, formData, requestId }: SuccessMessageProps): JSX.Element {
+function SuccessMessage({ mentor, formData, requestId, calendarUrl }: SuccessMessageProps): JSX.Element {
   const { t } = useTranslation(messages)
   const firstName = mentor.name.split(' ')[0]
+  const parsedCalendar = calendarUrl ? new URL(calendarUrl) : null
+  const calendarHost = parsedCalendar?.protocol === 'https:' && !parsedCalendar.port && !parsedCalendar.username && !parsedCalendar.password
+    ? parsedCalendar.hostname
+    : ''
 
   return (
     <div className="flex flex-1 animate-rise-in flex-col items-center text-center">
@@ -406,13 +400,13 @@ function SuccessMessage({ mentor, formData, requestId }: SuccessMessageProps): J
         <Link href={'/mentor/' + mentor.slug} className="button-secondary">{' '}{t('backToProfile')}{' '}</Link>
       </div>
 
-      {mentor.calendarType !== 'none' && (
+      {calendarUrl && (
         <div className="mt-10 w-full max-w-screen-md">
           <p className="text-[15px] leading-relaxed text-ink-soft">{' '}{t('bookingHint')}{' '}</p>
 
-          {mentor.calendarType === 'calendly' ? (
+          {calendarHost === 'calendly.com' ? (
             <InlineWidget
-              url={mentor.calendarUrl ?? ''}
+              url={calendarUrl}
               prefill={{
                 name: formData?.name,
                 email: formData?.email,
@@ -421,19 +415,14 @@ function SuccessMessage({ mentor, formData, requestId }: SuccessMessageProps): J
                 },
               }}
             />
-          ) : mentor.calendarType === 'koalendar' ? (
-            <Koalendar url={mentor.calendarUrl ?? ''} />
-          ) : mentor.calendarType === 'calendlab' ? (
-            <CalendlabWidget url={mentor.calendarUrl ?? ''} />
-          ) : safeHttpUrl(mentor.calendarUrl) ? (
-            // SECURITY (M9): only render the link for a validated http(s) URL.
-            <a
-              className="button"
-              href={safeHttpUrl(mentor.calendarUrl) as string}
-              target="_blank"
-              rel="noreferrer"
-            >{' '}{t('bookSession')}{' '}</a>
+          ) : calendarHost === 'koalendar.com' ? (
+            <Koalendar url={calendarUrl} />
+          ) : calendarHost === 'calendlab.ru' ? (
+            <CalendlabWidget url={calendarUrl} />
           ) : null}
+          <a className="button" href={calendarUrl} target="_blank" rel="noreferrer">
+            {t('bookSession')}
+          </a>
         </div>
       )}
     </div>

@@ -36,7 +36,7 @@ func (h *Handlers) RandomizeSortOrder(ctx context.Context) (JobSummary, error) {
 	}
 	summary.MentorsMatched = len(mentorIDs)
 
-	if h.appEnv != "production" {
+	if h.appEnv != "production" { //nolint:goconst // keep the production-only write gate explicit
 		summary.WritesSkipped = true
 		logger.Info("[Randomize Sort Order] Skipping sort order writes outside production",
 			zap.Int("mentors_matched", summary.MentorsMatched),

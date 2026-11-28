@@ -41,6 +41,7 @@ func TestRegistrationHandler_RegisterMentor_Success(t *testing.T) {
 
 	// Prepare valid request
 	reqBody := models.RegisterMentorRequest{
+		PrivacyConsent: true, PublishConsent: true,
 		Name:             "John Doe",
 		Email:            "john@example.com",
 		PreferredContact: "johndoe",
@@ -282,6 +283,7 @@ func TestRegistrationHandler_RegisterMentor_InvalidEmail(t *testing.T) {
 	router.POST("/register", handler.RegisterMentor)
 
 	reqBody := models.RegisterMentorRequest{
+		PrivacyConsent: true, PublishConsent: true,
 		Name:             "John Doe",
 		Email:            "not-an-email", // Invalid format
 		PreferredContact: "johndoe",
@@ -324,6 +326,7 @@ func TestRegistrationHandler_RegisterMentor_InvalidExperience(t *testing.T) {
 	router.POST("/register", handler.RegisterMentor)
 
 	reqBody := models.RegisterMentorRequest{
+		PrivacyConsent: true, PublishConsent: true,
 		Name:             "John Doe",
 		Email:            "john@example.com",
 		PreferredContact: "johndoe",
@@ -366,6 +369,7 @@ func TestRegistrationHandler_RegisterMentor_TooManyTags(t *testing.T) {
 	router.POST("/register", handler.RegisterMentor)
 
 	reqBody := models.RegisterMentorRequest{
+		PrivacyConsent: true, PublishConsent: true,
 		Name:             "John Doe",
 		Email:            "john@example.com",
 		PreferredContact: "johndoe",
@@ -409,6 +413,7 @@ func TestRegistrationHandler_RegisterMentor_TooLongFields(t *testing.T) {
 
 	// Name too long (> 100 chars)
 	reqBody := models.RegisterMentorRequest{
+		PrivacyConsent: true, PublishConsent: true,
 		Name:             strings.Repeat("A", 101), // 101 characters
 		Email:            "john@example.com",
 		PreferredContact: "johndoe",
@@ -447,6 +452,7 @@ func TestRegistrationHandler_RegisterMentor_InvalidContentType(t *testing.T) {
 	router.POST("/register", handler.RegisterMentor)
 
 	reqBody := models.RegisterMentorRequest{
+		PrivacyConsent: true, PublishConsent: true,
 		Name:             "John Doe",
 		Email:            "john@example.com",
 		PreferredContact: "johndoe",
@@ -489,6 +495,7 @@ func TestRegistrationHandler_RegisterMentor_CaptchaFailed(t *testing.T) {
 	router.POST("/register", handler.RegisterMentor)
 
 	reqBody := models.RegisterMentorRequest{
+		PrivacyConsent: true, PublishConsent: true,
 		Name:             "John Doe",
 		Email:            "john@example.com",
 		PreferredContact: "johndoe",
@@ -543,6 +550,7 @@ func TestRegistrationHandler_RegisterMentor_ServiceError(t *testing.T) {
 	router.POST("/register", handler.RegisterMentor)
 
 	reqBody := models.RegisterMentorRequest{
+		PrivacyConsent: true, PublishConsent: true,
 		Name:             "John Doe",
 		Email:            "john@example.com",
 		PreferredContact: "johndoe",
@@ -594,6 +602,7 @@ func TestRegistrationHandler_RegisterMentor_InvalidCalendarURL(t *testing.T) {
 	router.POST("/register", handler.RegisterMentor)
 
 	reqBody := models.RegisterMentorRequest{
+		PrivacyConsent: true, PublishConsent: true,
 		Name:             "John Doe",
 		Email:            "john@example.com",
 		PreferredContact: "johndoe",
@@ -626,4 +635,22 @@ func TestRegistrationHandler_RegisterMentor_InvalidCalendarURL(t *testing.T) {
 	var resp map[string]interface{}
 	json.Unmarshal(w.Body.Bytes(), &resp)
 	assert.Equal(t, "Validation failed", resp["error"])
+}
+
+func TestRegistrationRequiresBothConsentChoices(t *testing.T) {
+	for _, choices := range []string{``, `,"privacyConsent":true`, `,"publishConsent":true`, `,"privacyConsent":false,"publishConsent":true`} {
+		t.Run(choices, func(t *testing.T) {
+			service := new(MockRegistrationService)
+			service.On("RegisterMentor", mock.Anything, mock.Anything).Return(&models.RegisterMentorResponse{Success: true}, nil).Maybe()
+			router := gin.New()
+			router.POST("/register", handlers.NewRegistrationHandler(service).RegisterMentor)
+			body := `{"name":"John","email":"john@example.com","job":"Engineer","workplace":"Company","experience":"5-10","price":"Free","tags":["Backend"],"about":"About","description":"Description","competencies":"Skills","profilePicture":{"image":"x","fileName":"x.jpg","contentType":"image/jpeg"},"captchaToken":"12345678901234567890"` + choices + `}`
+			w := httptest.NewRecorder()
+			router.ServeHTTP(w, httptest.NewRequest("POST", "/register", strings.NewReader(body)))
+			if w.Code != http.StatusBadRequest {
+				t.Fatalf("status = %d, body = %s", w.Code, w.Body.String())
+			}
+			service.AssertNotCalled(t, "RegisterMentor", mock.Anything, mock.Anything)
+		})
+	}
 }

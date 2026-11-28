@@ -116,3 +116,8 @@ describe('Mentor profile — structured data', () => {
     ])
   })
 })
+
+it('hides historical prices in the profile and mobile CTA', () => {
+  const { container } = render(<Mentor mentor={baseMentor} canonicalUrl={CANONICAL} ogImageUrl="https://openmentor.io/og" />)
+  expect(container.textContent).not.toContain('$100')
+})

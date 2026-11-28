@@ -178,3 +178,56 @@ describe('Mentor contact page error surface', () => {
     )
   })
 })
+
+it('hides historical prices in desktop and mobile recaps', () => {
+  const { container } = render(<OrderMentor mentor={mentor} demoReadOnly={false} />)
+  expect(container.textContent).not.toContain('$100')
+})
+
+
+describe('booking links after a successful request', () => {
+  beforeEach(() => { window.localStorage.clear() })
+
+  it.each([
+    'https://calendar.google.com/calendar/appointments/schedules/AcZssZ-example?gv=true',
+    'https://calendly.com/jane/30min?month=2026-12',
+    'https://outlook.office.com/book/Example@contoso.com/',
+    'https://cal.com/jane/30min',
+    'https://koalendar.com/e/meet-jane',
+  ])('offers the response link %s even if the profile type is stale', async (url) => {
+    respondWith(200, { success: true, requestId: 'req-42', calendar_url: url })
+    render(<OrderMentor mentor={{ ...mentor, calendarType: 'none' }} demoReadOnly={false} />)
+    await submitContactForm()
+    expect(await screen.findByRole('link', { name: /book a session/i })).toHaveAttribute('href', url)
+  })
+
+  it.each([
+    'https://attacker.example/calendly.com/jane',
+    'https://calendly.com.attacker.example/jane',
+    'https://notcalendly.com/jane',
+  ])('never embeds a spoofed provider URL %s', async (url) => {
+    respondWith(200, { success: true, calendar_url: url })
+    render(<OrderMentor mentor={{ ...mentor, calendarType: 'calendly' }} demoReadOnly={false} />)
+    await submitContactForm()
+    expect(await screen.findByText(/Request sent/i)).toBeInTheDocument()
+    expect(screen.queryByTestId('calendly')).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /book a session/i })).toHaveAttribute('href', url)
+  })
+
+  it.each(['https://calendly.com@attacker.example/jane', 'https://user:pass@calendly.com/jane'])('rejects userinfo in booking URL %s', async (url) => {
+    respondWith(200, { success: true, calendar_url: url })
+    render(<OrderMentor mentor={mentor} demoReadOnly={false} />)
+    await submitContactForm()
+    expect(await screen.findByText(/Request sent/i)).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /book a session/i })).not.toBeInTheDocument()
+  })
+
+  it('does not render a booking link or widget for a dangerous response URL', async () => {
+    respondWith(200, { success: true, calendar_url: 'javascript:alert(1)' })
+    render(<OrderMentor mentor={{ ...mentor, calendarType: 'calendly' }} demoReadOnly={false} />)
+    await submitContactForm()
+    expect(await screen.findByText(/Request sent/i)).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /book a session/i })).not.toBeInTheDocument()
+    expect(screen.queryByTestId('calendly')).not.toBeInTheDocument()
+  })
+})

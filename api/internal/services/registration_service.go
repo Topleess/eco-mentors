@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/openmentor-io/openmentor/api/config"
 	"github.com/openmentor-io/openmentor/api/internal/models"
@@ -133,6 +134,9 @@ func registrationProperties(base map[string]interface{}, outcome string) map[str
 
 // RegisterMentor handles the complete mentor registration flow
 func (s *RegistrationService) RegisterMentor(ctx context.Context, req *models.RegisterMentorRequest) (*models.RegisterMentorResponse, error) {
+	if !req.PrivacyConsent || !req.PublishConsent {
+		return &models.RegisterMentorResponse{Error: "Both consent choices are required", Reason: "consent_required"}, errors.New("both consent choices are required")
+	}
 	baseProperties := map[string]interface{}{
 		"tags_count":          len(req.Tags),
 		"has_calendar_url":    strings.TrimSpace(req.CalendarURL) != "",
@@ -209,18 +213,19 @@ func (s *RegistrationService) RegisterMentor(ctx context.Context, req *models.Re
 
 	// 5. Create mentor record in PostgreSQL
 	fields := map[string]interface{}{
-		"name":              strings.TrimSpace(req.Name),
-		"email":             req.Email,
-		"preferred_contact": contact,
-		"job_title":         req.Job,
-		"workplace":         req.Workplace,
-		"experience":        req.Experience,
-		"price":             req.Price,
-		"about":             req.About,
-		"details":           req.Description,
-		"competencies":      req.Competencies,
-		"status":            registrationStatusDraft,
-		"photo_style":       photo.styleOrDefault(),
+		"name":                      strings.TrimSpace(req.Name),
+		"email":                     req.Email,
+		"preferred_contact":         contact,
+		"job_title":                 req.Job,
+		"workplace":                 req.Workplace,
+		"experience":                req.Experience,
+		"price":                     req.Price,
+		"about":                     req.About,
+		"details":                   req.Description,
+		"competencies":              req.Competencies,
+		"status":                    registrationStatusDraft,
+		"photo_style":               photo.styleOrDefault(),
+		"registration_consented_at": time.Now().UTC(),
 	}
 
 	if req.CalendarURL != "" {

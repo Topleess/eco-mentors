@@ -27,7 +27,7 @@ const clientRequestSelect = `
 		COALESCE(cr.description, ''),
 		cr.level, cr.status, cr.created_at, cr.updated_at, cr.status_changed_at,
 		cr.scheduled_at, cr.decline_reason, cr.decline_comment,
-		r.mentor_review
+		r.mentor_review, cr.accepted_at
 	FROM client_requests cr
 	LEFT JOIN reviews r ON r.client_request_id = cr.id
 `
@@ -226,6 +226,15 @@ func (r *ClientRequestRepository) UpdateDecline(
 	tag, err := r.pool.Exec(ctx, query, reason, comment, id, expected)
 	if err != nil {
 		return false, fmt.Errorf("failed to update decline: %w", err)
+	}
+	return tag.RowsAffected() == 1, nil
+}
+
+// AcceptRequest atomically records the mentor's explicit consent and contact.
+func (r *ClientRequestRepository) AcceptRequest(ctx context.Context, id, mentorID, contact string) (bool, error) {
+	tag, err := r.pool.Exec(ctx, `UPDATE client_requests SET accepted_at=NOW(), accepted_contact=$3, updated_at=NOW() WHERE id=$1 AND mentor_id=$2 AND status IN ('pending','contacted','working') AND accepted_at IS NULL`, id, mentorID, contact)
+	if err != nil {
+		return false, err
 	}
 	return tag.RowsAffected() == 1, nil
 }

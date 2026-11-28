@@ -17,9 +17,9 @@ it.each(['ru', 'en'])('links the visible source offer to eco-mentors in %s', (lo
   expect(source).toHaveTextContent(locale === 'ru' ? 'Исходный код' : 'Source code')
   expect(source).toHaveAttribute('rel', 'noopener noreferrer')
 })
-it('uses a shared source URL in header, about page and structured site metadata', () => {
+it('uses a shared source URL in footer, about page and structured site metadata', () => {
   for (const filename of [
-    'src/components/layout/NavHeader.tsx',
+    'src/components/layout/Footer.tsx',
     'src/pages/about.tsx',
     'src/pages/_app.tsx',
   ]) {

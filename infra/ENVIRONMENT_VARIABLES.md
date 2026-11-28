@@ -175,6 +175,7 @@ enforced by [`check-service-env.sh`](check-service-env.sh). Sensitive keys are
 | **`S3_STORAGE_*`** | | | | | | ○ | ● | ○ | |
 | **`SES_*`** (including worker-only `SES_FROM_EMAIL`, `SES_FROM_NAME`), `MODERATORS_EMAIL`, `DISCORD_MENTORS_PRIVATE_INVITE_LINK`, `DEV_EMAIL_OVERRIDE` | | | | | | | | ● | |
 | `WORKER_CRON_ENABLED`, `WORKER_DB_MAX_CONNS`, `HIGHLIGHTED_MENTORS` | | | | | | | | ● | |
+| `WORKER_REQUEST_EMAIL_RETRY_ENABLED`, `WORKER_REQUEST_EMAIL_LIVE_RECIPIENTS` | | | | | | | | ● | |
 | `WORKER_PROFILE_PURGE_CRON`, `WORKER_PROFILE_PURGE_RETENTION_DAYS` | | | | | | | | ● | |
 | `ANALYTICS_*`, **`POSTHOG_API_KEY`**, `POSTHOG_HOST/ENABLED/CAPTURE_ENDPOINT` | | | | | | ○ | ● | ● | |
 | `POSTHOG_DISABLE_GEOIP` | | | | | | | ● | ● | |

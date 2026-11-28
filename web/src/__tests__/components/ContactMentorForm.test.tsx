@@ -54,6 +54,11 @@ describe('ContactMentorForm', () => {
     expect(screen.getByLabelText(/How would you rate your level/i)).toBeInTheDocument()
   })
 
+  it('does not suggest agreeing on a price', () => {
+    render(<ContactMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />)
+    expect(screen.queryByText(/agree on format and price/i)).not.toBeInTheDocument()
+  })
+
   it('renders submit button', () => {
     render(<ContactMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />)
 

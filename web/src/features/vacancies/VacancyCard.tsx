@@ -18,9 +18,11 @@ export function VacancyFacts({ vacancy }: { vacancy: Vacancy }): JSX.Element {
 
 export function VacancyCard({ vacancy }: { vacancy: Vacancy }): JSX.Element {
   const { t } = useTranslation(editorMessages)
+  const { t: publicText } = useTranslation(messages)
   return <article className="rounded-card border border-line bg-white p-5 sm:p-6">
+    {vacancy.status === 'archived' && <p className="mb-2 mt-0 text-sm font-semibold text-ink-mute">{publicText('archived')}</p>}
     <p className="mb-1 mt-0 text-sm text-ink-mute">{vacancy.company}</p>
-    <h2 className="my-0 mb-3 font-name text-xl normal-case tracking-normal"><Link className="inline-flex min-h-11 items-center text-brand-navy underline-offset-4 hover:text-brand-cobalt hover:underline" href={`/vacancies/${vacancy.slug}`}>{vacancy.title}</Link></h2>
+    <h2 className="my-0 mb-3 font-name text-xl normal-case tracking-normal">{vacancy.status === 'archived' ? vacancy.title : <Link className="inline-flex min-h-11 items-center text-brand-navy underline-offset-4 hover:text-brand-cobalt hover:underline" href={`/vacancies/${vacancy.slug}`}>{vacancy.title}</Link>}</h2>
     <VacancyFacts vacancy={vacancy} />
     {vacancy.provenance === 'synthetic' && <p className="mb-0 mt-3 text-xs text-ink-mute">{t('sample')}</p>}
   </article>

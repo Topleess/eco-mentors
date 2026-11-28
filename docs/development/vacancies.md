@@ -4,7 +4,7 @@
 
 `/admin/vacancies` is the working administrator list. Titles open `/admin/vacancies/[id]`; `/admin/vacancies/new` creates a draft. Published rows have a separate public-view link. Industries and cities are chosen or added directly in searchable dropdowns in the editor; there is no separate management workflow. Existing admin styling, session checks and RU/EN are retained; ECO rebranding and Telegram remain deferred.
 
-Migration `000016_vacancies` adds PostgreSQL-backed vacancies, industries and cities. The Go API owns data; Next BFF routes forward the existing administrator session. Live pages never fall back to fixtures or browser storage. Public list/detail perform request-time reads; drafts and archives are excluded, including direct detail URLs. Demonstration content remains noindex, without JobPosting markup. Actual application delivery is not implemented.
+Migration `000016_vacancies` adds PostgreSQL-backed vacancies, industries and cities. The Go API owns data; Next BFF routes forward the existing administrator session. Live pages never fall back to fixtures or browser storage. The public list includes published and explicitly labeled archived vacancies; drafts are excluded. Public detail URLs remain available only for published vacancies. Demonstration content remains noindex, without JobPosting markup. Actual application delivery is not implemented.
 
 ## Public catalog
 

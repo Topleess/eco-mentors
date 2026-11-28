@@ -35,6 +35,7 @@ export function AdminLayout({ title, children }: AdminLayoutProps): JSX.Element 
     tabs.push({ href: '/admin/analytics', label: t('analytics') })
     tabs.push({ href: '/admin/vacancies', label: t('vacancies') })
     tabs.push({ href: '/admin/research', label: t('research') })
+    tabs.push({ href: '/admin/staff', label: t('staff') })
   }
 
   const onLogout = async (): Promise<void> => {

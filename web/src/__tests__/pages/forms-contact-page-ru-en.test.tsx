@@ -87,8 +87,8 @@ it('shows the existing read-only demo notice in Russian', () => {
   expect(screen.getByRole('link', { name: 'Посмотреть демо ментора' })).toHaveAttribute('href', '/demo-login')
 })
 
-it('translates the mobile recap price without changing the canonical mentor data', () => {
+it('does not display stored prices in the mobile recap', () => {
   render(<I18nProvider locale="ru"><OrderMentor mentor={{ ...mentor, price: 'Free' }} demoReadOnly={false} /></I18nProvider>)
   expect(screen.queryByText(/· Free/)).not.toBeInTheDocument()
-  expect(screen.getByText(/· Бесплатно/)).toBeInTheDocument()
+  expect(screen.queryByText(/· Бесплатно/)).not.toBeInTheDocument()
 })

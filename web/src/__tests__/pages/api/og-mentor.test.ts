@@ -21,7 +21,7 @@ jest.mock('next/og', () => ({
   }),
 }))
 
-import handler, { __resetCardCache } from '@/pages/api/og/mentor'
+import handler from '@/pages/api/og/mentor'
 
 // jsdom has AbortSignal but not the static timeout(), which both upstream
 // fetches use. Without this every request throws and lands on the banner, so
@@ -68,7 +68,6 @@ async function call(
 }
 
 beforeEach(() => {
-  __resetCardCache()
   mockImageResponse.mockClear()
   mockFetch.mockReset()
   stubUpstream()
@@ -152,42 +151,23 @@ describe('api/og/mentor bounds', () => {
 })
 
 describe('api/og/mentor caching', () => {
-  it('renders once and serves the cached PNG afterwards', async () => {
-    const first = await call({ slug: 'ada-lovelace-1' })
+  it('renders a fresh card when the photo changes without a profile revision', async () => {
+    mockFetch.mockImplementation(async (url: string) => String(url).includes('/internal/mentors')
+      ? { ok: true, json: async () => MENTOR, headers: new Map() }
+      : { ok: true, headers: { get: () => 'image/png' }, arrayBuffer: async () => new Uint8Array([4, 5, 6]).buffer })
+    await call({ slug: 'ada-lovelace-1' })
+    mockFetch.mockImplementation(async (url: string) => String(url).includes('/internal/mentors')
+      ? { ok: true, json: async () => MENTOR, headers: new Map() }
+      : { ok: true, headers: { get: () => 'image/png' }, arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer })
     const second = await call({ slug: 'ada-lovelace-1' })
-
-    expect(first.statusCode).toBe(200)
     expect(second.statusCode).toBe(200)
-    expect(second._getHeaders()['content-type']).toBe('image/png')
-    expect(mockImageResponse).toHaveBeenCalledTimes(1)
-    expect(mockFetch).toHaveBeenCalledTimes(2) // mentor + photo, once
+    expect(mockImageResponse).toHaveBeenCalledTimes(2)
+    const tree = mockImageResponse.mock.calls[1][0]
+    const photo = tree.props.children[1].props.children[1].props.children.props.src as ArrayBuffer
+    expect(Array.from(new Uint8Array(photo))).toEqual([1, 2, 3])
   })
 
-  // Arbitrary `v` values multiply CDN cache keys; they must not multiply
-  // renders, which is why the application cache is keyed by slug alone.
-  it('renders once across a sweep of cache-buster values', async () => {
-    for (let i = 0; i < 50; i += 1) {
-      const res = await call({ slug: 'ada-lovelace-1', v: String(1783946553 + i) })
-      expect(res.statusCode).toBe(200)
-    }
 
-    expect(mockImageResponse).toHaveBeenCalledTimes(1)
-  })
-
-  it('bounds the cache, so a wide sweep cannot grow it without limit', async () => {
-    // 17 distinct slugs against a 16-entry ceiling: the first is evicted and
-    // has to re-render, proving the ceiling is enforced rather than aspirational.
-    for (let i = 0; i < 17; i += 1) {
-      await call({ slug: `mentor-number-${i}` })
-    }
-    expect(mockImageResponse).toHaveBeenCalledTimes(17)
-
-    await call({ slug: 'mentor-number-0' })
-    expect(mockImageResponse).toHaveBeenCalledTimes(18)
-
-    await call({ slug: 'mentor-number-16' })
-    expect(mockImageResponse).toHaveBeenCalledTimes(18)
-  })
 })
 
 describe('api/og/mentor concurrency', () => {
@@ -239,4 +219,35 @@ describe('api/og/mentor concurrency', () => {
     const res = await call({ slug: 'ada-lovelace-1' })
     expect(res.statusCode).toBe(200)
   })
+})
+
+it('does not render a historical price in the social card', async () => {
+  mockFetch.mockImplementation(async (url: string) => String(url).includes('/internal/mentors')
+    ? { ok: true, json: async () => ({ ...MENTOR, price: '$789' }), headers: new Map() }
+    : { ok: false, headers: { get: () => null } })
+  const res = await call({ slug: 'ada-lovelace-1' })
+  expect(res.statusCode).toBe(200)
+  expect(JSON.stringify(mockImageResponse.mock.calls[0][0])).not.toContain('$789')
+})
+
+it('fetches the photo using the configured absolute Go API URL', async () => {
+  process.env.NEXT_PUBLIC_GO_API_URL = 'http://go-api:8081'
+  await call({ slug: 'ada-lovelace-1' })
+  expect(mockFetch.mock.calls[1][0]).toBe('http://go-api:8081/api/v1/mentor-photos/550e8400-e29b-41d4-a716-446655440001')
+  delete process.env.NEXT_PUBLIC_GO_API_URL
+})
+
+it('requests only public mentors for social cards', async () => {
+  await call({ slug: 'ada-lovelace-1' })
+  expect(JSON.parse(mockFetch.mock.calls[0][1].body)).toEqual({ only_visible: true })
+})
+
+it('redirects to the banner after a previously public mentor is hidden or unpublished', async () => {
+  expect((await call({ slug: 'ada-lovelace-1' }))._getHeaders()['cache-control']).toBe('no-store')
+  mockFetch.mockImplementation(async () => ({ ok: false, status: 404 }))
+  const res = await call({ slug: 'ada-lovelace-1' })
+  expect(res.statusCode).toBe(302)
+  expect(res._getRedirectUrl()).toBe('/images/banner.png')
+  expect(res._getHeaders()['cache-control']).toBe('no-store')
+  expect(mockImageResponse).toHaveBeenCalledTimes(1)
 })

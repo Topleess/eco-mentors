@@ -111,6 +111,7 @@ export type DeclineReasonValue = (typeof DECLINE_REASONS)[number]['value']
  * Client request from a mentee
  */
 export interface MentorClientRequest {
+  acceptedAt?: string | null
   id: string
   email: string
   name: string

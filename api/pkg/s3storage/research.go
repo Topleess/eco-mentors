@@ -66,7 +66,7 @@ func (s *StorageClient) ReadResearchCover(ctx context.Context, id string) ([]byt
 	recordResearchStorage("readResearchCover", start, err)
 	if err != nil {
 		var apiErr smithy.APIError
-		if errors.As(err, &apiErr) && (apiErr.ErrorCode() == "NoSuchKey" || apiErr.ErrorCode() == "NotFound") {
+		if errors.As(err, &apiErr) && (apiErr.ErrorCode() == s3NoSuchKey || apiErr.ErrorCode() == "NotFound") {
 			return nil, ErrResearchCoverNotFound
 		}
 		return nil, err

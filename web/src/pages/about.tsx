@@ -43,27 +43,11 @@ export default function About(): JSX.Element {
       </Section>
 
       <main className="mx-auto w-full max-w-[720px] px-5 pb-16 pt-8 sm:pb-24 sm:pt-12">
-        <Block title={t('whyThisExists')}>
-          <p className="my-0">{t('almostEveryoneWhoGrewInTechCan')}</p>
-          <p className="my-0">{t('openmentorMakesThoseConversationsEasyToStart')}</p>
-        </Block>
-
-        <Block title={t('communityFirst')}>
-          <p className="my-0">{t('thisIsCommunityHelpOrganizedNotA')}</p>
-
-        </Block>
-
-        <Block title={t('lightweightByDesign')}>
-          <p className="my-0">{t('ourJobIsToMakeTheConnection')}</p>
-          <p className="my-0">{t('paymentsFollowTheSamePrincipleIfA')}</p>
-        </Block>
-
-        <Block title={t('realPractitioners')}>
-          <p className="my-0">{t('theMentorsHereAreWorkingProfessionalsSharing')}</p>
-          <p className="my-0">
-            {t('soundLikeYou')} <Link href="/bementor">{t('becomeAMentor')}</Link>{' '}
-            {t('freeMentoringIsWarmlyEncouraged')}
-          </p>
+        <Block title={t('aboutProjectHeading')}>
+          <p className="my-0">{t('aboutProjectDescription')}</p>
+          <p className="my-0"><a href="https://t.me/EcoCartaMsk" target="_blank" rel="noopener noreferrer">{t('aboutTelegram')}</a></p>
+          <p className="my-0"><a href="https://ecocareerguide.ru/" target="_blank" rel="noopener noreferrer">{t('aboutWebsite')}</a></p>
+          <p className="my-0"><a href="https://rutube.ru/video/e1b2aea3244dca0f496f12531c4cab7c/" target="_blank" rel="noopener noreferrer">{t('aboutVideo')}</a></p>
         </Block>
 
         <Block title={t('openByNature')}>

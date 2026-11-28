@@ -8,7 +8,7 @@ jest.mock('@/components', () => ({
   Footer: () => null, NavHeader: () => null, MetaHeader: () => null,
   MentorsFilters: () => null, MentorsList: () => null, MentorsSort: () => null, MentorsSearch: () => null,
   sortMentors: (items: unknown[]) => items,
-  useMentors: () => [[], '', false, jest.fn(), jest.fn(), { count: () => 0, tags: {values: []}, category: {values: null} }, 22],
+  useMentors: () => [[], '', false, jest.fn(), jest.fn(), { count: () => 0, tags: {values: []}, category: {values: []} }, 22],
 }))
 jest.mock('next/head', () => ({ __esModule: true, default: ({ children }: { children: ReactNode }) => <>{children}</> }))
 jest.mock('@/components/forms/RegisterMentorForm', () => ({

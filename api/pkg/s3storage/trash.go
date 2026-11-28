@@ -187,5 +187,5 @@ func (s *StorageClient) recordMoveOutcome(ctx context.Context, operation, outcom
 // string, not on the SDK's typed variants.
 func isNoSuchKey(err error) bool {
 	var apiErr smithy.APIError
-	return errors.As(err, &apiErr) && apiErr.ErrorCode() == "NoSuchKey"
+	return errors.As(err, &apiErr) && apiErr.ErrorCode() == s3NoSuchKey
 }

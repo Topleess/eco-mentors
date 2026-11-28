@@ -3,6 +3,7 @@ package services_test
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/openmentor-io/openmentor/api/config"
 	"github.com/openmentor-io/openmentor/api/internal/models"
@@ -16,7 +17,7 @@ import (
 // was created without it (see migration 000009).
 
 func registrationFixture(tags []string) *models.RegisterMentorRequest {
-	return &models.RegisterMentorRequest{
+	return &models.RegisterMentorRequest{PrivacyConsent: true, PublishConsent: true,
 		Name:         "John Doe",
 		Email:        "john@example.com",
 		Job:          "Staff Engineer",
@@ -81,6 +82,31 @@ func TestRegistrationPassesResolvedTagsToTheInsert(t *testing.T) {
 	for i, id := range want {
 		if repo.createdTagIDs[i] != id {
 			t.Errorf("tag id %d = %q, want %q", i, repo.createdTagIDs[i], id)
+		}
+	}
+}
+
+func TestRegistrationConsentEvidenceAndServiceGuard(t *testing.T) {
+	for _, choices := range []struct{ privacy, publish bool }{{false, false}, {true, false}, {false, true}, {true, true}} {
+		repo := &recordingRegistrationRepo{}
+		svc := services.NewRegistrationService(repo, nil, &config.Config{}, captchaOK, &capturingTracker{})
+		req := registrationFixture([]string{"Backend"})
+		req.PrivacyConsent = choices.privacy
+		req.PublishConsent = choices.publish
+		before := time.Now().UTC()
+		_, err := svc.RegisterMentor(context.Background(), req)
+		if !choices.privacy || !choices.publish {
+			if err == nil || repo.createCalls != 0 {
+				t.Fatalf("choices %+v: err %v calls %d", choices, err, repo.createCalls)
+			}
+			continue
+		}
+		if err != nil || repo.createCalls != 1 {
+			t.Fatalf("accepted: err %v calls %d", err, repo.createCalls)
+		}
+		stamp, ok := repo.createdFields["registration_consented_at"].(time.Time)
+		if !ok || stamp.Before(before) || stamp.After(time.Now().UTC()) {
+			t.Fatalf("invalid server timestamp: %v", repo.createdFields["registration_consented_at"])
 		}
 	}
 }

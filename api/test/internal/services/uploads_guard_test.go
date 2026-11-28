@@ -56,7 +56,7 @@ func TestRegistrationWithPhotoRejectedWhenUploadsUnconfigured(t *testing.T) {
 	repo := &recordingRegistrationRepo{}
 	svc := services.NewRegistrationService(repo, nil, &config.Config{}, captchaOK, &capturingTracker{})
 
-	req := &models.RegisterMentorRequest{
+	req := &models.RegisterMentorRequest{PrivacyConsent: true, PublishConsent: true,
 		Name:  "John Doe",
 		Email: "john@example.com",
 	}

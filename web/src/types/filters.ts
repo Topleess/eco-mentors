@@ -47,8 +47,8 @@ export interface BooleanFilterState {
  */
 export interface AppliedFilters {
   tags: FilterState<string[]>
-  /** Single-select topic tab (label from FiltersConfig.categories) */
-  category: FilterState<string | undefined>
+  /** Selected topic categories (labels from FiltersConfig.categories). */
+  category: FilterState<string[]>
   experience: FilterState<string[]>
   price: FilterState<string | undefined>
   noSessions: BooleanFilterState

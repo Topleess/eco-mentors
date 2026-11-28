@@ -63,6 +63,7 @@ type JobRequest struct {
 	Status           string
 	DeclineReason    string
 	DeclineComment   string
+	AcceptedContact  string
 	MentorName       string // populated only by GetJobRequestWithMentorName
 }
 
@@ -497,7 +498,7 @@ func (r *Repository) GetJobRequestByID(ctx context.Context, requestID string) (*
 // deletion lockout exists to stop — and the unspendable invitation row would
 // pollute the outstanding-invitation count the H4 cutover is gated on (D4).
 func (r *Repository) GetJobRequestWithMentorName(ctx context.Context, requestID string) (*JobRequest, error) {
-	query := `SELECT ` + jobRequestColumns + `, m.name AS mentor_name
+	query := `SELECT ` + jobRequestColumns + `, m.name AS mentor_name, COALESCE(cr.accepted_contact, '')
 		FROM client_requests cr
 		JOIN mentors m ON m.id = cr.mentor_id AND m.deleted_at IS NULL
 		WHERE cr.id = $1`
@@ -508,7 +509,7 @@ func (r *Repository) GetJobRequestWithMentorName(ctx context.Context, requestID 
 		&req.PreferredContact, &req.Description,
 		&req.Level, &req.Status,
 		&req.DeclineReason, &req.DeclineComment,
-		&req.MentorName,
+		&req.MentorName, &req.AcceptedContact,
 	)
 	if errors.Is(err, pgx.ErrNoRows) {
 		return nil, nil
@@ -909,4 +910,34 @@ func (r *Repository) GetJobReviewByID(ctx context.Context, reviewID string) (*Jo
 // The pool is the WORKER's, so after H8 this still connects as om_worker.
 func (r *Repository) CreateReviewInvitation(ctx context.Context, requestID, tokenHash string, expiresAt time.Time) error {
 	return r.reviews.CreateReviewInvitation(ctx, requestID, tokenHash, expiresAt)
+}
+
+// Claims expire to recover process crashes; completion is fenced by the claim timestamp.
+func (r *Repository) ClaimAcceptanceNotification(ctx context.Context, id string) (time.Time, error) {
+	var claim time.Time
+	err := r.pool.QueryRow(ctx, `UPDATE client_requests SET acceptance_notification_claimed_at=clock_timestamp() WHERE id=$1 AND accepted_at IS NOT NULL AND acceptance_notification_sent_at IS NULL AND (acceptance_notification_claimed_at IS NULL OR acceptance_notification_claimed_at < clock_timestamp() - interval '15 minutes') RETURNING acceptance_notification_claimed_at`, id).Scan(&claim)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return time.Time{}, nil
+	}
+	return claim, err
+}
+func (r *Repository) FinishAcceptanceNotification(ctx context.Context, id string, claim time.Time, sent bool) (bool, error) {
+	tag, err := r.pool.Exec(ctx, `UPDATE client_requests SET acceptance_notification_claimed_at=CASE WHEN $3 THEN NULL ELSE clock_timestamp() END, acceptance_notification_sent_at=CASE WHEN $3 THEN clock_timestamp() ELSE NULL END WHERE id=$1 AND acceptance_notification_claimed_at=$2 AND acceptance_notification_sent_at IS NULL`, id, claim, sent)
+	return tag.RowsAffected() == 1, err
+}
+func (r *Repository) ListPendingAcceptanceNotifications(ctx context.Context) ([]string, error) {
+	rows, err := r.pool.Query(ctx, `SELECT id FROM client_requests WHERE accepted_at IS NOT NULL AND acceptance_notification_sent_at IS NULL AND (acceptance_notification_claimed_at IS NULL OR acceptance_notification_claimed_at < clock_timestamp() - interval '15 minutes') ORDER BY COALESCE(acceptance_notification_claimed_at, accepted_at) LIMIT 100`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var ids []string
+	for rows.Next() {
+		var id string
+		if err := rows.Scan(&id); err != nil {
+			return nil, err
+		}
+		ids = append(ids, id)
+	}
+	return ids, rows.Err()
 }

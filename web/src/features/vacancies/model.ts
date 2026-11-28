@@ -12,6 +12,8 @@ export interface DictionaryEntry {
 export interface VacancyDictionaries { industries: DictionaryEntry[]; cities: DictionaryEntry[] }
 export interface Vacancy {
   id: string
+  telegramSource?: { channelId: string; messageId: number; rawText: string; photoIds: string[]; sourceUrl: string } | null
+  privateContact?: string | null
   slug: string
   title: string
   company: string
@@ -33,7 +35,7 @@ export interface Vacancy {
   createdAt: string
   updatedAt: string
 }
-export type VacancyWrite = Omit<Vacancy, 'id' | 'industry' | 'location' | 'createdAt' | 'updatedAt' | 'version'> & { version?: number }
+export type VacancyWrite = Omit<Vacancy, 'id' | 'industry' | 'location' | 'createdAt' | 'updatedAt' | 'version' | 'privateContact' | 'telegramSource'> & { version?: number }
 export interface VacancyProvider {
   readonly source: 'mock'
   listPublished(): Vacancy[]

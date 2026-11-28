@@ -2,6 +2,7 @@ package worker
 
 import (
 	"errors"
+	"fmt"
 	"html/template"
 	"net/http"
 	"net/url"
@@ -259,5 +260,66 @@ func TestSessionCompleteEmailCarriesNoRequestID(t *testing.T) {
 	for part, body := range map[string]string{"html": rendered.HTML, "text": rendered.Text} {
 		assert.NotContains(t, body, request.ID, "%s part still carries the request id", part)
 		assert.NotContains(t, body, "request_id", "%s part still references request_id", part)
+	}
+}
+
+func TestAcceptedRequestEmailContainsAgreedContact(t *testing.T) {
+	env := newJobsTestEnv()
+	request := finishedRequest("pending")
+	request.AcceptedContact = "mentor@example.com"
+	env.repo.requestsWithMentor[finishedRequestID] = request
+	w := env.do(http.MethodGet, "/jobs/request-accepted?requestId="+finishedRequestID, nil)
+	require.Equal(t, http.StatusOK, w.Code)
+	require.Equal(t, []string{"request-accepted"}, env.sender.templates())
+	assert.Equal(t, "jane@example.com", env.sender.attempts[0].Recipient)
+	assert.Equal(t, "mentor@example.com", env.sender.attempts[0].Props["mentor_contact"])
+}
+
+func TestAcceptedRequestReplayDoesNotSendTwice(t *testing.T) {
+	env := newJobsTestEnv()
+	request := finishedRequest("contacted")
+	request.AcceptedContact = "mentor@example.com"
+	env.repo.requestsWithMentor[finishedRequestID] = request
+	for i := 0; i < 2; i++ {
+		require.Equal(t, http.StatusOK, env.do(http.MethodGet, "/jobs/request-accepted?requestId="+finishedRequestID, nil).Code)
+	}
+	require.Len(t, env.sender.attempts, 1)
+}
+
+func TestAcceptedTemplateEscapesContact(t *testing.T) {
+	rendered, err := templates.Render("request-accepted", map[string]interface{}{"base_url": "https://client.example", "first_name": "Mentee", "mentor_name": "Mentor", "mentor_contact": "<script>bad</script>"})
+	require.NoError(t, err)
+	assert.NotContains(t, rendered.HTML, "<script>bad</script>")
+	assert.Contains(t, rendered.Text, "<script>bad</script>")
+}
+
+func TestAcceptedRequestRetriesAfterSendFailure(t *testing.T) {
+	env := newJobsTestEnv()
+	request := finishedRequest("pending")
+	request.AcceptedContact = "mentor@example.com"
+	env.repo.requestsWithMentor[finishedRequestID] = request
+	env.sender.failAll = true
+	require.Equal(t, http.StatusServiceUnavailable, env.do(http.MethodGet, "/jobs/request-accepted?requestId="+finishedRequestID, nil).Code)
+	env.sender.failAll = false
+	env.repo.acceptanceClaims[finishedRequestID] = time.Now().Add(-16 * time.Minute)
+	require.Equal(t, http.StatusOK, env.do(http.MethodGet, "/jobs/request-accepted?requestId="+finishedRequestID, nil).Code)
+	require.Len(t, env.sender.attempts, 2)
+}
+
+func TestAcceptanceCronRecoversLostTriggerAndStaleClaim(t *testing.T) {
+	for _, stale := range []bool{false, true} {
+		t.Run(fmt.Sprint(stale), func(t *testing.T) {
+			env := newJobsTestEnv()
+			request := finishedRequest("pending")
+			request.AcceptedContact = "mentor@example.com"
+			env.repo.requestsWithMentor[finishedRequestID] = request
+			if stale {
+				env.repo.acceptanceClaims[finishedRequestID] = time.Now().Add(-16 * time.Minute)
+			}
+			require.Equal(t, http.StatusOK, env.do(http.MethodPost, "/jobs/cron/retry-acceptance-notifications", nil).Code)
+			require.Len(t, env.sender.attempts, 1)
+			require.Equal(t, http.StatusOK, env.do(http.MethodPost, "/jobs/cron/retry-acceptance-notifications", nil).Code)
+			require.Len(t, env.sender.attempts, 1)
+		})
 	}
 }

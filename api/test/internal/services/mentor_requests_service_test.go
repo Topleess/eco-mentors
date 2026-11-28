@@ -119,6 +119,7 @@ var _ httpclient.Client = (*countingTriggerClient)(nil)
 func requestsTestConfig() *config.Config {
 	cfg := &config.Config{}
 	cfg.EventTriggers.RequestProcessFinishedTriggerURL = "https://worker.example/jobs/request-finished?id="
+	cfg.EventTriggers.RequestAcceptedTriggerURL = "https://worker.example/jobs/request-accepted?requestId="
 	return cfg
 }
 
@@ -203,4 +204,45 @@ func TestDeclineThatDidNotApplyIsReported(t *testing.T) {
 		t.Fatal("a decline that did not apply must not fire the mentee notification")
 	case <-time.After(150 * time.Millisecond):
 	}
+}
+
+func TestAcceptRequestRequiresExplicitContactAndOnlyOnce(t *testing.T) {
+	repo := &mentorRequestsRepoFake{request: &models.MentorClientRequest{ID: "req-1", MentorID: "mentor-1", Status: models.StatusPending}}
+	client := newCountingTriggerClient()
+	svc := services.NewMentorRequestsService(repo, requestsTestConfig(), client, &capturingTracker{})
+	if _, err := svc.AcceptRequest(context.Background(), "mentor-1", "req-1", "  "); err == nil {
+		t.Fatal("blank contact accepted")
+	}
+	if _, err := svc.AcceptRequest(context.Background(), "other", "req-1", "mentor@example.com"); !errors.Is(err, services.ErrAccessDenied) {
+		t.Fatalf("foreign mentor: %v", err)
+	}
+	result, err := svc.AcceptRequest(context.Background(), "mentor-1", "req-1", " mentor@example.com ")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Status != models.StatusPending {
+		t.Fatalf("status changed: %s", result.Status)
+	}
+	if _, err := svc.AcceptRequest(context.Background(), "mentor-1", "req-1", "mentor@example.com"); err == nil {
+		t.Fatal("second acceptance succeeded")
+	}
+	select {
+	case <-client.fired:
+	case <-time.After(time.Second):
+		t.Fatal("acceptance notification not triggered")
+	}
+	select {
+	case <-client.fired:
+		t.Fatal("duplicate notification triggered")
+	case <-time.After(150 * time.Millisecond):
+	}
+}
+
+func (f *mentorRequestsRepoFake) AcceptRequest(_ context.Context, _, _, _ string) (bool, error) {
+	if f.notApplied || f.request.AcceptedAt != nil {
+		return false, nil
+	}
+	now := time.Now()
+	f.request.AcceptedAt = &now
+	return true, nil
 }

@@ -11,10 +11,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faCircleNotch, faQuestionCircle } from '@fortawesome/free-solid-svg-icons'
 import { Tooltip } from 'react-tooltip'
 import { useState, useRef, type ChangeEvent } from 'react'
-import { imageLoader, updatedAtToVersion } from '@/lib/image-loader'
+import { updatedAtToVersion } from '@/lib/image-loader'
 import { isValidCalendarUrl } from '@/lib/safe-url'
-import { formatPrice, isValidPrice, parsePrice, type PriceValue } from '@/lib/price'
-import PriceField from './PriceField'
 import type { MentorWithSecureFields } from '@/types'
 
 interface TagOption {
@@ -35,13 +33,7 @@ interface ProfileFormData {
   calendarUrl?: string
 }
 
-/**
- * What the form holds internally. It differs from what it submits in exactly
- * one field: price is edited as a {kind, amount} pair and serialized to its
- * canonical string on submit, because "fixed with no amount yet" is a state the
- * string has no spelling for.
- */
-type ProfileFormValues = Omit<ProfileFormData, 'price'> & { price: PriceValue | null }
+type ProfileFormValues = Omit<ProfileFormData, 'price'>
 
 interface ImageUploadData {
   image: string
@@ -159,6 +151,7 @@ export default function ProfileForm({
     formState: { errors },
   } = useForm<ProfileFormValues>()
 
+  const [photoFailed, setPhotoFailed] = useState(false)
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
   const [imageError, setImageError] = useState<keyof typeof messages | ''>('')
@@ -169,11 +162,6 @@ export default function ProfileForm({
     mentor.experience,
     t('chooseOne')
   )
-  // An unparseable stored price stays unselected rather than being coerced to a
-  // real one: silently rewriting what a mentor charges is the D44 failure, and
-  // the `required` rule turns it into a save the mentor has to resolve instead.
-  const storedPrice = parsePrice(mentor.price)
-
   const MAX_TAGS = 5
 
   const handleImageChange = (e: ChangeEvent<HTMLInputElement>): void => {
@@ -244,12 +232,7 @@ export default function ProfileForm({
   }
 
   const handleFormSubmit = (values: ProfileFormValues): void => {
-    const price = values.price === null ? null : formatPrice(values.price)
-    // The Controller's rule already blocks this, so reaching here means the
-    // rule and formatPrice disagree — drop the save rather than post a price
-    // the mentor did not choose.
-    if (price === null) return
-    onSubmit({ ...values, price })
+    onSubmit({ ...values, price: mentor.price || 'Free' })
   }
 
   return (
@@ -283,7 +266,7 @@ export default function ProfileForm({
         </label>
 
         <div className="mt-2 space-y-4">
-          {(mentor.photo_url || tempImagePreview) && !imagePreview && (
+          {(tempImagePreview || !photoFailed) && !imagePreview && (
             <div className="flex items-center space-x-4">
               {tempImagePreview ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -294,16 +277,13 @@ export default function ProfileForm({
                 />
               ) : (
                 <Image
-                  src={imageLoader({
-                    src: mentor.mentorId,
-                    quality: 'full',
-                    version: updatedAtToVersion(mentor.updatedAt),
-                  })}
+                  src={`/api/mentor/profile/photo?v=${updatedAtToVersion(mentor.updatedAt) ?? 0}`}
                   alt={t('currentProfile')}
                   className="w-24 h-24 rounded-full object-cover"
                   width={40}
                   height={40}
                   unoptimized
+                  onError={() => setPhotoFailed(true)}
                   key={mentor.updatedAt ?? mentor.photo_url}
                 />
               )}
@@ -442,29 +422,6 @@ export default function ProfileForm({
           </select>
         </div>
 
-        <div>
-          <Controller
-            control={control}
-            name="price"
-            defaultValue={storedPrice}
-            rules={{ validate: (value) => value !== null && isValidPrice(value) }}
-            render={({ field }) => (
-              <PriceField
-                value={field.value}
-                onChange={field.onChange}
-                inputRef={field.ref}
-                label={t('priceLabel')}
-                labelClassName="block mb-2 font-medium text-ink"
-                invalid={Boolean(errors.price)}
-                error={
-                  errors.price
-                    ? t('priceValidation')
-                    : undefined
-                }
-              />
-            )}
-          />
-        </div>
       </div>
 
       <div>

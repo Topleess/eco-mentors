@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import Link from 'next/link'
 import { useTranslation } from '@/i18n'
 import { messages } from '@/features/vacancies/messages'
 import { editorMessages } from '@/i18n/messages/vacancies-admin'
@@ -13,12 +14,12 @@ export function VacancyCatalog({ vacancies }: { vacancies: Vacancy[] }): JSX.Ele
   const [search, setSearch] = useState('')
   const [industry, setIndustry] = useState('')
   const [workFormat, setWorkFormat] = useState('')
-  const published = vacancies.filter(row => row.status === 'published')
+  const published = vacancies.filter(row => row.status === 'published' || row.status === 'archived')
   const query = search.trim().toLocaleLowerCase()
   const filtered = published.filter(row => (!industry || row.industry === industry) && (!workFormat || row.workFormat === workFormat) && `${row.title} ${row.company} ${row.location}`.toLocaleLowerCase().includes(query))
   const reset = () => { setSearch(''); setIndustry(''); setWorkFormat('') }
   return <>
-    <h1 className="my-0 text-3xl sm:text-[40px]">{t('title')}</h1>
+    <h1 className="my-0 text-3xl sm:text-[40px]">{t('title')}</h1><Link href="/vacancies/apply" className="button-secondary mt-4 inline-flex min-h-11">Предложить вакансию</Link>
     <p className="mb-2 mt-4 text-sm font-semibold text-brand-cobalt">{t('notice')}</p>
     {published.some(row => row.provenance === 'synthetic') && <p className="mb-8 mt-0 max-w-2xl text-sm text-ink-mute">{e('sampleNote')}</p>}
     <div className="mt-6 space-y-4">

@@ -492,8 +492,8 @@ func (r *MentorRepository) CreateMentor(ctx context.Context, fields map[string]i
 	query := `
 		INSERT INTO mentors (legacy_id, slug, name, email, job_title, workplace, about, details,
 			competencies, experience, price, status, preferred_contact, calendar_url, sort_order,
-			photo_style)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+			photo_style, registration_consented_at)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
 		RETURNING id
 	`
 
@@ -516,6 +516,7 @@ func (r *MentorRepository) CreateMentor(ctx context.Context, fields map[string]i
 		fields["calendar_url"],
 		fields["sort_order"],
 		photoStyle,
+		fields["registration_consented_at"],
 	).Scan(&mentorId)
 
 	if err != nil {

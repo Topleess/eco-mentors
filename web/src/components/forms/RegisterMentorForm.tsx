@@ -7,8 +7,6 @@ import classNames from 'classnames'
 import { useForm, Controller } from 'react-hook-form'
 import Turnstile, { type CaptchaInstance as TurnstileInstance } from '@/components/forms/Captcha'
 import Wysiwyg from './Wysiwyg'
-import PriceField from './PriceField'
-import { formatPrice, isValidPrice, type PriceValue } from '@/lib/price'
 import filters from '@/config/filters'
 import { MAX_IMAGE_FILE_BYTES, MAX_IMAGE_FILE_LABEL } from '@/config/uploads'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -30,6 +28,8 @@ interface TagOption {
 }
 
 interface RegisterFormData {
+  privacyConsent: boolean
+  publishConsent: boolean
   name: string
   email: string
   contact: string
@@ -42,7 +42,6 @@ interface RegisterFormData {
    * submit — "fixed with no amount yet" is a state the stored string has no
    * spelling for. Null until the mentor picks one; nothing is preselected.
    */
-  price: PriceValue | null
   tags: string[]
   about: string
   description: string
@@ -287,15 +286,9 @@ export default function RegisterMentorForm({
       contentType: selectedImage.type,
     }
 
-    // The Controller's rule already blocks an incomplete price, so a null here
-    // means that rule and formatPrice disagree — drop the submit rather than
-    // register a mentor at a price they did not choose.
-    const price = data.price === null ? null : formatPrice(data.price)
-    if (price === null) return
-
     onSubmit({
       ...data,
-      price,
+      price: 'Free',
       username: data.username?.trim() || undefined,
       profilePicture,
       captchaToken,
@@ -326,12 +319,7 @@ export default function RegisterMentorForm({
         selectedImage &&
           values.job?.trim() &&
           values.workplace?.trim() &&
-          values.experience &&
-          // Not just "a kind is chosen": "Set an amount" with an empty box
-          // would otherwise mark the section complete and send the mentor on to
-          // a submit the Controller's rule then blocks.
-          values.price !== null &&
-          isValidPrice(values.price)
+          values.experience
       ),
     },
     {
@@ -349,7 +337,25 @@ export default function RegisterMentorForm({
       complete: Boolean(captchaToken) && isValidCalendarUrl(values.calendarUrl),
     },
   ]
-  const currentIndex = sections.findIndex((section) => !section.complete)
+  const [currentIndex, setCurrentIndex] = useState(0)
+  useEffect(() => {
+    const ids = ['reg-contact', 'reg-profile', 'reg-expertise', 'reg-scheduling']
+    const update = (): void => {
+      let current = 0
+      ids.forEach((id, index) => {
+        const element = document.getElementById(id)
+        if (element && element.getBoundingClientRect().top <= 120) current = index
+      })
+      setCurrentIndex(current)
+    }
+    update()
+    window.addEventListener('scroll', update, { passive: true })
+    window.addEventListener('resize', update)
+    return () => {
+      window.removeEventListener('scroll', update)
+      window.removeEventListener('resize', update)
+    }
+  }, [])
   const completeCount = sections.filter((section) => section.complete).length
 
   const requiredText = t('required')
@@ -379,6 +385,7 @@ export default function RegisterMentorForm({
             <a
               key={section.id}
               href={`#${section.id}`}
+              aria-current={isCurrent ? 'location' : undefined}
               className={classNames(
                 'flex items-center gap-2.5 rounded-[11px] px-3.5 py-[11px] text-[13px] transition-colors duration-120',
                 isCurrent
@@ -688,30 +695,6 @@ export default function RegisterMentorForm({
                 {errors.experience && fieldError(requiredText)}
               </div>
 
-              <div>
-                <Controller
-                  control={control}
-                  name="price"
-                  defaultValue={null}
-                  rules={{ validate: (value) => value !== null && isValidPrice(value) }}
-                  render={({ field }) => (
-                    <PriceField
-                      value={field.value}
-                      onChange={field.onChange}
-                      inputRef={field.ref}
-                      label={t('priceLabel')}
-                      labelClassName={labelClass}
-                      requiredMark={requiredMark}
-                      invalid={Boolean(errors.price)}
-                      error={
-                        errors.price
-                          ? t('priceValidation')
-                          : undefined
-                      }
-                    />
-                  )}
-                />
-              </div>
             </div>
           </section>
 
@@ -894,6 +877,23 @@ export default function RegisterMentorForm({
               )}
             </div>
           </section>
+
+          <div className="space-y-3">
+            <div>
+              <label className="flex items-start gap-2 text-sm">
+                <input type="checkbox" {...register('privacyConsent', { required: true })} aria-invalid={Boolean(errors.privacyConsent)} />
+                <span>{t('mentorPrivacyConsent')} <a className="link" href="/privacy" target="_blank" rel="noopener noreferrer">{t('mentorPrivacyPolicy')}</a>.</span>
+              </label>
+              {errors.privacyConsent && fieldError(requiredText)}
+            </div>
+            <div>
+              <label className="flex items-start gap-2 text-sm">
+                <input type="checkbox" {...register('publishConsent', { required: true })} aria-invalid={Boolean(errors.publishConsent)} />
+                <span>{t('mentorPublishConsent')}</span>
+              </label>
+              {errors.publishConsent && fieldError(requiredText)}
+            </div>
+          </div>
 
           {isError && (
             <div className="rounded-field border-[1.5px] border-danger/40 bg-danger/5 px-4 py-3 text-sm font-medium text-danger">{' '}{t('submitError')}{' '}</div>

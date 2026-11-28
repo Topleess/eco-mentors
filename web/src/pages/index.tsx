@@ -170,10 +170,8 @@ const homeJsonLd: Record<string, unknown> = {
 
   const countLabel = roundedCountLabel(pageMentors.length, intlLocale)
 
-  // Results meta: the narrowed tag wins over the category label.
-  const activeFilterLabel = appliedFilters.tags.values.length
-    ? appliedFilters.tags.values.map((tag) => translateLabel(locale, tag)).join(' · ')
-    : (appliedFilters.category.values ? translateLabel(locale, appliedFilters.category.values) : null)
+  const activeFilterLabel = [...appliedFilters.category.values, ...appliedFilters.tags.values]
+    .map((value) => translateLabel(locale, value)).join(' · ') || null
 
   return (
     <>
@@ -212,8 +210,6 @@ const homeJsonLd: Record<string, unknown> = {
           {/* Trust strip: the mission in one glance, visible without scrolling. */}
           <p className="meta-mono mb-0 mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-ink-mute sm:mt-5">
             <span>{t('noAccountNeeded')}</span>
-            <span aria-hidden="true">·</span>
-            <span>{t('0Commission')}</span>
             <span aria-hidden="true">·</span>
             <span>{t('manyMentorsFree')}</span>
           </p>

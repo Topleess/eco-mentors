@@ -68,3 +68,10 @@ it.each(['anonymous', 'moderator', 'loading'])('does not expose records to %s', 
   if (kind === 'loading') expect(mockRouter.replace).not.toHaveBeenCalled()
   else await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith(kind === 'anonymous' ? '/admin/login' : '/admin/mentors/pending'))
 })
+
+it('marks employer submissions in the review queue without exposing their contact there', async () => {
+  ;(loadAdminVacancies as jest.Mock).mockResolvedValue([{ ...vacancyFixtures[0], status: 'draft', privateContact: 'private@example.org' }])
+  render(<I18nProvider locale="ru"><Page /></I18nProvider>)
+  expect(await screen.findByText('Заявка работодателя')).toBeInTheDocument()
+  expect(screen.queryByText('private@example.org')).not.toBeInTheDocument()
+})

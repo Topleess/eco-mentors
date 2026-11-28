@@ -23,7 +23,7 @@ func TestRegistrationVerifiesCaptchaBeforeTouchingThePhoto(t *testing.T) {
 	repo := &recordingRegistrationRepo{}
 	svc := services.NewRegistrationService(repo, &s3storage.StorageClient{}, &config.Config{}, captchaFail, &capturingTracker{})
 
-	req := &models.RegisterMentorRequest{Name: "John Doe", Email: "john@example.com"}
+	req := &models.RegisterMentorRequest{PrivacyConsent: true, PublishConsent: true, Name: "John Doe", Email: "john@example.com"}
 	// A legitimate 2000x2000 photo: it passes every validator, so nothing but
 	// the guard order can keep it from being decoded (~16 MiB of pixels).
 	req.ProfilePicture.Image = base64.StdEncoding.EncodeToString(imagefixture.PhotoPNG(t, 2000, 2000))
@@ -54,7 +54,7 @@ func TestRegistrationRejectsBadCaptchaBeforeBadPhoto(t *testing.T) {
 	repo := &recordingRegistrationRepo{}
 	svc := services.NewRegistrationService(repo, &s3storage.StorageClient{}, &config.Config{}, captchaFail, &capturingTracker{})
 
-	req := &models.RegisterMentorRequest{Name: "John Doe", Email: "john@example.com"}
+	req := &models.RegisterMentorRequest{PrivacyConsent: true, PublishConsent: true, Name: "John Doe", Email: "john@example.com"}
 	req.ProfilePicture.Image = base64.StdEncoding.EncodeToString([]byte("not an image at all"))
 	req.ProfilePicture.ContentType = "image/png"
 

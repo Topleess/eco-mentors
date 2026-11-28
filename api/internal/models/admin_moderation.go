@@ -16,20 +16,22 @@ func (r ModeratorRole) IsValid() bool {
 
 // Moderator represents a moderator/admin account.
 type Moderator struct {
-	ID    string
-	Name  string
-	Email string
-	Role  ModeratorRole
+	ID             string
+	Name           string
+	Email          string
+	Role           ModeratorRole
+	SessionVersion int
 }
 
 // AdminSession represents an authenticated moderator/admin web session.
 type AdminSession struct {
-	ModeratorID string        `json:"moderatorId"`
-	Email       string        `json:"email"`
-	Name        string        `json:"name"`
-	Role        ModeratorRole `json:"role"`
-	ExpiresAt   int64         `json:"exp"`
-	IssuedAt    int64         `json:"iat"`
+	ModeratorID    string        `json:"moderatorId"`
+	SessionVersion int           `json:"-"`
+	Email          string        `json:"email"`
+	Name           string        `json:"name"`
+	Role           ModeratorRole `json:"role"`
+	ExpiresAt      int64         `json:"exp"`
+	IssuedAt       int64         `json:"iat"`
 }
 
 type AdminRequestLoginRequest struct {

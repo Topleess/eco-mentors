@@ -84,16 +84,8 @@ func (h *Handlers) NewRequestWatcher(c *gin.Context) {
 		return
 	}
 
-	// The request is CLAIMED directly against the sends below: all three emails
-	// announce a brand-new request waiting for its mentor, so none of them may go
-	// out for a request this call did not just move into that state. A replay after
-	// the request advanced — or a second delivery of the same callback — loses the
-	// claim and stops here.
-	//
-	// A send failure after this point still consumes the claim. That window is
-	// inherent, not an oversight: sendEmails attempts every message even when an
-	// earlier one fails, so releasing the claim on send error (the way
-	// finalizeNewMentor does) would let a replay re-send whatever already went out.
+	// Normalize a fresh request once; delivery claims are independent so a
+	// replay can retry only recipients whose notifications remain unsent.
 	applied, err := h.repo.SetRequestContactPending(ctx, request.ID, request.PreferredContact)
 	if err != nil {
 		logger.Error("[New Client Request] Failed to update request", zap.String("request_ref", redact.ID(requestID)), logger.RedactedError(err))
@@ -101,16 +93,8 @@ func (h *Handlers) NewRequestWatcher(c *gin.Context) {
 		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "failed to update request"})
 		return
 	}
-	if !applied {
-		logger.Info("[New Client Request] Request already processed or no longer new, skipping",
-			zap.String("request_ref", redact.ID(requestID)))
-		h.track(ctx, analytics.EventNewRequestWatcherProcessed, analytics.SystemDistinctID("worker"), map[string]interface{}{
-			"outcome": "superseded",
-		})
-		// Idempotent no-op, so 200: a retry would find the same state.
-		c.JSON(http.StatusOK, gin.H{"success": true, "requestId": request.ID, "superseded": true})
-		return
-	}
+	// A replay may still have unsent per-recipient deliveries. Historical or
+	// superseded requests have no eligible delivery rows and are safe no-ops.
 
 	// Mentee confirmation: mentors with a calendar link get the calendly
 	// variant (mirrors `mentor.calendly ? ... : ...` in the func).
@@ -136,9 +120,9 @@ func (h *Handlers) NewRequestWatcher(c *gin.Context) {
 		menteeContact = request.PreferredContact
 	}
 
-	sendErr := h.sendEmails(ctx, job,
+	messages := []email.Message{
 		menteeMessage,
-		email.Message{
+		{
 			TemplateName: "new-request-mentor",
 			Recipient:    mentor.Email,
 			Props: map[string]interface{}{
@@ -150,7 +134,7 @@ func (h *Handlers) NewRequestWatcher(c *gin.Context) {
 				"request_url":    h.mentorRequestURL(request.ID),
 			},
 		},
-		email.Message{
+		{
 			TemplateName: "new-request-moderator",
 			Recipient:    h.moderatorsEmail,
 			Props: map[string]interface{}{
@@ -161,10 +145,27 @@ func (h *Handlers) NewRequestWatcher(c *gin.Context) {
 				"admin_url":    h.adminPortalURL(),
 			},
 		},
-	)
+	}
+	var sendErr error
+	sentCount := 0
+	for i, kind := range []string{"mentee", "mentor", "moderator"} {
+		sent, err := h.sendRequestDelivery(ctx, request.ID, kind, job, messages[i])
+		if sent {
+			sentCount++
+		}
+		if err != nil {
+			sendErr = err
+		}
+	}
 	if sendErr != nil {
 		trackError(errTypeEmailSendFailed)
 		c.JSON(http.StatusServiceUnavailable, gin.H{"error": "failed to send emails"})
+		return
+	}
+
+	if !applied && sentCount == 0 {
+		h.track(ctx, analytics.EventNewRequestWatcherProcessed, analytics.SystemDistinctID("worker"), map[string]interface{}{"outcome": "superseded"})
+		c.JSON(http.StatusOK, gin.H{"success": true, "requestId": request.ID, "superseded": true})
 		return
 	}
 

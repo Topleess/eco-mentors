@@ -228,6 +228,8 @@ export interface RegisterMentorRequest {
   competencies: string
   calendarUrl?: string
   profilePicture: ProfilePictureData
+  privacyConsent: boolean
+  publishConsent: boolean
   captchaToken: string
 }
 

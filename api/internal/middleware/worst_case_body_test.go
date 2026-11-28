@@ -60,6 +60,8 @@ func worstCaseValue(t *testing.T, typ reflect.Type, binding, key string, overrid
 	}
 
 	switch typ.Kind() {
+	case reflect.Bool:
+		return "true" // Required consent must pass validation.
 	case reflect.Struct:
 		return worstCaseObject(t, typ, overrides)
 	case reflect.Slice:

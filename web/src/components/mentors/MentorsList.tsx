@@ -4,7 +4,6 @@ import classNames from 'classnames'
 import { useEffect, useRef, useState } from 'react'
 import { imageLoader, updatedAtToVersion } from '@/lib/image-loader'
 import { mentorInitialsClass, mentorPastelGradClass } from '@/lib/mentor-pastel'
-import { fixedAmount, isFree, parsePrice } from '@/lib/price'
 import analytics from '@/lib/analytics'
 import { useTranslation } from '@/i18n'
 import { messages } from '@/i18n/messages/catalog'
@@ -32,37 +31,6 @@ function initials(name: string): string {
   const letters =
     parts.length >= 2 ? parts[0].charAt(0) + parts[1].charAt(0) : (parts[0] ?? '').slice(0, 2)
   return letters.toUpperCase()
-}
-
-/**
- * Stored price -> card meta: FREE (mint ink) / $N (navy) / NEGOTIABLE
- * (stays ink-mute). Classification comes from lib/price, the same place the
- * byPrice buckets read.
- */
-function PriceMeta({ price }: { price: string }): JSX.Element {
-  const { t } = useTranslation(messages)
-  if (isFree(price)) {
-    return <span className="text-mint-ink">{t('free')}</span>
-  }
-
-  const amount = fixedAmount(price)
-  if (amount !== null) {
-    // The canonical spelling, NOT toLocaleString: the profile page, the
-    // contact recap and the confirmation email all render the stored "$1000",
-    // and a card that says "$1,000" while the page it links to says "$1000"
-    // reads as two different prices. One spelling everywhere.
-    return <span className="text-brand-navy">${amount}</span>
-  }
-
-  if (parsePrice(price)?.kind === 'negotiable') {
-    return <span>{t('negotiable')}</span>
-  }
-
-  // Predates the grammar, so mentors_price_chk makes this unreachable for
-  // stored data. Render it verbatim rather than as NEGOTIABLE: claiming a
-  // mentor is open to negotiating when they wrote something else is worse than
-  // showing an odd string.
-  return <span>{price}</span>
 }
 
 function MentorCard({
@@ -197,7 +165,7 @@ function MentorCard({
         </div>
 
         <div className="meta-mono mt-2 text-[10px] text-ink-mute sm:mt-2.5 sm:text-[11px]">
-          {t('cardExperience', { experience: mentor.experience.replace(/-/g, '–').toUpperCase() })} · <PriceMeta price={mentor.price} />
+          {t('cardExperience', { experience: mentor.experience.replace(/-/g, '–').toUpperCase() })}
         </div>
       </div>
     </Link>

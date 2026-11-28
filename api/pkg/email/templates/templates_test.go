@@ -15,14 +15,15 @@ var expectedTemplates = map[string][]string{
 	"new-mentor-returned":  {"first_name", "reviewer_note", "edit_url"},
 	"new-mentor":           {"first_name"},
 	"new-mentor-duplicate": {"first_name"},
-	"new-request-calendly": {"calendly_url", "first_name", "mentor_name", "request_details", "request_price"},
+	"new-request-calendly": {"calendly_url", "first_name", "mentor_name", "request_details"},
 	"new-request-mentor":   {"mentee_contact", "mentee_email", "mentee_name", "mentee_request", "mentor_name", "request_url"},
-	"new-request":          {"first_name", "mentor_name", "request_details", "request_price"},
+	"new-request":          {"first_name", "mentor_name", "request_details"},
 	"mentor-login":         {"login_url", "mentor_name"},
 	// H4: the review link is now a whole URL carrying a single-use capability in
 	// its FRAGMENT, built by worker.issueReviewInvitation. It replaced
 	// `request_id`, which this template used to interpolate into a query string —
 	// which is what made the primary key itself the review capability.
+	"request-accepted":          {"first_name", "mentor_name", "mentor_contact"},
 	"session-complete":          {"first_name", "mentor_name", "review_url"},
 	"session-declined":          {"decline_info", "decline_info_text", "first_name", "mentor_name"},
 	"new-review":                {"first_name", "mentee_name", "review_text"},

@@ -87,6 +87,8 @@ const (
 // new-mentor-watcher delivery.
 func (h *Handlers) CronJobs() []CronJob {
 	return []CronJob{
+		{Name: "retry-request-deliveries", Schedule: "0 */10 * * * *", Run: h.RetryRequestDeliveries, SkipIfRunning: true},
+		{Name: "retry-acceptance-notifications", Schedule: "0 */10 * * * *", Run: h.RetryAcceptanceNotifications, SkipIfRunning: true},
 		{Name: "sessions-watcher", Schedule: "0 30 8 * * *", Run: h.SessionsWatcher},
 		{Name: "update-status-reminder", Schedule: "0 0 10 * * Wed", Run: h.UpdateStatusReminder},
 		{Name: "deactivate-pending-mentors", Schedule: "0 0 10 * * Wed", Run: h.DeactivatePendingMentors},
@@ -111,6 +113,11 @@ func (h *Handlers) CronJobs() []CronJob {
 
 // NewCron builds the scheduler and registers every job in CronJobs.
 func NewCron(h *Handlers) (*Cron, error) {
+	return NewCronForFlags(h, true, false)
+}
+
+// NewCronForFlags preserves the full schedule or selects only request retries.
+func NewCronForFlags(h *Handlers, full, retries bool) (*Cron, error) {
 	// Azure NCRONTAB expressions include a seconds field, so use a
 	// seconds-aware parser and keep the expressions verbatim.
 	parser := cron.NewParser(
@@ -126,6 +133,10 @@ func NewCron(h *Handlers) (*Cron, error) {
 	c := &Cron{cron: cron.New(cron.WithParser(parser), cron.WithLocation(time.UTC))}
 
 	for _, job := range h.CronJobs() {
+		isRetry := job.Name == "retry-request-deliveries" || job.Name == "retry-acceptance-notifications"
+		if !full && (!retries || !isRetry) {
+			continue
+		}
 		schedule, err := parser.Parse(job.Schedule)
 		if err != nil {
 			return nil, err

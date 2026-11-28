@@ -17,10 +17,22 @@ import (
 	"github.com/openmentor-io/openmentor/api/pkg/logger"
 )
 
+const vacancyAdminSelect = `SELECT v.payload || jsonb_build_object('id',v.id,'slug',v.slug,'industryId',COALESCE(v.industry_id,''),'cityId',COALESCE(v.city_id,''),'industry',COALESCE(i.name,''),'location',COALESCE(c.name,''),'status',v.status,'version',v.version,'createdAt',v.created_at,'updatedAt',v.updated_at,'privateContact',a.contact,'telegramSource',(SELECT jsonb_build_object('channelId',s.channel_id::text,'messageId',s.message_id,'rawText',s.raw_text,'photoIds',s.photo_ids,'sourceUrl',s.source_url) FROM telegram_vacancy_sources s WHERE s.vacancy_id=v.id)) FROM vacancies v LEFT JOIN vacancy_industries i ON i.id=v.industry_id LEFT JOIN vacancy_cities c ON c.id=v.city_id LEFT JOIN vacancy_applications a ON a.vacancy_id=v.id `
+
 const vacancySelect = `SELECT v.payload || jsonb_build_object('id',v.id,'slug',v.slug,'industryId',v.industry_id,'cityId',v.city_id,'industry',i.name,'location',c.name,'status',v.status,'version',v.version,'createdAt',v.created_at,'updatedAt',v.updated_at) FROM vacancies v JOIN vacancy_industries i ON i.id=v.industry_id JOIN vacancy_cities c ON c.id=v.city_id `
 
-func RegisterVacancyRoutes(r *gin.Engine, pool *pgxpool.Pool, tm *jwt.TokenManager, checker middleware.AdminSessionChecker, domain string, secure bool) {
+type vacancyCaptcha interface {
+	Verify(context.Context, string) error
+}
+
+func RegisterVacancyRoutes(r *gin.Engine, pool *pgxpool.Pool, tm *jwt.TokenManager, checker middleware.AdminSessionChecker, domain string, secure bool, verifiers ...vacancyCaptcha) {
 	public := r.Group("/api/v1/vacancies")
+	var verifier vacancyCaptcha
+	if len(verifiers) > 0 {
+		verifier = verifiers[0]
+	}
+	limiter := middleware.NewRateLimiter(1.0/10.0, 5)
+	public.POST("/applications", limiter.Middleware(), middleware.BodySizeLimitMiddleware(64*1024), func(c *gin.Context) { vacancyApply(c, pool, verifier) })
 	public.GET("", func(c *gin.Context) { vacancyList(c, pool, true) })
 	public.GET("/dictionaries", func(c *gin.Context) {
 		industries, err := dictionaryList(c.Request.Context(), pool, "vacancy_industries", true)
@@ -46,12 +58,14 @@ func RegisterVacancyRoutes(r *gin.Engine, pool *pgxpool.Pool, tm *jwt.TokenManag
 			c.AbortWithStatusJSON(401, gin.H{"error": "Unauthorized"})
 			return
 		}
-		if string(s.Role) != "admin" {
+		if string(s.Role) != staffAdminRole {
 			c.AbortWithStatusJSON(403, gin.H{"error": "Access denied"})
 			return
 		}
 		c.Next()
 	})
+	admin.POST("/telegram-vacancies/import", middleware.BodySizeLimitMiddleware(128*1024), func(c *gin.Context) { telegramVacancyImport(c, pool) })
+	admin.GET("/vacancies/:id/telegram/reparse", func(c *gin.Context) { telegramReparse(c, pool) })
 	admin.GET("/vacancies", func(c *gin.Context) { vacancyList(c, pool, false) })
 	admin.GET("/vacancies/:id", func(c *gin.Context) { vacancyGet(c, pool, false) })
 	admin.POST("/vacancies", func(c *gin.Context) { vacancySave(c, pool, false) })
@@ -86,8 +100,11 @@ func RegisterVacancyRoutes(r *gin.Engine, pool *pgxpool.Pool, tm *jwt.TokenManag
 
 func vacancyList(c *gin.Context, pool *pgxpool.Pool, public bool) {
 	query := vacancySelect
+	if !public {
+		query = vacancyAdminSelect
+	}
 	if public {
-		query += " WHERE v.status='published'"
+		query += " WHERE v.status IN ('published','archived')"
 	}
 	query += " ORDER BY v.created_at,v.id"
 	rows, err := pool.Query(c.Request.Context(), query)
@@ -112,7 +129,7 @@ func vacancyList(c *gin.Context, pool *pgxpool.Pool, public bool) {
 	c.JSON(200, gin.H{"vacancies": items})
 }
 func vacancyGet(c *gin.Context, pool *pgxpool.Pool, public bool) {
-	query := vacancySelect + " WHERE v.id=$1"
+	query := vacancyAdminSelect + " WHERE v.id=$1"
 	id := c.Param("id")
 	if public {
 		query = vacancySelect + " WHERE v.slug=$1 AND v.status='published'"

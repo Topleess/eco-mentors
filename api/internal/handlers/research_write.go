@@ -115,7 +115,7 @@ func (v researchInput) valid(update bool) bool {
 	if v.ReadingMinutes < 1 || v.ReadingMinutes > 240 || (update && v.Version < 1) || !researchAsset(v.CoverURL) || !researchAsset(v.PDFURL) {
 		return false
 	}
-	if v.Status != "draft" && v.Status != researchPublished && v.Status != "archived" {
+	if v.Status != "draft" && v.Status != researchPublished && v.Status != "archived" { //nolint:goconst // The matching constant is test-only.
 		return false
 	}
 	if len(v.Sections) < 1 || len(v.Sections) > 30 || len(v.KeyFindings) > 20 {

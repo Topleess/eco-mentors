@@ -94,12 +94,13 @@ func AdminSessionMiddleware(
 		}
 
 		session := &models.AdminSession{
-			ModeratorID: claims.MentorUUID,
-			Email:       claims.Email,
-			Name:        claims.Name,
-			Role:        role,
-			ExpiresAt:   claims.ExpiresAt.Unix(),
-			IssuedAt:    claims.IssuedAt.Unix(),
+			ModeratorID:    claims.MentorUUID,
+			SessionVersion: claims.SessionVersion,
+			Email:          claims.Email,
+			Name:           claims.Name,
+			Role:           role,
+			ExpiresAt:      claims.ExpiresAt.Unix(),
+			IssuedAt:       claims.IssuedAt.Unix(),
 		}
 
 		c.Set(AdminSessionContextKey, session)
@@ -131,7 +132,7 @@ func adminSessionRole(
 		return "", false
 	}
 
-	if !sessionVersionCurrent(claims.SessionVersion, version) {
+	if !AdminSessionVersionCurrent(claims.SessionVersion, version) {
 		_ = c.Error(fmt.Errorf("admin session was revoked")) //nolint:errcheck
 		ClearAdminSessionCookie(c, cookieDomain, cookieSecure)
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})

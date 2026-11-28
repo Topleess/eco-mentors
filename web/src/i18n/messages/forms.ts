@@ -1,6 +1,9 @@
 import { createTranslator, type Locale, type Messages } from '@/i18n/core'
 
 export const messages = {
+  mentorPrivacyConsent: { en: 'I consent to the processing of my personal data as described in the', ru: 'Я согласен(на) на обработку персональных данных в соответствии с' },
+  mentorPrivacyPolicy: { en: 'Privacy Policy', ru: 'Политикой конфиденциальности' },
+  mentorPublishConsent: { en: 'I agree to publish my profile information, except my email address.', ru: 'Я согласен(на) на публикацию данных моего профиля, кроме адреса электронной почты.' },
   "helpPlaceholder": { en: "I can help:\n— develop an environmental project;\n— understand environmental documentation.", ru: "Могу помочь:\n— разработать экологический проект;\n— разобраться в экологической документации." },
   "companyPlaceholder": { en: "Environmental consulting company", ru: "Экологическая консалтинговая компания" },
   "jobPlaceholder": { en: "Environmental engineer", ru: "Инженер-эколог" },
@@ -35,7 +38,7 @@ export const messages = {
   captchaRequired: { en: "Please complete the verification above.", ru: "Пожалуйста, пройдите проверку выше." },
   sendRequest: { en: "Send request", ru: "Отправить запрос" },
   contactPrivacyPrefix: { en: "No account needed. We only share your email with", ru: "Аккаунт не нужен. Мы передадим ваш email только" },
-  contactPrivacySuffix: { en: "— you'll agree on format and price directly with them.", ru: "— о формате и цене вы договоритесь напрямую." },
+  contactPrivacySuffix: { en: "— you'll agree on the meeting format directly with them.", ru: "— о формате встречи вы договоритесь напрямую." },
   chooseOne: { en: "Please choose one", ru: "Выберите вариант" },
   imageTypeError: { en: "Please choose a JPEG, PNG, or WebP image.", ru: "Выберите изображение в формате JPEG, PNG или WebP." },
   imageRequired: { en: "Please choose an image to upload.", ru: "Выберите изображение для загрузки." },
@@ -140,7 +143,7 @@ export const messages = {
   requestSentSuffix: { en: "got your message and will reply directly to", ru: "получил(а) ваше сообщение и ответит напрямую на" },
   requestId: { en: "Request ID:", ru: "ID запроса:" },
   browseMentors: { en: "Browse more mentors", ru: "Посмотреть других менторов" },
-  bookingHint: { en: "You can also pick a convenient time for the session right now using the form below.", ru: "Вы также можете выбрать удобное время для сессии прямо сейчас в форме ниже." },
+  bookingHint: { en: "You can also choose a convenient time using the booking link below.", ru: "Вы также можете выбрать удобное время по ссылке ниже." },
   bookSession: { en: "Book a session", ru: "Записаться на сессию" },
   dailyLimit: { en: "You've reached the daily request limit. Come back tomorrow to contact another mentor.", ru: "Вы достигли дневного лимита запросов. Возвращайтесь завтра, чтобы связаться с другим ментором." },
   invalidReviewLink: { en: "This review link is not valid. Please use the link from your email.", ru: "Эта ссылка на отзыв недействительна. Используйте ссылку из письма." },
@@ -205,7 +208,7 @@ export const messages = {
   captchaError: { en: 'Captcha verification failed.', ru: 'Не удалось пройти проверку. Попробуйте ещё раз.' },
   validationError: { en: 'Validation failed.', ru: 'Проверьте правильность заполнения полей.' },
   rateLimitError: { en: 'Too many requests, try again later.', ru: 'Слишком много запросов. Попробуйте позже.' },
-  contactPrivacy: { en: "No account needed. We only share your email with {name} — you'll agree on format and price directly with them.", ru: 'Аккаунт не нужен. Ваш email получит только {name} — о формате и цене вы договоритесь напрямую.' },
+  contactPrivacy: { en: "No account needed. We only share your email with {name} — you'll agree on the meeting format directly with them.", ru: 'Аккаунт не нужен. Ваш email получит только {name} — о формате встречи вы договоритесь напрямую.' },
 } satisfies Messages
 
 /** Translate known UI/upstream errors; preserve actionable details we do not own. */

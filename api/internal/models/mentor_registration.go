@@ -26,6 +26,9 @@ type RegisterMentorRequest struct {
 	// Image
 	ProfilePicture ProfilePictureData `json:"profilePicture" binding:"required"`
 
+	PrivacyConsent bool `json:"privacyConsent" binding:"required"`
+	PublishConsent bool `json:"publishConsent" binding:"required"`
+
 	// Security
 	// max=2048 is Cloudflare's documented ceiling for a Turnstile response
 	// token. Without it this field is the one unbounded string on the route, so

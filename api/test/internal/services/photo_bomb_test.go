@@ -45,7 +45,7 @@ func TestRegistrationRejectsDecompressionBomb(t *testing.T) {
 	repo := &recordingRegistrationRepo{}
 	svc := services.NewRegistrationService(repo, &s3storage.StorageClient{}, &config.Config{}, captchaOK, &capturingTracker{})
 
-	req := &models.RegisterMentorRequest{Name: "John Doe", Email: "john@example.com"}
+	req := &models.RegisterMentorRequest{PrivacyConsent: true, PublishConsent: true, Name: "John Doe", Email: "john@example.com"}
 	req.ProfilePicture.Image = bombBase64(t)
 	req.ProfilePicture.ContentType = "image/png"
 
@@ -66,7 +66,7 @@ func TestRegistrationAcceptsOrdinaryPhoto(t *testing.T) {
 	repo := &recordingRegistrationRepo{}
 	svc := services.NewRegistrationService(repo, unreachableStorage(t), &config.Config{}, captchaOK, &capturingTracker{})
 
-	req := &models.RegisterMentorRequest{Name: "John Doe", Email: "john@example.com"}
+	req := &models.RegisterMentorRequest{PrivacyConsent: true, PublishConsent: true, Name: "John Doe", Email: "john@example.com"}
 	req.ProfilePicture.Image = photoDataURI(t)
 	req.ProfilePicture.ContentType = "image/png"
 

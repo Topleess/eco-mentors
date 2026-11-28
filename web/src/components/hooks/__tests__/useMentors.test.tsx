@@ -84,18 +84,26 @@ describe('useMentors', () => {
     expect(mentors[0].slug).toBe('backend-mentor')
   })
 
+  it('matches any selected specialization and intersects experience', () => {
+    const { result } = renderHook(() => useMentors(baseMentors, 10))
+    act(() => result.current[5].tags.set(['Производственный экологический контроль', 'Экологическая отчётность']))
+    expect(result.current[0]).toHaveLength(2)
+    act(() => result.current[5].experience.set(['10+ years']))
+    expect(result.current[0].map((mentor) => mentor.slug)).toEqual(['backend-mentor'])
+  })
+
   it('filters by topic category (any matching tag) and toggles off', () => {
     const { result } = renderHook(() => useMentors(baseMentors, 10))
 
     act(() => {
-      result.current[5].category.set('Экология предприятий')
+      result.current[5].category.set(['Экология предприятий'])
     })
 
     // Each mentor matches a different tag in the enterprise ecology category.
     expect(result.current[0]).toHaveLength(2)
 
     act(() => {
-      result.current[5].category.set('Климат')
+      result.current[5].category.set(['Климат'])
     })
 
     expect(result.current[0]).toHaveLength(0)
@@ -105,6 +113,16 @@ describe('useMentors', () => {
     })
 
     expect(result.current[0]).toHaveLength(2)
+  })
+
+  it('unions multiple categories while narrowing only the category with specializations', () => {
+    const climateMentor = { ...baseMentors[0], id: 3, slug: 'climate', tags: ['Углеродный учёт'] }
+    const { result } = renderHook(() => useMentors([...baseMentors, climateMentor], 10))
+    act(() => result.current[5].category.set(['Экология предприятий', 'Климат']))
+    expect(result.current[0]).toHaveLength(3)
+    act(() => result.current[5].tags.set(['Экологическая отчётность']))
+    expect(result.current[0].map((mentor) => mentor.slug)).toEqual(['backend-mentor', 'climate'])
+    expect(result.current[5].count()).toBe(3)
   })
 
   it('filters by price and new/mentees flags with pagination', () => {

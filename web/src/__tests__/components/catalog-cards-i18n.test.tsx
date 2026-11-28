@@ -14,15 +14,19 @@ it.each([[1, '1 ВСТРЕЧА'], [2, '2 ВСТРЕЧИ'], [5, '5 ВСТРЕЧ']
   render(<I18nProvider locale="ru"><MentorsList mentors={[{ ...mentor, sessionsCount: Number(count) }]} hasMore onClickMore={more} /></I18nProvider>)
   expect(screen.getByText(String(label))).toBeInTheDocument()
   expect(screen.getByText(/2–5 ЛЕТ ОПЫТА/)).toBeInTheDocument()
-  expect(screen.getByText('БЕСПЛАТНО')).toHaveClass('text-mint-ink')
   expect(screen.getByRole('link')).toHaveAttribute('href', '/mentor/mentor')
   fireEvent.click(screen.getByRole('button', { name: 'Показать ещё менторов' }))
   expect(more).toHaveBeenCalledTimes(1)
 })
 
-it('localizes new and negotiable badges while keeping dollar prices canonical', () => {
+it('localizes the new badge without exposing historical prices', () => {
   render(<I18nProvider locale="ru"><MentorsList mentors={[{ ...mentor, isNew: true, price: 'Negotiable' }, { ...mentor, id: 2, slug: 'paid', price: '$1000' }]} hasMore={false} onClickMore={() => {}} /></I18nProvider>)
   expect(screen.getByText('НОВЫЙ')).toHaveClass('bg-brand-cobalt')
-  expect(screen.getByText('ПО ДОГОВОРЁННОСТИ')).toBeInTheDocument()
-  expect(screen.getByText('$1000')).toHaveClass('text-brand-navy')
+  expect(screen.queryByText('ПО ДОГОВОРЁННОСТИ')).not.toBeInTheDocument()
+  expect(screen.queryByText('$1000')).not.toBeInTheDocument()
+})
+
+it('does not display historical prices on public cards', () => {
+  const { container } = render(<I18nProvider locale="ru"><MentorsList mentors={[{ ...mentor, price: '$789' }, { ...mentor, id: 2, slug: 'old', price: 'Negotiable' }]} hasMore={false} onClickMore={() => {}} /></I18nProvider>)
+  expect(container.textContent).not.toMatch(/\$789|договорённости/i)
 })

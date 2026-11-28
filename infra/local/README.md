@@ -50,3 +50,21 @@ Repository checks:
 ```
 
 Database-backed API tests require a **separate disposable test database**, not this editing database (`OPENMENTOR_TEST_DATABASE_URL`). Without it those tests skip.
+
+## Optional Telegram vacancy intake
+
+Intake is disabled by default. A single bot may both read and publish in the test channel; add it as an administrator and use the numeric negative channel ID for both settings. Do not use the bot with another polling consumer; long polling cannot coexist with a webhook. The importer only recognizes posts containing one of the supported Russian section headings with section content (`Какие задачи ждут?`, `Кто идеальный кандидат?`, `Что предлагают?`); other posts are skipped. Drafts require review.
+
+Publication and intake serialize around sending and recognizing posts. If a send result is unknown, its reservation remains without a message ID and recognized posts in the shared channel pause without advancing the offset. Because older reservations do not record a channel, any unresolved reservation blocks recognized intake on the shared channel. An operator must investigate Telegram and reconcile the reservation before intake resumes; do not blindly retry the send or delete an ambiguous reservation, since either could cause a duplicate or self-import. Telegram updates may expire while intake is paused.
+
+Add the following to the existing ignored, mode-0600 `infra/local/.env` (replace placeholders locally; never commit credentials):
+
+```sh
+TELEGRAM_VACANCY_INTAKE_ENABLED=true
+TELEGRAM_VACANCY_INTAKE_BOT_TOKEN='your-test-bot-token'
+TELEGRAM_VACANCY_INTAKE_CHAT_ID=-1000000000000
+TELEGRAM_VACANCY_BOT_TOKEN='your-test-bot-token'
+TELEGRAM_VACANCY_CHAT_ID=-1000000000000
+```
+
+Restart with `PATH=/Applications/Docker.app/Contents/Resources/bin:$PATH ./infra/local/start.sh backend`; it rebuilds the API and applies migrations before starting. Telegram only supplies updates retained for the bot; this is not a historical channel backfill. Offsets are stored in the local database, and retry resumes after the last committed update; already-imported posts are deduplicated. A failed import is retried and blocks later updates until corrected. The API logs a generic retry warning without content or credentials. To disable, set the enabled flag to `false` and restart. Never use a real channel or credentials in automated tests.

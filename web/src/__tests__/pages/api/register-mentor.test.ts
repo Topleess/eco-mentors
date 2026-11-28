@@ -62,6 +62,8 @@ describe('api/register-mentor', () => {
         contentType: 'image/jpeg',
       },
       captchaToken: 'valid-token',
+      privacyConsent: true,
+      publishConsent: true,
     }
 
     const mockResponse = { success: true, message: 'Registration successful', mentorId: 123 }

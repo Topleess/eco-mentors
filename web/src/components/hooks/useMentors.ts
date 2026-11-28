@@ -12,7 +12,7 @@ export default function useMentors(
 ): UseMentorsReturn {
   const [searchInput, setSearchInput] = useState('')
   const [selectedTags, setSelectedTags] = useState<string[]>([])
-  const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined)
+  const [selectedCategory, setSelectedCategory] = useState<string[]>([])
   const [mentorsCount, setMentorsCount] = useState(pageSize)
 
   const [selectedPrice, setSelectedPrice] = useState<string | undefined>(undefined)
@@ -30,15 +30,6 @@ export default function useMentors(
 
   const showMoreMentors = (): void => {
     setMentorsCount(mentorsCount + pageSize)
-  }
-
-  const hasAllTags = (mentorTags: string[], tagsToCheck: string[]): boolean => {
-    for (const selectedTag of tagsToCheck) {
-      if (!mentorTags.includes(selectedTag)) {
-        return false
-      }
-    }
-    return true
   }
 
   let filteredMentors = allMentors
@@ -71,19 +62,15 @@ export default function useMentors(
     })
   }
 
-  // filter by tags
-  if (selectedTags.length) {
-    filteredMentors = filteredMentors.filter((mentor) => hasAllTags(mentor.tags, selectedTags))
+  // Each selected category contributes all its tags unless narrowed by selected tags.
+  const topicTags = new Set(selectedTags)
+  for (const category of filters.categories) {
+    if (selectedCategory.includes(category.label) && !category.tags.some((tag) => selectedTags.includes(tag))) {
+      category.tags.forEach((tag) => topicTags.add(tag))
+    }
   }
-
-  // filter by topic tab (single-select category = OR over its tags)
-  if (selectedCategory) {
-    const categoryTags =
-      filters.categories.find((category) => category.label === selectedCategory)?.tags ?? []
-
-    filteredMentors = filteredMentors.filter((mentor) =>
-      mentor.tags.some((tag) => categoryTags.includes(tag))
-    )
+  if (selectedCategory.length || selectedTags.length) {
+    filteredMentors = filteredMentors.filter((mentor) => mentor.tags.some((tag) => topicTags.has(tag)))
   }
 
   // filter by experience
@@ -133,7 +120,7 @@ export default function useMentors(
         matched_results_count: filteredMentors.length,
         active_filters_count:
           selectedTags.length +
-          (selectedCategory ? 1 : 0) +
+          selectedCategory.length +
           selectedExperience.length +
           (selectedPrice ? 1 : 0) +
           (selectedNoSessions ? 1 : 0) +
@@ -161,7 +148,7 @@ export default function useMentors(
     category: {
       values: selectedCategory,
       set: setSelectedCategory,
-      reset: () => setSelectedCategory(undefined),
+      reset: () => setSelectedCategory([]),
     },
     experience: {
       values: selectedExperience,
@@ -186,7 +173,7 @@ export default function useMentors(
     count: () => {
       return (
         selectedTags.length +
-        (selectedCategory ? 1 : 0) +
+        selectedCategory.length +
         selectedExperience.length +
         (selectedPrice ? 1 : 0) +
         (selectedNoSessions ? 1 : 0) +

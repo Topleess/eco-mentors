@@ -163,14 +163,14 @@ func main() {
 
 	// Start the cron scheduler for the timer jobs
 	var cronScheduler *worker.Cron
-	if cfg.Worker.CronEnabled {
-		cronScheduler, err = worker.NewCron(handlers)
+	if cfg.Worker.CronEnabled || cfg.Worker.RequestEmailRetryEnabled {
+		cronScheduler, err = worker.NewCronForFlags(handlers, cfg.Worker.CronEnabled, cfg.Worker.RequestEmailRetryEnabled)
 		if err != nil {
 			logger.Fatal("Failed to initialize cron scheduler", zap.Error(err))
 		}
 		cronScheduler.Start()
 	} else {
-		logger.Warn("Cron scheduler disabled via WORKER_CRON_ENABLED=false")
+		logger.Warn("Cron scheduler disabled: both worker schedule flags are false")
 	}
 
 	// Start the internal HTTP server for the async event triggers plus the

@@ -2,6 +2,7 @@
 import { createMocks } from 'node-mocks-http'
 import admin from '@/pages/api/admin/vacancies/[id]'
 import publicList from '@/pages/api/vacancies'
+import application from '@/pages/api/vacancies/applications'
 const mockRequest = jest.fn()
 const mockCookies = jest.fn()
 jest.mock('@/lib/go-api-client', () => ({ getGoApiClient: () => ({ request: mockRequest, requestWithCookies: mockCookies }) }))
@@ -25,4 +26,12 @@ it('public proxy never forwards admin cookies or requests an admin endpoint', as
   await publicList(req, res)
   expect(mockRequest).toHaveBeenCalledWith('GET', '/api/v1/vacancies')
   expect(res._getJSONData()).toEqual({ vacancies: [] })
+})
+it('forwards a public application without cookies', async () => {
+  mockRequest.mockResolvedValue({ success: true })
+  const body = { contact: 'private@example.org', captchaToken: 'token', consent: true }
+  const { req, res } = createMocks({ method: 'POST', headers: { cookie: 'private=1' }, body })
+  await application(req, res)
+  expect(mockRequest).toHaveBeenCalledWith('POST', '/api/v1/vacancies/applications', { body })
+  expect(res.statusCode).toBe(201)
 })

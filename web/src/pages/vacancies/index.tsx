@@ -11,7 +11,7 @@ import type { Vacancy } from '@/features/vacancies/model'
 export async function getServerSideProps({ res }: { res: Pick<ServerResponse, 'setHeader'> }) {
   res.setHeader('Cache-Control', 'no-store')
   const { vacancies } = await getGoApiClient().request<{ vacancies: Vacancy[] }>('GET', '/api/v1/vacancies')
-  return { props: { vacancies: vacancies.filter(row => row.status === 'published') } }
+  return { props: { vacancies: vacancies.filter(row => row.status === 'published' || row.status === 'archived') } }
 }
 
 export default function Vacancies({ vacancies }: { vacancies: Vacancy[] }): JSX.Element {

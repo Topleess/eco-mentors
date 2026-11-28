@@ -93,6 +93,12 @@ GET      /jobs/request-process-finished?requestId=
 
 **Cron jobs** (scheduled when `WORKER_CRON_ENABLED=true`):
 
+With `WORKER_CRON_ENABLED=false`, set `WORKER_REQUEST_EMAIL_RETRY_ENABLED=true`
+to schedule only request delivery and acceptance notification retries every ten
+minutes. The new flag defaults to false; the full schedule still includes both
+retry jobs regardless of its value. Never enable the full schedule solely for
+retries: it includes destructive profile purging. Manual job routes are unchanged.
+
 | Job | Schedule |
 |---|---|
 | `sessions-watcher` | daily 08:30 |
@@ -110,7 +116,12 @@ curl -X POST -H "X-Worker-Token: $WORKER_AUTH_TOKEN" \
 
 The worker serves `/healthz` and `/metrics`, keeps its own smaller DB pool
 (`WORKER_DB_MAX_CONNS`), and the email cron jobs only send in
-`APP_ENV=production` unless `DEV_EMAIL_OVERRIDE` reroutes all recipients.
+`APP_ENV=production` unless `DEV_EMAIL_OVERRIDE` reroutes all recipients. The two
+request retry jobs also allow live recipients in non-production only when both
+`WORKER_REQUEST_EMAIL_RETRY_ENABLED=true` and
+`WORKER_REQUEST_EMAIL_LIVE_RECIPIENTS=true` are explicitly set. This can email
+real people; the override still takes precedence. See
+`docs/development/request-delivery-outbox.md` for security and scope.
 
 ## Storage & integrations
 

@@ -15,9 +15,9 @@ interface MentorsFiltersProps {
 
 /**
  * Panel identifiers: one shared dropdown panel serves the category pills
- * plus the Experience / Price pills at the end of the row.
+ * plus the Experience pill at the end of the row.
  */
-type PanelKey = `cat:${string}` | 'experience' | 'price'
+type PanelKey = `cat:${string}` | 'experience'
 
 const PANEL_WIDTH = 210
 
@@ -117,8 +117,8 @@ function PanelItem({ label, count, selected, onClick }: PanelItemProps): JSX.Ele
 
 /**
  * Catalog filter row (design 01): "All mentors" + two-level category pills
- * (category filters by ALL its tags; the dropdown narrows to a single tag),
- * then Experience (multi-select) and Price (single-select) dropdown pills.
+ * (each category can be narrowed by selecting specializations),
+ * then an Experience multi-select dropdown pill.
  * The row scrolls horizontally edge-to-edge on mobile; dropdowns render as
  * absolute panels anchored under the clicked pill (rendered as siblings of
  * the scroll row so overflow-x never clips them).
@@ -188,13 +188,6 @@ export default function MentorsFilters({ appliedFilters, mentors }: MentorsFilte
     return counts
   }, [mentors])
 
-  const priceCounts = useMemo(() => {
-    const counts = new Map<string, number>()
-    for (const [label, matches] of Object.entries(allFilters.byPrice)) {
-      counts.set(label, mentors.filter((mentor) => matches(mentor.price)).length)
-    }
-    return counts
-  }, [mentors])
 
   const trackFilterChange = (filterType: string, value: string, added: boolean): void => {
     analytics.event(analytics.events.MENTOR_FILTER_CHANGED, {
@@ -222,7 +215,7 @@ export default function MentorsFilters({ appliedFilters, mentors }: MentorsFilte
   }
 
   const topicFilterActive =
-    Boolean(appliedFilters.category.values) || appliedFilters.tags.values.length > 0
+    appliedFilters.category.values.length > 0 || appliedFilters.tags.values.length > 0
 
   const onClickAll = (): void => {
     if (topicFilterActive) {
@@ -234,40 +227,30 @@ export default function MentorsFilters({ appliedFilters, mentors }: MentorsFilte
   }
 
   const onClickCategory = (category: FilterCategory, target: HTMLElement): void => {
-    const isActive = appliedFilters.category.values === category.label
-    const hasDropdown = category.tags.length > 1
-
-    if (!isActive) {
-      appliedFilters.category.set(category.label)
-      appliedFilters.tags.set([])
-      trackFilterChange('category', category.label, true)
-
-      if (hasDropdown) {
-        togglePanel(`cat:${category.label}`, target)
-      } else {
-        setOpenPanel(null)
-      }
+    const isActive = appliedFilters.category.values.includes(category.label)
+    const key: PanelKey = `cat:${category.label}`
+    if (isActive && openPanel === key) {
+      appliedFilters.category.set(appliedFilters.category.values.filter((value) => value !== category.label))
+      appliedFilters.tags.set(appliedFilters.tags.values.filter((tag) => !category.tags.includes(tag)))
+      trackFilterChange('category', category.label, false)
+      setOpenPanel(null)
       return
     }
-
-    if (hasDropdown) {
-      // Clicking the active category again toggles its dropdown.
-      togglePanel(`cat:${category.label}`, target)
-    } else {
-      // Single-tag category: toggle back to "All".
-      appliedFilters.category.reset()
-      appliedFilters.tags.set([])
-      trackFilterChange('category', category.label, false)
+    if (!isActive) {
+      appliedFilters.category.set([...appliedFilters.category.values, category.label])
+      trackFilterChange('category', category.label, true)
+    }
+    if (category.tags.length > 1) togglePanel(key, target)
+    else if (isActive) {
+      appliedFilters.category.set(appliedFilters.category.values.filter((value) => value !== category.label))
     }
   }
 
   const onClickTag = (tag: string): void => {
-    const isSelected = appliedFilters.tags.values.includes(tag)
-    // Single tag narrows the category; re-picking it widens back to the
-    // whole category (the category filter itself stays on).
-    appliedFilters.tags.set(isSelected ? [] : [tag])
+    const values = appliedFilters.tags.values
+    const isSelected = values.includes(tag)
+    appliedFilters.tags.set(isSelected ? values.filter((value) => value !== tag) : [...values, tag])
     trackFilterChange('tag', tag, !isSelected)
-    setOpenPanel(null)
   }
 
   const onClickExperience = (label: string): void => {
@@ -280,12 +263,6 @@ export default function MentorsFilters({ appliedFilters, mentors }: MentorsFilte
     // Multi-select: the panel stays open.
   }
 
-  const onClickPrice = (label: string): void => {
-    const isSelected = appliedFilters.price.values === label
-    appliedFilters.price.set(isSelected ? undefined : label)
-    trackFilterChange('price', label, !isSelected)
-    setOpenPanel(null)
-  }
 
   const openCategory = openPanel?.startsWith('cat:')
     ? allFilters.categories.find((category) => `cat:${category.label}` === openPanel)
@@ -299,14 +276,15 @@ export default function MentorsFilters({ appliedFilters, mentors }: MentorsFilte
         <Pill label={t('allMentors')} active={!topicFilterActive} onClick={onClickAll} />
 
         {allFilters.categories.map((category) => {
-          const isActive = appliedFilters.category.values === category.label
+          const isActive = appliedFilters.category.values.includes(category.label)
           const hasDropdown = category.tags.length > 1
-          const selectedTag = category.tags.find((tag) => appliedFilters.tags.values.includes(tag))
+          const selectedCount = category.tags.filter((tag) => appliedFilters.tags.values.includes(tag)).length
 
           return (
             <Pill
               key={category.label}
-              label={translateLabel(locale, selectedTag ?? category.label)}
+              label={translateLabel(locale, category.label)}
+              badgeCount={selectedCount}
               active={isActive}
               hasChevron={hasDropdown}
               open={openPanel === `cat:${category.label}`}
@@ -324,14 +302,7 @@ export default function MentorsFilters({ appliedFilters, mentors }: MentorsFilte
           onClick={(target) => togglePanel('experience', target)}
         />
 
-        <Pill
-          label={t('price')}
-          active={Boolean(appliedFilters.price.values)}
-          hasChevron
-          open={openPanel === 'price'}
-          badgeCount={appliedFilters.price.values ? 1 : 0}
-          onClick={(target) => togglePanel('price', target)}
-        />
+
       </div>
 
       {openPanel && (
@@ -361,16 +332,7 @@ export default function MentorsFilters({ appliedFilters, mentors }: MentorsFilte
               />
             ))}
 
-          {openPanel === 'price' &&
-            Object.keys(allFilters.byPrice).map((label) => (
-              <PanelItem
-                key={label}
-                label={translateLabel(locale, label)}
-                count={priceCounts.get(label) ?? 0}
-                selected={appliedFilters.price.values === label}
-                onClick={() => onClickPrice(label)}
-              />
-            ))}
+
         </div>
       )}
     </div>

@@ -57,19 +57,7 @@ const menteeFaqs: FaqEntry[] = [
     q: t('howMuchDoesASessionCost'),
     a: (
       <p className="my-0">
-        {t('everyMentorSetsTheirOwnPriceYou')}{' '}<strong>{t('forFree')}</strong> {t('communityHelpIsWhatThisPlatformWas')}</p>
-    ),
-  },
-  {
-    id: 'payments',
-    q: t('howDoPaymentsWork'),
-    a: (
-      <>
-        <p className="my-0">
-          {t('theyDonTGoThroughUsAnd')}</p>
-        <p className="my-0">
-          {t('theHonestFlipSideBecauseWeDon')}</p>
-      </>
+        {t('freeSessionAnswer')}</p>
     ),
   },
   {
@@ -125,18 +113,6 @@ const mentorFaqs: FaqEntry[] = [
     a: (
       <p className="my-0">
         {t('youNeverHaveToChargeAndMentoring')}</p>
-    ),
-  },
-  {
-    id: 'payments-mentor',
-    q: t('howDoPaymentsWorkIfIDo'),
-    a: (
-      <>
-        <p className="my-0">
-          {t('directlyBetweenYouAndYourMenteeYou')}</p>
-        <p className="my-0">
-          {t('theTradeOffStatedHonestlyYouAlso')}</p>
-      </>
     ),
   },
   {
@@ -227,12 +203,7 @@ const mentorFaqs: FaqEntry[] = [
     a: (<p className="my-0">{t('accountAnswer')}</p>
     ),
   },
-  {
-    id: 'commission',
-    q: t('doesOpenmentorTakeACut'),
-    a: (<p className="my-0">{t('commissionAnswer')}</p>
-    ),
-  },
+
 ]
 
 const allFaqs: FaqEntry[] = [...menteeFaqs, ...mentorFaqs]

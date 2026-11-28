@@ -59,9 +59,11 @@ type Handlers struct {
 	baseURL         string
 
 	// Cron job settings (stage 3, timer-triggered functions).
-	appEnv             string   // APP_ENV: drives the non-production gates
-	devEmailOverride   string   // DEV_EMAIL_OVERRIDE: unlocks the email jobs off production
-	highlightedMentors []string // HIGHLIGHTED_MENTORS ids pinned by randomize-sort-order
+	appEnv                     string // APP_ENV: drives the non-production gates
+	devEmailOverride           string // DEV_EMAIL_OVERRIDE: unlocks the email jobs off production
+	requestEmailLiveRecipients bool
+	requestEmailRetryEnabled   bool
+	highlightedMentors         []string // HIGHLIGHTED_MENTORS ids pinned by randomize-sort-order
 
 	// Profile purge (D70): WORKER_PROFILE_PURGE_CRON schedules the job,
 	// WORKER_PROFILE_PURGE_RETENTION_DAYS decides how long a deleted profile
@@ -103,9 +105,11 @@ func NewHandlers(repo JobsRepository, sender EmailSender, tracker analytics.Trac
 		moderatorsEmail: moderatorsEmail,
 		baseURL:         baseURL,
 
-		appEnv:             cfg.Server.AppEnv,
-		devEmailOverride:   cfg.Email.DevEmailOverride,
-		highlightedMentors: parseHighlightedMentors(cfg.Worker.HighlightedMentors),
+		appEnv:                     cfg.Server.AppEnv,
+		devEmailOverride:           cfg.Email.DevEmailOverride,
+		requestEmailLiveRecipients: cfg.Worker.RequestEmailLiveRecipients,
+		requestEmailRetryEnabled:   cfg.Worker.RequestEmailRetryEnabled,
+		highlightedMentors:         parseHighlightedMentors(cfg.Worker.HighlightedMentors),
 
 		profilePurgeCron:          resolvePurgeCron(cfg.Worker.ProfilePurgeCron),
 		profilePurgeRetentionDays: resolvePurgeRetentionDays(cfg.Worker.ProfilePurgeRetentionDays),
@@ -173,6 +177,7 @@ func (s *Server) RegisterJobRoutes(h *Handlers) {
 	s.RegisterHandler("/moderator-login-email", h.ModeratorLoginEmail)
 	s.RegisterHandler("/mentor-moderation-action", h.MentorModerationAction)
 	s.RegisterHandler("/process-mentee-review", h.ProcessMenteeReview, "POST", "GET")
+	s.RegisterHandler("/request-accepted", h.RequestAccepted, "GET")
 	s.RegisterHandler("/request-process-finished", h.RequestProcessFinished, "GET")
 	s.RegisterHandler("/profile-migrated", h.ProfileMigrated)
 	// Profile deletion confirmations (D70), fired by the API for both the

@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -29,6 +30,7 @@ import (
 	"github.com/openmentor-io/openmentor/api/pkg/profiling"
 	"github.com/openmentor-io/openmentor/api/pkg/s3storage"
 	"github.com/openmentor-io/openmentor/api/pkg/tracing"
+	"github.com/openmentor-io/openmentor/api/pkg/turnstile"
 	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 	"go.uber.org/zap"
 )
@@ -145,6 +147,7 @@ func registerMentorAdminRoutes(
 		cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure, middleware.LiveCheckOnEveryRequest))
 	requests.GET("", mentorRequestsHandler.GetRequests)
 	requests.GET("/:id", mentorRequestsHandler.GetRequestByID)
+	requests.POST("/:id/accept", mentorRequestsHandler.AcceptRequest)
 	requests.POST("/:id/status", mentorRequestsHandler.UpdateStatus)
 	requests.POST("/:id/decline", mentorRequestsHandler.DeclineRequest)
 
@@ -309,6 +312,33 @@ func main() { //nolint:gocyclo
 		logger.Fatal("Failed to initialize database connection pool", zap.Error(err))
 	}
 	defer pool.Close()
+
+	intake, err := handlers.TelegramPollerFromEnv(pool, os.Getenv("TELEGRAM_VACANCY_INTAKE_ENABLED"), os.Getenv("TELEGRAM_VACANCY_INTAKE_BOT_TOKEN"), os.Getenv("TELEGRAM_VACANCY_INTAKE_CHAT_ID"))
+	if err != nil {
+		logger.Fatal("Invalid Telegram intake configuration")
+	}
+	intakeCtx, stopIntake := context.WithCancel(context.Background())
+	intakeDone := make(chan struct{})
+	if intake != nil {
+		outboundChat := os.Getenv("TELEGRAM_VACANCY_CHAT_ID")
+		if outboundChat != "" {
+			var parseErr error
+			intake.OutboundChannelID, parseErr = strconv.ParseInt(outboundChat, 10, 64)
+			if parseErr != nil || intake.OutboundChannelID >= 0 {
+				logger.Fatal("Telegram outbound chat must be a negative numeric channel ID when intake is enabled")
+			}
+		}
+		intake.OnRetry = func() { logger.Warn("Telegram intake failed; retrying") }
+		go func() {
+			defer close(intakeDone)
+			if err := intake.Run(intakeCtx); err != nil {
+				logger.Error("Telegram intake stopped; check configuration and database")
+			}
+		}()
+	} else {
+		close(intakeDone)
+	}
+	defer func() { stopIntake(); <-intakeDone }()
 
 	// NOTE: Database migrations are now run separately via the migrate command
 	// Run migrations before starting the app: ./migrate or docker-compose run migrate
@@ -532,9 +562,18 @@ func main() { //nolint:gocyclo
 	// Moderator/Admin web moderation routes
 	registerAdminModerationRoutes(router, cfg, adminAuthRateLimiter, profileRateLimiter, uploadAdmission, adminAuthHandler, adminMentorsHandler, adminMentorRequestsHandler, usernameHandler, adminAuthService.GetTokenManager(), moderatorRepo)
 
-	handlers.RegisterVacancyRoutes(router, pool, adminAuthService.GetTokenManager(), moderatorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure)
+	handlers.RegisterVacancyRoutes(router, pool, adminAuthService.GetTokenManager(), moderatorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure, turnstile.NewVerifier(turnstile.Options{Provider: cfg.Turnstile.Provider, SecretKey: cfg.Turnstile.SecretKey, ExpectedHostname: cfg.Turnstile.ExpectedHostname, ExpectedAction: cfg.Turnstile.ExpectedAction}, httpClient))
+	handlers.RegisterTelegramVacancyRoutes(router, pool, adminAuthService.GetTokenManager(), moderatorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure, handlers.TelegramVacancyOptions{Token: os.Getenv("TELEGRAM_VACANCY_BOT_TOKEN"), ChatID: os.Getenv("TELEGRAM_VACANCY_CHAT_ID"), PublicBaseURL: cfg.Server.BaseURL})
 	handlers.RegisterResearchRoutes(router, pool, adminAuthService.GetTokenManager(), moderatorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure)
+	handlers.RegisterStaffRoutes(router, pool, adminAuthService.GetTokenManager(), moderatorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure)
 	handlers.RegisterRequestAnalyticsRoutes(router, pool, adminAuthService.GetTokenManager(), moderatorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure)
+	handlers.RegisterMentorPhotoRoutes(router, handlers.MentorPhotoDatabase{Pool: pool}, storageClient, generalRateLimiter.Middleware())
+	if token := mentorAuthService.GetTokenManager(); token != nil {
+		router.GET("/api/v1/mentor/profile/photo", middleware.MentorSessionMiddleware(token, mentorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure, middleware.LiveCheckOnEveryRequest), handlers.MentorOwnPhoto(storageClient))
+	}
+	if token := adminAuthService.GetTokenManager(); token != nil {
+		router.GET("/api/v1/admin/mentors/:id/photo", middleware.AdminSessionMiddleware(token, moderatorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure), handlers.AdminMentorPhoto(storageClient))
+	}
 	handlers.RegisterResearchCoverRoutes(router, adminAuthService.GetTokenManager(), moderatorRepo, cfg.MentorSession.CookieDomain, cfg.MentorSession.CookieSecure, storageClient, profileRateLimiter.Middleware(), uploadAdmission.Middleware())
 
 	// Create HTTP server

@@ -8,7 +8,7 @@ import type { AppliedFilters } from '@/types'
 function filters(): AppliedFilters {
   return {
     tags: { values: [], set: jest.fn(), reset: jest.fn() },
-    category: { values: undefined, set: jest.fn(), reset: jest.fn() },
+    category: { values: [], set: jest.fn(), reset: jest.fn() },
     experience: { values: [], set: jest.fn(), reset: jest.fn() },
     price: { values: undefined, set: jest.fn(), reset: jest.fn() },
     noSessions: { value: false, set: jest.fn(), reset: jest.fn() },
@@ -28,16 +28,10 @@ it.each(['ru', 'en'] as const)('renders %s filter controls without changing cano
   expect(event).toHaveBeenCalledWith(analytics.events.MENTOR_FILTER_CHANGED, {
     filter_type: 'experience', filter_value: '10+ years', action: 'added',
   })
-  fireEvent.click(screen.getByRole('button', { name: locale === 'ru' ? 'Цена' : 'Price' }))
-  fireEvent.click(screen.getByRole('button', { name: new RegExp(translateLabel(locale, 'Free')) }))
-  expect(applied.price.set).toHaveBeenCalledWith('Free')
-  expect(event).toHaveBeenCalledWith(analytics.events.MENTOR_FILTER_CHANGED, {
-    filter_type: 'price', filter_value: 'Free', action: 'added',
-  })
   const categoryLabel = translateLabel(locale, 'Экология предприятий')
   expect(categoryLabel).toBe(locale === 'ru' ? 'Экология предприятий' : 'Enterprise ecology')
   fireEvent.click(screen.getByRole('button', { name: categoryLabel }))
-  expect(applied.category.set).toHaveBeenCalledWith('Экология предприятий')
+  expect(applied.category.set).toHaveBeenCalledWith(['Экология предприятий'])
   fireEvent.click(screen.getByRole('button', { name: new RegExp(translateLabel(locale, 'Экологическая отчётность')) }))
   expect(applied.tags.set).toHaveBeenLastCalledWith(['Экологическая отчётность'])
   expect(event).toHaveBeenCalledWith(analytics.events.MENTOR_FILTER_CHANGED, {

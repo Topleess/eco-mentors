@@ -11,6 +11,15 @@ import "net/http"
 // rollout, at which point no token without the claim can still be valid: issue
 // #80 tracks it together with the rest of the D57/D58 compatibility batch, which
 // all comes out in one PR.
+// AdminSessionVersionCurrent accepts pre-version tokens only while the row is
+// at the migration's initial version (1). Any bump permanently invalidates them.
+func AdminSessionVersionCurrent(claimed, current int) bool {
+	if claimed == 0 {
+		return current == 1
+	}
+	return claimed > 0 && claimed == current
+}
+
 func sessionVersionCurrent(claimed, current int) bool {
 	if claimed == 0 {
 		return true

@@ -33,7 +33,7 @@ it('combines search and facets, derives the count and resets no results', async 
   expect(screen.getByRole('status')).toHaveTextContent('Найдено: 0')
   expect(screen.getByText('Ничего не найдено')).toBeInTheDocument()
   await user.click(screen.getByRole('button', { name: 'Сбросить фильтры' }))
-  expect(screen.getAllByRole('article')).toHaveLength(9)
+  expect(screen.getAllByRole('article')).toHaveLength(10)
   expect(screen.getByRole('searchbox')).toHaveValue('')
 })
 

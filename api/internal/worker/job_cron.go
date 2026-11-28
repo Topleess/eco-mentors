@@ -80,7 +80,13 @@ type CronJobFunc func(ctx context.Context) (JobSummary, error)
 // all emails to a dev inbox. randomize-sort-order deliberately does NOT use
 // this gate (see its handler).
 func (h *Handlers) skipNonProduction() bool {
-	return h.appEnv != "production" && h.devEmailOverride == ""
+	return h.appEnv != "production" && strings.TrimSpace(h.devEmailOverride) == ""
+}
+
+// The live-recipient exception is restricted to request retry jobs and needs
+// both explicit switches, including for manual invocations.
+func (h *Handlers) skipRequestRetry() bool {
+	return h.skipNonProduction() && (!h.requestEmailRetryEnabled || !h.requestEmailLiveRecipients)
 }
 
 // requestsListOpen / requestsListClose are the exact <ul> markup the func's

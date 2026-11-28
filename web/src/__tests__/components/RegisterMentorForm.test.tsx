@@ -88,18 +88,52 @@ describe('RegisterMentorForm', () => {
     jest.clearAllMocks()
   })
 
+  it('submits a completed registration with the server-required Free price', async () => {
+    const user = userEvent.setup()
+    render(<RegisterMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />)
+    await user.type(screen.getByLabelText(/First and last name/i), 'Jane Doe')
+    await user.type(screen.getByRole('textbox', { name: /Email address/i }), 'jane@example.com')
+    await user.type(screen.getByLabelText(/Job title/i), 'Engineer')
+    await user.type(screen.getByLabelText(/Organization/i), 'Acme')
+    await user.selectOptions(screen.getByLabelText(/Experience/i), '10+')
+    await user.click(screen.getByRole('button', { name: /Industrial environmental monitoring/i }))
+    const editors = screen.getAllByTestId('wysiwyg')
+    await user.type(editors[0], 'About me')
+    await user.type(editors[1], 'How I help')
+    await user.type(screen.getByLabelText(/Competencies and tools/i), 'Ecology')
+    await user.upload(screen.getByLabelText(/Mentor photo/i), new File(['photo'], 'photo.png', { type: 'image/png' }))
+    await user.click(screen.getByTestId('turnstile'))
+    await user.click(screen.getByRole('button', { name: /Create my profile/i }))
+    expect(mockOnSubmit).not.toHaveBeenCalled()
+    await user.click(screen.getByRole('checkbox', { name: /privacy policy/i }))
+    await user.click(screen.getByRole('button', { name: /Create my profile/i }))
+    expect(mockOnSubmit).not.toHaveBeenCalled()
+    await user.click(screen.getByRole('checkbox', { name: /publish my profile/i }))
+    await user.click(screen.getByRole('button', { name: /Create my profile/i }))
+    await waitFor(() => expect(mockOnSubmit).toHaveBeenCalledWith(expect.objectContaining({ price: 'Free', captchaToken: 'mock-turnstile-token', privacyConsent: true, publishConsent: true })))
+  })
+
+  it('tracks the section currently in view rather than the first incomplete section', () => {
+    render(<RegisterMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />)
+    const ids = ['reg-contact', 'reg-profile', 'reg-expertise', 'reg-scheduling']
+    ids.forEach((id, index) => {
+      jest.spyOn(document.getElementById(id)!, 'getBoundingClientRect').mockReturnValue({ top: (index - 2) * 500 } as DOMRect)
+    })
+    fireEvent.scroll(window)
+    expect(screen.getByRole('link', { name: /Your expertise/i })).toHaveAttribute('aria-current', 'location')
+    expect(screen.getByRole('link', { name: /Contact details/i })).not.toHaveAttribute('aria-current')
+  })
+
   it('renders all required form fields', () => {
     render(<RegisterMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />)
 
     expect(screen.getByLabelText(/First and last name/i)).toBeInTheDocument()
-    expect(screen.getByLabelText(/Email address/i)).toBeInTheDocument()
+    expect(screen.getByRole('textbox', { name: /Email address/i })).toBeInTheDocument()
     expect(screen.getByLabelText(/Additional contact/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/Job title/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/Organization/i)).toBeInTheDocument()
     expect(screen.getByLabelText(/Experience/i)).toBeInTheDocument()
-    // A fieldset legend, not a <label for> — the price control is a radio
-    // group, so it is found by its group name rather than by label text.
-    expect(screen.getByRole('group', { name: /Price per one-hour session/i })).toBeInTheDocument()
+    expect(screen.queryByRole('group', { name: /Price per one-hour session/i })).not.toBeInTheDocument()
     // Tags field uses Controller-wrapped Select, so check for label text instead
     expect(screen.getByText(/Mentoring topics/i)).toBeInTheDocument()
     // Wysiwyg fields also use Controller, check for label text
@@ -218,12 +252,13 @@ describe('RegisterMentorForm', () => {
 
     // Fill all fields except profile picture
     await user.type(screen.getByLabelText(/First and last name/i), 'John Doe')
-    await user.type(screen.getByLabelText(/Email address/i), 'john@example.com')
+    await user.type(screen.getByRole('textbox', { name: /Email address/i }), 'john@example.com')
     await user.type(screen.getByLabelText(/Additional contact/i), 'johndoe')
     await user.type(screen.getByLabelText(/Job title/i), 'Engineer')
     await user.type(screen.getByLabelText(/Organization/i), 'Tech Company')
     await user.selectOptions(screen.getByLabelText(/Experience/i), '10+')
-    await user.click(screen.getByRole('radio', { name: /^Negotiable$/i }))
+    await user.click(screen.getByRole('checkbox', { name: /privacy policy/i }))
+    await user.click(screen.getByRole('checkbox', { name: /publish my profile/i }))
 
     // Complete the captcha
     await act(async () => {
@@ -325,7 +360,7 @@ describe('RegisterMentorForm', () => {
     const user = userEvent.setup()
     render(<RegisterMentorForm isLoading={false} isError={false} onSubmit={mockOnSubmit} />)
 
-    await user.type(screen.getByLabelText(/Email address/i), 'invalid-email')
+    await user.type(screen.getByRole('textbox', { name: /Email address/i }), 'invalid-email')
 
     await act(async () => {
       fireEvent.click(screen.getByTestId('turnstile'))

@@ -38,7 +38,6 @@ import {
 } from '@/lib/admin-moderation-api'
 import { DeleteProfileDialog } from '@/components'
 import { formatDateTime } from '@/components/mentor-admin'
-import { imageLoader } from '@/lib/image-loader'
 import { isValidCalendarUrl } from '@/lib/safe-url'
 import { formatPrice, isValidPrice, parsePrice, type PriceValue } from '@/lib/price'
 import PriceField from '@/components/forms/PriceField'
@@ -1003,7 +1002,7 @@ function MentorModerationEditContent(): JSX.Element {
               </h3>
               <div className="mb-3 flex items-center gap-4">
                 <Image
-                  src={imagePreview || imageLoader({ src: mentor.mentorId, quality: 'full' })}
+                  src={imagePreview || `/api/admin/mentors/${encodeURIComponent(mentor.mentorId)}/photo?v=${encodeURIComponent(mentor.updatedAt ?? '')}`}
                   alt={t('pictureAlt')}
                   width={96}
                   height={96}
